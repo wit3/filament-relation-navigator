@@ -1,0 +1,11 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ resource }};
+use Wit3\FilamentRelationNavigator\Pages\RelationPage;
+
+class {{ class }} extends RelationPage
+{
+    protected static string $resource = {{ resourceClass }}::class;
+}

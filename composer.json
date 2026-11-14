@@ -1,0 +1,59 @@
+{
+    "name": "wit3/filament-relation-navigator",
+    "description": "Give every Filament relation manager its own page (/{record}/{relation}) and switch between them from the breadcrumb, reusing the relation managers you already have.",
+    "keywords": [
+        "filament",
+        "filament-plugin",
+        "relation-manager",
+        "breadcrumbs",
+        "laravel"
+    ],
+    "type": "library",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Salvatore Scalzi"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "filament/filament": "^4.0|^5.0",
+        "spatie/laravel-package-tools": "^1.15"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.18",
+        "orchestra/testbench": "^9.0|^10.0|^11.0",
+        "pestphp/pest": "^3.0|^4.0",
+        "pestphp/pest-plugin-laravel": "^3.0|^4.0",
+        "pestphp/pest-plugin-livewire": "^3.0|^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Wit3\\FilamentRelationNavigator\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Wit3\\FilamentRelationNavigator\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "format": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Wit3\\FilamentRelationNavigator\\FilamentRelationNavigatorServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

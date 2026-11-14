@@ -1,0 +1,36 @@
+.fi-relation-navigator {
+    display: inline-flex;
+}
+
+.fi-relation-navigator-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 0.375rem;
+    padding: 0.125rem 0.375rem;
+    margin: -0.125rem -0.375rem;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+.fi-relation-navigator-trigger:hover,
+.fi-relation-navigator-trigger:focus-visible {
+    background-color: rgb(0 0 0 / 0.05);
+    outline: none;
+}
+
+:is(.dark) .fi-relation-navigator-trigger:hover,
+:is(.dark) .fi-relation-navigator-trigger:focus-visible {
+    background-color: rgb(255 255 255 / 0.05);
+}
+
+.fi-relation-navigator-trigger-icon {
+    width: 1rem;
+    height: 1rem;
+    opacity: 0.7;
+}
+
+.fi-relation-navigator-item.fi-active {
+    font-weight: 600;
+}
