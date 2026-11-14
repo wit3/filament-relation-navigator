@@ -8,6 +8,7 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\AuthorResource;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\EditAuthor;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\GroupOnlyCommentsRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\HiddenPageRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PostsRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PublishedCommentsRelationManager;
@@ -46,17 +47,35 @@ it('shows the link on the view page', function (): void {
         ->assertSee("/admin/authors/{$id}/published-comments", escape: false);
 });
 
-it('does not link a relation manager to the relation page it is on', function (string $slug): void {
+it('does not link a relation manager to the relation page it is on', function (): void {
     // There the relation manager gets the view page as its page class, as on
     // the view page: only the URL tells them apart.
-    $this->get("/admin/authors/{$this->author->getKey()}/{$slug}")
+    $this->get("/admin/authors/{$this->author->getKey()}/published-comments")
         ->assertOk()
         ->assertSee('Published comments')
         ->assertDontSee('Open as page');
-})->with([
-    'its own page' => 'published-comments',
-    'the page of its group' => 'activity',
-]);
+});
+
+it('links a relation manager on a group page to its own page', function (): void {
+    $id = $this->author->getKey();
+
+    // The group page shows its relation managers one under the other.
+    // Published comments has its own page: linked. Group only comments has
+    // only the group's, the page it is on: not linked. (Posts is lazy.)
+    $html = $this->get("/admin/authors/{$id}/activity")->assertOk()->getContent();
+
+    expect($html)->toContain('Group only comments')
+        ->toContain("/admin/authors/{$id}/published-comments")
+        ->and(substr_count($html, 'Open as page'))->toBe(1);
+});
+
+it('prefers the own page of a relation manager to the page of its group', function (): void {
+    Livewire::test(PublishedCommentsRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => ViewAuthor::class])
+        ->assertSee(AuthorResource::getUrl('relations.published-comments', ['record' => $this->author]), escape: false);
+
+    Livewire::test(GroupOnlyCommentsRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => ViewAuthor::class])
+        ->assertSee(AuthorResource::getUrl('relations.activity', ['record' => $this->author]), escape: false);
+});
 
 it('does not link a relation manager on a relation page class', function (): void {
     Livewire::test(PostsRelationManager::class, [

@@ -16,6 +16,7 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\Author
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\EditAuthor;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ListAuthors;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\GroupOnlyCommentsRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\HiddenPageRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\NotesRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PostsRelationManager;
@@ -83,6 +84,7 @@ class AuthorResource extends Resource
             'activity' => RelationGroup::make('Activity', [
                 PostsRelationManager::class,
                 PublishedCommentsRelationManager::class,
+                GroupOnlyCommentsRelationManager::class,
             ]),
         ];
     }

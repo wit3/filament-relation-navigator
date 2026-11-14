@@ -4,8 +4,13 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+### Changed
+
+- "Open as page" opens a relation manager's own page before the page of a relation group it also belongs to (it used to open whichever came first in `getRelations()`). A manager that exists only inside a group still opens the group's page.
+
 ### Added
 
+- **"Open as page" on relation group pages**: a relation manager shown on its group's page links to its own page when it has one.
 - **Title, subheading and breadcrumb of one relation page** from its relation manager, given the owner record: `getRelationPageTitle()`, `getRelationPageSubheading()`, `getRelationPageBreadcrumb()` (static, optional, `null` keeps the default). The menu keeps the tab title.
 
 ## 1.4.1 - 2026-11-14

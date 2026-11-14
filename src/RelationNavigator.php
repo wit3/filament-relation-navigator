@@ -437,7 +437,10 @@ final class RelationNavigator
         $url = false;
         $resolveUrl = function () use ($manager, &$url): ?string {
             if ($url === false) {
-                $url = self::isOnRelationPage() ? null : self::getRelationManagerPageUrl($manager);
+                $url = self::getRelationManagerPageUrl($manager);
+
+                // Never a link to the page it is on (its own relation page).
+                $url = ($url !== null && self::isOriginalUrl($url)) ? null : $url;
             }
 
             return $url;
@@ -507,7 +510,7 @@ final class RelationNavigator
         // A relation page embeds the relation manager with the view page as
         // its page class: look at the page it is on, also on Livewire
         // requests (lazy loading, table actions).
-        if ($url === null || self::isOnRelationPage()) {
+        if ($url === null || self::isOriginalUrl($url)) {
             return null;
         }
 
@@ -518,17 +521,14 @@ final class RelationNavigator
     }
 
     /**
-     * Whether the current Livewire components are on a relation page.
+     * Whether the URL is the page the current Livewire components are on,
+     * also on Livewire requests (lazy loading, table actions).
      */
-    private static function isOnRelationPage(): bool
+    private static function isOriginalUrl(string $url): bool
     {
-        try {
-            $route = Route::getRoutes()->match(Request::create((string) Livewire::originalUrl()));
-        } catch (\Throwable) {
-            return false;
-        }
+        $normalize = fn (string $url): string => rtrim((string) strtok($url, '?#'), '/');
 
-        return array_key_exists(RelationPage::ROUTE_PARAMETER, $route->defaults);
+        return $normalize($url) === $normalize((string) Livewire::originalUrl());
     }
 
     /**
@@ -599,7 +599,11 @@ final class RelationNavigator
     private static function findRelationPageSlug(string $relationPage, RelationManager $manager, Model $ownerRecord): ?string
     {
         $contextPageClass = $relationPage::getContextPageClass();
-        $fallback = null;
+
+        // The best entry: one whose properties the instance has, then its own
+        // page before the page of a group it belongs to, then the first one.
+        $best = null;
+        $bestScore = -1;
 
         foreach ($relationPage::getRelationPageDefinitions() as $slug => $definition) {
             $entries = $definition->isGroup()
@@ -613,23 +617,24 @@ final class RelationNavigator
 
                 $properties = ($entry instanceof RelationManagerConfiguration) ? $entry->getProperties() : [];
 
-                if ($properties === []) {
-                    $fallback ??= (string) $slug;
-
-                    continue;
-                }
-
-                $matches = collect($properties)->every(
+                $matches = ($properties !== []) && collect($properties)->every(
                     fn (mixed $value, string $property): bool => property_exists($manager, $property) && $manager->{$property} === $value,
                 );
 
-                if ($matches) {
-                    return (string) $slug;
+                if (($properties !== []) && ! $matches) {
+                    continue;
+                }
+
+                $score = ($matches ? 2 : 0) + ($definition->isGroup() ? 0 : 1);
+
+                if ($score > $bestScore) {
+                    $best = (string) $slug;
+                    $bestScore = $score;
                 }
             }
         }
 
-        return $fallback;
+        return $best;
     }
 
     /**

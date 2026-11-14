@@ -265,8 +265,10 @@ it only when `canAccess()` allows it for the record.
 <!-- #region open-as-page -->
 On the view and edit pages, every relation manager that has its own page gets
 an **Open as page** action in the header of its table, next to its title and
-before its own actions. A manager inside a relation group opens the group's
-page. Turn it off where you need to:
+before its own actions. It opens the relation manager's own page, or the
+page of its relation group when it has no page of its own. On a group's page
+the managers with a page of their own get the action too; on its own page a
+manager never links to itself. Turn it off where you need to:
 
 ```php
 // config/filament-relation-navigator.php: everywhere

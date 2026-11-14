@@ -36,7 +36,7 @@ CI runs the suite on Filament 4 and 5, Laravel 12 and 13, PHP 8.2-8.5 and the lo
 - **README.md is the documentation source.** Its `<!-- #region name -->` markers feed the docs site: keep them balanced and keep the names stable. Use absolute URLs for links to repository files.
 - **Commits and texts in English**, imperative mood ("Add …", "Fix …").
 - **Blade/Livewire:** no Blade `@if` inside an HTML tag's attributes in views rendered by Livewire (it injects comment markers): build attribute strings in PHP.
-- **Relation managers on a relation page receive the view page as `$pageClass`.** Tell the relation page apart by the route (see `RelationNavigator::isOnRelationPage()`), never by the page class.
+- **Relation managers on a relation page receive the view page as `$pageClass`.** Tell pages apart by URL (see `RelationNavigator::isOriginalUrl()`, which also works on Livewire requests), never by the page class.
 - **Authorization:** Filament checks the record's `view`/`update` policies when view/edit pages mount, not in `canAccess()`. Anything that lists or opens record pages must check `RelationNavigator::canAccessRecordPage()`.
 - **Tests first** for behaviour changes; add a browser test for anything that depends on JavaScript.
 - GitHub Actions are pinned to commit SHAs with the version in a comment; Dependabot updates them.
