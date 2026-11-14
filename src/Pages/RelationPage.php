@@ -413,7 +413,26 @@ abstract class RelationPage extends Page
             return static::$title;
         }
 
-        return $this->getRelationTitle();
+        return $this->callRelationManagerHook('getRelationPageTitle') ?? $this->getRelationTitle();
+    }
+
+    /**
+     * A static method of the page's relation manager, for this page only:
+     * `getRelationPageTitle()`, `getRelationPageSubheading()` or
+     * `getRelationPageBreadcrumb()`, given the owner record. Null when the
+     * relation manager has none (or for a relation group).
+     */
+    protected function callRelationManagerHook(string $method): string|Htmlable|null
+    {
+        $managerClass = $this->getRelationPageDefinition()?->getManagerClass();
+
+        if ($managerClass === null || ! method_exists($managerClass, $method)) {
+            return null;
+        }
+
+        $value = $managerClass::$method($this->getRecord());
+
+        return ($value instanceof Htmlable || is_string($value)) && filled($value) ? $value : null;
     }
 
     /**
@@ -424,6 +443,12 @@ abstract class RelationPage extends Page
     {
         if (filled($this->subheading ?? null)) {
             return $this->subheading;
+        }
+
+        $subheading = $this->callRelationManagerHook('getRelationPageSubheading');
+
+        if ($subheading !== null) {
+            return $subheading;
         }
 
         // The header already shows the record.
@@ -457,7 +482,13 @@ abstract class RelationPage extends Page
 
     public function getBreadcrumb(): string
     {
-        return static::$breadcrumb ?? $this->getRelationTitle();
+        if (static::$breadcrumb !== null) {
+            return static::$breadcrumb;
+        }
+
+        $breadcrumb = $this->callRelationManagerHook('getRelationPageBreadcrumb');
+
+        return $breadcrumb instanceof Htmlable ? $breadcrumb->toHtml() : ($breadcrumb ?? $this->getRelationTitle());
     }
 
     /**

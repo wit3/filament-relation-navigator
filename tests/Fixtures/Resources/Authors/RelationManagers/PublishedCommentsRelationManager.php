@@ -23,6 +23,25 @@ class PublishedCommentsRelationManager extends RelationManager
      * An author named "No comments" cannot see them: a record that cannot
      * open a page another record can.
      */
+    /**
+     * Per-page title, subheading and breadcrumb, for an author named
+     * "Custom titles" only (null keeps the defaults).
+     */
+    public static function getRelationPageTitle(Model $ownerRecord): ?string
+    {
+        return $ownerRecord->getAttribute('name') === 'Custom titles' ? 'Comments by '.$ownerRecord->getAttribute('name') : null;
+    }
+
+    public static function getRelationPageSubheading(Model $ownerRecord): ?string
+    {
+        return $ownerRecord->getAttribute('name') === 'Custom titles' ? 'Only the published ones' : null;
+    }
+
+    public static function getRelationPageBreadcrumb(Model $ownerRecord): ?string
+    {
+        return $ownerRecord->getAttribute('name') === 'Custom titles' ? 'Comments' : null;
+    }
+
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
         return $ownerRecord->getAttribute('name') !== 'No comments';

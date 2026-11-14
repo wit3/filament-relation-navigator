@@ -543,6 +543,38 @@ include `filament-relation-navigator::menu.partials.list` with `showCheck`.
 ## Customising the relation pages
 
 <!-- #region customising-the-relation-pages -->
+### Title, subheading and breadcrumb of one relation
+
+A relation manager can set them for its own page, from the record, with no
+page class:
+
+```php
+class OrdersRelationManager extends RelationManager
+{
+    public static function getRelationPageTitle(Model $ownerRecord): string|Htmlable|null
+    {
+        return "Orders of {$ownerRecord->name}";
+    }
+
+    public static function getRelationPageSubheading(Model $ownerRecord): string|Htmlable|null
+    {
+        return 'Last 12 months';
+    }
+
+    public static function getRelationPageBreadcrumb(Model $ownerRecord): ?string
+    {
+        return 'Orders';
+    }
+}
+```
+
+Return `null` to keep the default. A page class you wrote (below) wins with
+its own `$title`, `$subheading` and `$breadcrumb`. The menu and the tabs keep
+the relation manager's title. Relation groups have no relation manager, so
+their page uses the group label.
+
+### A page class of your own
+
 The generated relation pages cover most needs. To change their title, their
 breadcrumbs or anything else a Filament page can do, write the page class
 yourself; the package then uses yours for that resource:

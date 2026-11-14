@@ -175,3 +175,27 @@ it('computes each badge once per request', function (): void {
 
     expect($queries)->toBe(1);
 });
+
+it('takes the title, subheading and breadcrumb of one relation page from its relation manager', function (): void {
+    $author = Author::create(['name' => 'Custom titles']);
+
+    $page = Livewire::test(AuthorResource::getPages()['relations.published-comments']->getPage(), [
+        'record' => $author->getKey(),
+        'relationPage' => 'published-comments',
+    ])->instance();
+
+    expect($page->getTitle())->toBe('Comments by Custom titles')
+        ->and($page->getSubheading())->toBe('Only the published ones')
+        ->and($page->getBreadcrumb())->toBe('Comments');
+
+    // The menu keeps the tab title, like the tabs.
+    expect(collect($page->getRelationNavigatorItems())->firstWhere('key', 'relations.published-comments')->label)
+        ->toBe('Published comments');
+
+    // Other records keep the defaults.
+    $other = Author::create(['name' => 'Ada Lovelace']);
+
+    $this->get("/admin/authors/{$other->getKey()}/published-comments")
+        ->assertOk()
+        ->assertSeeInOrder(['<h1', 'Published comments'], escape: false);
+});

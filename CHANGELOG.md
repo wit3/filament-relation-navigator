@@ -4,6 +4,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+### Added
+
+- **Title, subheading and breadcrumb of one relation page** from its relation manager, given the owner record: `getRelationPageTitle()`, `getRelationPageSubheading()`, `getRelationPageBreadcrumb()` (static, optional, `null` keeps the default). The menu keeps the tab title.
+
 ## 1.4.1 - 2026-11-14
 
 No code changes: documentation, AI tooling and repository hygiene.
