@@ -22,13 +22,13 @@ between them from a **menu in the breadcrumb**.
   relation the user can see, with icons and badges. Two looks, optional
   search and keyboard navigation, a view of your own, and a version for
   small screens.
+- **Previous and next record** on the same page, an **"Open as page"** link
+  above every relation manager tab, and links to old tabs that land on the
+  new pages: each one a config switch.
 - **One trait, no page classes**: no files to generate, nothing to add to
   `getPages()` or to the panel provider.
 
-<picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-dark.png">
-    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-light.png" alt="The orders of a customer on their own page, with the breadcrumb menu open">
-</picture>
+<img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/demo.gif" alt="The menu opened with Alt Shift R, filtered to Invoices, then the next customer on the same page" width="880">
 
 ## Requirements
 
@@ -88,8 +88,8 @@ That's all. The relation pages have the menu already, and the tabs on the
 view page keep working as before.
 
 <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-simple-dark.png">
-    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-simple-light.png" alt="The breadcrumb menu on the view page" width="520">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-light.png" alt="The orders of a customer on their own page, with the breadcrumb menu open">
 </picture>
 
 ## Relation pages
@@ -242,6 +242,60 @@ class CustomerActivity extends Page
 The menu uses the page's `$navigationLabel` and `$navigationIcon`, and shows
 it only when `canAccess()` allows it for the record.
 
+## Open as page
+
+On the view and edit pages, every relation manager that has its own page gets
+an **Open as page** link above its table. A manager inside a relation group
+opens the group's page. Turn it off in the config:
+
+```php
+'relation_manager_link' => false,
+```
+
+`RelationNavigator::getRelationManagerPageUrl($relationManager)` returns the
+same URL, for a button of your own.
+
+## Previous and next record
+
+Two buttons before the header actions open the previous or the next record,
+by key, **on the same page**: from a customer's invoices to the next
+customer's invoices. A record that cannot open that page opens on its first
+page in the menu. They are off by default, since they add two queries per
+page:
+
+```php
+'record_navigation' => true,
+```
+
+They walk through the resource's own query (`getRecordRouteBindingEloquentQuery()`),
+so tenancy and your scopes apply. Per page:
+
+```php
+public function hasRelationNavigatorRecordNavigation(): bool
+{
+    return true;
+}
+
+public function getRelationNavigatorRecordNavigationQuery(): ?Builder
+{
+    return Customer::query()->where('active', true);
+}
+```
+
+Nested resources are not supported yet: they show no buttons.
+
+## Links to relation manager tabs
+
+Once the relation pages replace the tabs, old links such as
+`/customers/1?relation=orders` can open `/customers/1/orders` instead:
+
+```php
+'redirect_relation_tabs' => true,
+```
+
+Tabs without a relation page, or that the record cannot see, stay where they
+are.
+
 ## Menu presets
 
 Publish the config:
@@ -252,14 +306,14 @@ php artisan vendor:publish --tag=filament-relation-navigator-config
 
 ```php
 'menu' => [
-    'preset' => 'simple',   // 'github', a preset of yours, or a view name
+    'preset' => 'github',   // 'simple', a preset of yours, or a view name
     'presets' => [
         'simple' => 'filament-relation-navigator::menu.simple',
         'github' => 'filament-relation-navigator::menu.github',
     ],
-    'searchable' => false,  // a search field on top of the list, whatever the preset
+    'searchable' => true,   // a search field on top of the list, whatever the preset
     'search_from' => 0,     // ...from this many items
-    'badges' => true,       // the relation managers' badges, as in their tabs
+    'badges' => true,       // the relation managers' badges; 'lazy' loads them when the menu opens
     'max_height' => '24rem',
     'separator' => true,    // record pages and relation pages in two blocks
     'mobile' => true,       // the menu above the heading on small screens
@@ -267,12 +321,25 @@ php artisan vendor:publish --tag=filament-relation-navigator-config
 ],
 ```
 
-**simple**: the last breadcrumb itself opens the list (screenshot above).
+**github** (the default): the last breadcrumb stays text and a caret next to
+it opens a panel with a heading, a search field and a check on the current
+page, like GitHub's repository switcher. The field gets the focus when the
+menu opens and Enter opens the first match.
 
-**github**: the last breadcrumb stays text and a caret next to it opens a
-panel with a heading and a check on the current page, like GitHub's
-repository switcher. Here with `searchable` on: the field gets the focus when
-the menu opens and Enter opens the first match.
+**simple**: the last breadcrumb itself opens the list. For the menu of 1.2
+and earlier, set `'preset' => 'simple'` and `'searchable' => false`.
+
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-simple-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-simple-light.png" alt="The simple preset on the view page" width="520">
+</picture>
+
+### Deferred badges
+
+Badges run the same queries as the tab badges. With `'badges' => 'lazy'` the
+page renders without them, and the menu loads them in one request when it
+opens. If you published the package views, update
+`menu/partials/list.blade.php` first.
 
 **Keyboard**: from the search field, Down moves into the list; Up and Down
 move between the pages, Enter opens one, Escape closes the menu.

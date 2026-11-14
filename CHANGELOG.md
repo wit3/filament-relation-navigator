@@ -4,6 +4,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+## 1.3.0 - 2026-11-14
+
+New features, all behind config switches, and a new default look for the menu. No breaking changes: every new key has a default in the code, so a published config from 1.2 keeps working.
+
 ### Added
 
 - **Links to relation manager tabs open the relation page** (config `redirect_relation_tabs`, default `false`): `/customers/1?relation=bills` on the view or edit page redirects to `/customers/1/bills`, with `wire:navigate` in SPA mode. Tabs without a relation page, or that the record cannot see, stay where they are. Per page: `shouldRedirectRelationTabs()` and `getRelationTabRedirectUrl()`.
@@ -17,6 +21,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 ### Changed
 
 - **The default menu is now the `github` preset with the search field** (`menu.preset` = `github`, `menu.searchable` = `true`): it is the one with the most features. Apps that published the config keep what they set. To keep the menu of 1.2 and earlier, set `'preset' => 'simple'` and `'searchable' => false` in `config/filament-relation-navigator.php`, or override `getRelationNavigatorPreset()` and `isRelationNavigatorSearchable()` on the page.
+
+### Internal
+
+- Tests for each feature, tenancy and nested resources included, and a browser test for the deferred badges. README with a GIF and new screenshots.
 
 ## 1.2.1 - 2026-11-14
 
