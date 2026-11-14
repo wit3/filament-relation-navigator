@@ -17,6 +17,11 @@ final class RelationPageDefinition
     private const MEMO_KEY = 'filament-relation-navigator.memo';
 
     /**
+     * @var list<string>
+     */
+    private const LAZY_BADGE_METHODS = ['isBadgeLazyLoaded', 'isBadgeDeferred'];
+
+    /**
      * @param  class-string<RelationManager> | RelationGroup | RelationManagerConfiguration  $manager
      */
     public function __construct(
@@ -97,12 +102,18 @@ final class RelationPageDefinition
     {
         $managerClass = $this->getManagerClass();
 
-        return match (true) {
-            $managerClass === null => false,
-            method_exists($managerClass, 'isBadgeLazyLoaded') => (bool) $managerClass::isBadgeLazyLoaded($ownerRecord, $pageClass),
-            method_exists($managerClass, 'isBadgeDeferred') => (bool) $managerClass::isBadgeDeferred($ownerRecord, $pageClass),
-            default => false,
-        };
+        if ($managerClass === null) {
+            return false;
+        }
+
+        // isBadgeLazyLoaded() from Filament 4.16, isBadgeDeferred() before.
+        foreach (self::LAZY_BADGE_METHODS as $method) {
+            if (method_exists($managerClass, $method)) {
+                return (bool) $managerClass::$method($ownerRecord, $pageClass);
+            }
+        }
+
+        return false;
     }
 
     /**
