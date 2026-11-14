@@ -52,6 +52,12 @@ class FilamentRelationNavigatorServiceProvider extends PackageServiceProvider
             fn (): ?Htmlable => RelationNavigator::renderMobileMenu(),
         );
 
+        // "Open as page" above the relation managers of the record pages.
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::RESOURCE_RELATION_MANAGER_BEFORE,
+            fn (): ?Htmlable => RelationNavigator::renderRelationManagerLink(),
+        );
+
         FilamentAsset::register([
             Css::make('filament-relation-navigator', __DIR__.'/../resources/css/relation-navigator.css'),
         ], package: 'wit3/filament-relation-navigator');

@@ -10,4 +10,6 @@ return [
 
     'empty' => 'No pages found.',
 
+    'open_as_page' => 'Open as page',
+
 ];

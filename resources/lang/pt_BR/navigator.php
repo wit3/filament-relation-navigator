@@ -10,4 +10,6 @@ return [
 
     'empty' => 'Nenhuma página encontrada.',
 
+    'open_as_page' => 'Abrir como página',
+
 ];

@@ -63,4 +63,16 @@ return [
 
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Relation managers on the record pages
+    |--------------------------------------------------------------------------
+    |
+    | An "Open as page" link above the table of every relation manager that
+    | has its own page, on the view and edit pages.
+    |
+    */
+
+    'relation_manager_link' => true,
+
 ];

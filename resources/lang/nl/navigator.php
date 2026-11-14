@@ -10,4 +10,6 @@ return [
 
     'empty' => 'Geen pagina\'s gevonden.',
 
+    'open_as_page' => 'Openen als pagina',
+
 ];

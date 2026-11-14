@@ -12,8 +12,10 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\RelationManagers\RelationManagerConfiguration;
 use Filament\Resources\Resource;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Wit3\FilamentRelationNavigator\Concerns\HasRelationNavigator;
@@ -350,6 +352,136 @@ final class RelationNavigator
         $menu = method_exists($page, 'renderRelationNavigatorMobileMenu') ? $page->renderRelationNavigatorMobileMenu() : null;
 
         return $menu instanceof Htmlable ? $menu : null;
+    }
+
+    /**
+     * The "Open as page" link above a relation manager's table on the view
+     * and edit pages (config `relation_manager_link`). Rendered by the
+     * package through a render hook; never on the relation page itself.
+     */
+    public static function renderRelationManagerLink(): ?Htmlable
+    {
+        if (! config('filament-relation-navigator.relation_manager_link', true)) {
+            return null;
+        }
+
+        $manager = Livewire::current();
+
+        if (! $manager instanceof RelationManager) {
+            return null;
+        }
+
+        $url = self::getRelationManagerPageUrl($manager);
+
+        if ($url === null) {
+            return null;
+        }
+
+        return new HtmlString(app(ViewFactory::class)->make(self::view('relation-manager-link'), [
+            'url' => $url,
+            'label' => __('filament-relation-navigator::navigator.open_as_page'),
+        ])->render());
+    }
+
+    /**
+     * A view of the package, checked: a published copy may be missing.
+     *
+     * @return view-string
+     */
+    private static function view(string $name): string
+    {
+        $view = "filament-relation-navigator::{$name}";
+
+        if (! app(ViewFactory::class)->exists($view)) {
+            throw new \InvalidArgumentException("The view [{$view}] does not exist.");
+        }
+
+        return $view;
+    }
+
+    /**
+     * The URL of the relation page that shows this relation manager (or the
+     * group it belongs to), for its owner record. Null on the relation page
+     * itself, or when the relation manager has no page.
+     */
+    public static function getRelationManagerPageUrl(RelationManager $manager): ?string
+    {
+        $pageClass = $manager->getPageClass();
+
+        if (! is_subclass_of($pageClass, Page::class) || is_subclass_of($pageClass, RelationPage::class)) {
+            return null;
+        }
+
+        $resource = $pageClass::getResource();
+
+        if (! is_subclass_of($resource, Resource::class)) {
+            return null;
+        }
+
+        $relationPage = self::getRelationPageClass($resource);
+
+        if (! $relationPage) {
+            return null;
+        }
+
+        $ownerRecord = $manager->getOwnerRecord();
+        $slug = self::findRelationPageSlug($relationPage, $manager, $ownerRecord);
+
+        if ($slug === null) {
+            return null;
+        }
+
+        $pageKey = $relationPage::getPageKey($slug);
+
+        if (! self::hasRoute($resource, $pageKey)) {
+            return null;
+        }
+
+        return $resource::getUrl($pageKey, ['record' => $ownerRecord], shouldGuessMissingParameters: true);
+    }
+
+    /**
+     * The slug of the relation page of a relation manager instance. The same
+     * class can be listed twice with different properties
+     * (`PostsRelationManager::make([...])`): the entry whose properties the
+     * instance has wins, then the plain class.
+     *
+     * @param  class-string<RelationPage>  $relationPage
+     */
+    private static function findRelationPageSlug(string $relationPage, RelationManager $manager, Model $ownerRecord): ?string
+    {
+        $contextPageClass = $relationPage::getContextPageClass();
+        $fallback = null;
+
+        foreach ($relationPage::getRelationPageDefinitions() as $slug => $definition) {
+            $entries = $definition->isGroup()
+                ? $definition->getGroup($ownerRecord, $contextPageClass)->getManagers()
+                : [$definition->manager];
+
+            foreach ($entries as $entry) {
+                if (self::normalizeManagerClass($entry) !== $manager::class) {
+                    continue;
+                }
+
+                $properties = ($entry instanceof RelationManagerConfiguration) ? $entry->getProperties() : [];
+
+                if ($properties === []) {
+                    $fallback ??= (string) $slug;
+
+                    continue;
+                }
+
+                $matches = collect($properties)->every(
+                    fn (mixed $value, string $property): bool => property_exists($manager, $property) && $manager->{$property} === $value,
+                );
+
+                if ($matches) {
+                    return (string) $slug;
+                }
+            }
+        }
+
+        return $fallback;
     }
 
     /**

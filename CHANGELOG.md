@@ -4,6 +4,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+### Added
+
+- **"Open as page"** link above the table of every relation manager that has its own page, on the view and edit pages (config `relation_manager_link`, default `true`). It links to the relation group's page for a manager inside a group, and tells apart two entries of the same manager (`PostsRelationManager::make([...])`) by their properties. `RelationNavigator::getRelationManagerPageUrl()` returns the same URL for your own buttons.
+
 ### Changed
 
 - **The default menu is now the `github` preset with the search field** (`menu.preset` = `github`, `menu.searchable` = `true`): it is the one with the most features. Apps that published the config keep what they set. To keep the menu of 1.2 and earlier, set `'preset' => 'simple'` and `'searchable' => false` in `config/filament-relation-navigator.php`, or override `getRelationNavigatorPreset()` and `isRelationNavigatorSearchable()` on the page.
