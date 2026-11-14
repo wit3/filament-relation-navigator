@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Routing\CompiledRouteCollection;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Wit3\FilamentRelationNavigator\GeneratedRelationPages;
@@ -11,8 +12,10 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\Author
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\OptedInCommentsRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PostsRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\AutoAuthors\AutoAuthorResource;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\AutoAuthors\Pages\ViewAutoAuthor;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\NoPagesAuthors\NoPagesAuthorResource;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\OptInAuthors\OptInAuthorResource;
+use Wit3\FilamentRelationNavigator\Tests\TestCase;
 
 beforeEach(function (): void {
     $this->actingAs(User::create(['name' => 'Admin', 'email' => 'admin@example.com', 'password' => 'secret']));
@@ -26,7 +29,7 @@ it('gives every relation of a resource with HasRelationPages a page, without a p
     $page = RelationNavigator::getRelationPageClass(AutoAuthorResource::class);
 
     expect($page)->toBe(GeneratedRelationPages::classFor(AutoAuthorResource::class))
-        ->and(array_keys($page::getRelationPageDefinitions()))->toBe(['posts', 'notes'])
+        ->and(array_keys($page::getRelationPageDefinitions()))->toBe(['posts', 'notes', 'featured-posts'])
         ->and(Route::has('filament.admin.resources.auto-authors.relations.posts'))->toBeTrue()
         ->and(Route::has('filament.admin.resources.auto-authors.relations.notes'))->toBeTrue()
         ->and(Route::has('filament.admin.resources.auto-authors.relations.hidden-page'))->toBeFalse();
@@ -151,4 +154,77 @@ it('shows the record under the title when there is no header', function (): void
         ->instance();
 
     expect($page->getSubheading())->toBe('Ada Lovelace');
+});
+
+it('writes the generated classes to the temporary directory when the storage is read-only', function (): void {
+    $readOnly = sys_get_temp_dir().'/frn-read-only-'.uniqid();
+    mkdir($readOnly.'/framework/cache', 0755, true);
+    chmod($readOnly.'/framework/cache', 0555);
+
+    $storage = app()->storagePath();
+    GeneratedRelationPages::useCachePath(null);
+    app()->useStoragePath($readOnly);
+
+    try {
+        expect(GeneratedRelationPages::pathFor('Some\\Class'))
+            ->toStartWith(rtrim(sys_get_temp_dir(), '/').'/filament-relation-navigator/');
+    } finally {
+        app()->useStoragePath($storage);
+        GeneratedRelationPages::useCachePath(TestCase::generatedPagesPath());
+        chmod($readOnly.'/framework/cache', 0755);
+    }
+});
+
+it('explains a cache directory it cannot write to', function (): void {
+    $readOnly = sys_get_temp_dir().'/frn-read-only-'.uniqid();
+    mkdir($readOnly, 0555, true);
+    GeneratedRelationPages::useCachePath($readOnly);
+
+    try {
+        expect(fn () => GeneratedRelationPages::ensureFile('Wit3\\X\\YRelationPage', AutoAuthorResource::class))
+            ->toThrow(RuntimeException::class, 'useCachePath()');
+    } finally {
+        GeneratedRelationPages::useCachePath(TestCase::generatedPagesPath());
+        chmod($readOnly, 0755);
+    }
+});
+
+it('passes the properties of a configured relation manager to its page', function (): void {
+    $this->get("/admin/auto-authors/{$this->author->getKey()}/featured-posts")
+        ->assertOk()
+        ->assertSeeLivewire(PostsRelationManager::class);
+
+    Livewire::test(PostsRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => ViewAutoAuthor::class, 'note' => 'Only the featured ones'])
+        ->assertSee('Only the featured ones');
+
+    $page = Livewire::test(
+        RelationNavigator::getLivewireComponentName(GeneratedRelationPages::classFor(AutoAuthorResource::class)),
+        ['record' => $this->author->getKey(), 'relationPage' => 'featured-posts'],
+    );
+
+    expect($page->html())->toContain('Only the featured ones');
+});
+
+it('works with cached routes', function (): void {
+    // What `route:cache` stores and Laravel loads back: serialized, compiled
+    // routes. (`artisan route:cache` itself would boot Testbench's skeleton
+    // app, without this test's panels.)
+    $router = app('router');
+    $routes = $router->getRoutes();
+
+    foreach ($routes as $route) {
+        $route->prepareForSerialization();
+    }
+
+    $router->setCompiledRoutes(unserialize(serialize($routes->compile())));
+
+    expect($router->getRoutes())->toBeInstanceOf(CompiledRouteCollection::class)
+        ->and($router->getRoutes()->getByName('filament.admin.resources.auto-authors.relations.posts'))->not->toBeNull();
+
+    $this->get("/admin/auto-authors/{$this->author->getKey()}/posts")
+        ->assertOk()
+        ->assertSeeLivewire(PostsRelationManager::class);
+
+    $this->get("/admin/authors/{$this->author->getKey()}/posts")
+        ->assertOk();
 });

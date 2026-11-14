@@ -14,15 +14,16 @@ jobs:
       matrix:
         include:
           - { php: '8.2', laravel: '12.*', testbench: '10.*', filament: '4.*', pest: '3.*' }
+          - { php: '8.2', laravel: '12.*', testbench: '10.*', filament: '4.*', pest: '3.*', lowest: true }
           - { php: '8.3', laravel: '12.*', testbench: '10.*', filament: '5.*', pest: '4.*' }
           - { php: '8.4', laravel: '13.*', testbench: '11.*', filament: '4.*', pest: '4.*' }
           - { php: '8.4', laravel: '13.*', testbench: '11.*', filament: '5.*', pest: '4.*' }
           - { php: '8.5', laravel: '13.*', testbench: '11.*', filament: '5.*', pest: '4.*' }
 
-    name: PHP ${{ matrix.php }} · Laravel ${{ matrix.laravel }} · Filament ${{ matrix.filament }}
+    name: PHP ${{ matrix.php }} · Laravel ${{ matrix.laravel }} · Filament ${{ matrix.filament }}${{ matrix.lowest && ' · lowest' || '' }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -30,15 +31,15 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite, intl, fileinfo
           coverage: none
 
-      - name: Drop the browser plugin on Pest 3
+      - name: Drop the browser plugin and Larastan on Pest 3
         if: matrix.pest == '3.*'
-        run: composer remove --dev pestphp/pest-plugin-browser --no-update --no-interaction
+        run: composer remove --dev pestphp/pest-plugin-browser larastan/larastan --no-update --no-interaction
 
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "filament/filament:${{ matrix.filament }}" --no-interaction --no-update
           composer require --dev "pestphp/pest:${{ matrix.pest }}" "pestphp/pest-plugin-laravel:${{ matrix.pest }}" "pestphp/pest-plugin-livewire:${{ matrix.pest }}" --no-interaction --no-update
-          composer update --prefer-dist --no-interaction --with-all-dependencies
+          composer update --prefer-dist --no-interaction --with-all-dependencies ${{ matrix.lowest && '--prefer-lowest --prefer-stable' || '' }}
 
       - name: Run tests
         run: vendor/bin/pest --testsuite=Feature
@@ -46,10 +47,15 @@ jobs:
   browser:
     runs-on: ubuntu-latest
 
-    name: Browser · PHP 8.4 · Laravel 13 · Filament 5
+    strategy:
+      fail-fast: false
+      matrix:
+        filament: ['4.*', '5.*']
+
+    name: Browser · PHP 8.4 · Laravel 13 · Filament ${{ matrix.filament }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -57,11 +63,14 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite, intl, fileinfo
           coverage: none
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
 
-      - run: composer install --prefer-dist --no-interaction
+      - name: Install dependencies
+        run: |
+          composer require "filament/filament:${{ matrix.filament }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction --with-all-dependencies
 
       - run: npm ci
 

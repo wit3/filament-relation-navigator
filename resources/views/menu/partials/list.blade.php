@@ -88,7 +88,11 @@
         x-on:keydown.up.prevent.stop="move(-1)"
     >
         @foreach ($blocks as $block)
-            <x-filament::dropdown.list x-show="hasMatchesIn($el)">
+            {{-- The line between blocks only when the block above shows something. --}}
+            <x-filament::dropdown.list
+                x-show="hasMatchesIn($el)"
+                :x-bind:style="$loop->first ? null : '$el.previousElementSibling && hasMatchesIn($el.previousElementSibling) ? {} : { borderTopWidth: \'0px\' }'"
+            >
                 @foreach ($block as $item)
                     <x-filament::dropdown.list.item
                         tag="a"

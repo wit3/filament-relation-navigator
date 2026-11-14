@@ -151,6 +151,40 @@ final class RelationNavigator
                 }
             });
         }
+
+        // A resource registered several times with configurations
+        // (`UserResource::make('admins')`): one set of routes each, under the
+        // configuration's slug, as Filament does for the resource's pages.
+        foreach ($panel->getResourceConfigurations() as $configuration) {
+            $resource = $configuration->getResource();
+
+            if (! is_subclass_of($resource, Resource::class)) {
+                continue;
+            }
+
+            Filament::setCurrentResourceConfigurationKey($configuration->getKey());
+
+            try {
+                $page = self::getGeneratedRelationPageClass($resource);
+
+                if (! $page) {
+                    continue;
+                }
+
+                $registrations = $page::relationRoutes();
+                $key = $configuration->getKey();
+
+                $resource::registerRoutes($panel, function () use ($panel, $registrations, $key): void {
+                    foreach ($registrations as $name => $registration) {
+                        $registration->registerRoute($panel)
+                            ?->middleware("resource-configuration:{$key}")
+                            ->name($name);
+                    }
+                }, $configuration);
+            } finally {
+                Filament::setCurrentResourceConfigurationKey(null);
+            }
+        }
     }
 
     /**

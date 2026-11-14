@@ -33,9 +33,12 @@
     }
 
     if (filled($shortcut)) {
-        $ariaShortcut = collect(explode('+', $shortcut))
-            ->map(fn (string $key): string => ['mod' => 'Meta', 'command' => 'Meta', 'meta' => 'Meta', 'ctrl' => 'Control', 'control' => 'Control', 'alt' => 'Alt', 'option' => 'Alt', 'shift' => 'Shift'][$key] ?? strtoupper($key))
-            ->implode('+');
+        // `mod` is ⌘ on a Mac and Ctrl elsewhere: declare both.
+        $ariaShortcut = collect(str_contains($shortcut, 'mod') ? [str_replace('mod', 'meta', $shortcut), str_replace('mod', 'ctrl', $shortcut)] : [$shortcut])
+            ->map(fn (string $combination): string => collect(explode('+', $combination))
+                ->map(fn (string $key): string => ['command' => 'Meta', 'meta' => 'Meta', 'ctrl' => 'Control', 'control' => 'Control', 'alt' => 'Alt', 'option' => 'Alt', 'shift' => 'Shift'][$key] ?? strtoupper($key))
+                ->implode('+'))
+            ->implode(' ');
 
         // Every menu on the page (breadcrumbs, small screens) listens: only
         // the visible one opens.

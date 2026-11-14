@@ -240,3 +240,15 @@ it('matches the physical key, with mod as ⌘ on a Mac and Ctrl elsewhere', func
         ->and(RelationNavigator::getShortcutCondition('alt+shift+7'))->toContain('"Digit7"')
         ->and(RelationNavigator::getShortcutCondition('alt+shift'))->toBeNull();
 });
+
+it('declares both variants of a mod shortcut to assistive technology', function (): void {
+    config()->set('filament-relation-navigator.menu.shortcut', 'mod+shift+p');
+
+    $this->get("/admin/authors/{$this->author->getKey()}/posts")
+        ->assertSee('aria-keyshortcuts="Meta+Shift+P Control+Shift+P"', escape: false);
+});
+
+it('drops the separator line when the search hides the block above', function (): void {
+    $this->get("/admin/authors/{$this->author->getKey()}")
+        ->assertSee('x-bind:style="$el.previousElementSibling &amp;&amp; hasMatchesIn($el.previousElementSibling)', escape: false);
+});

@@ -2,6 +2,22 @@
 
 All notable changes to `filament-relation-navigator` are documented here.
 
+## 1.2.1 - 2026-11-14
+
+Bug fixes and tests. No API changes.
+
+### Fixed
+
+- Resources registered through a configuration (`UserResource::make('admins')`) had no generated relation pages: they now get them under the configuration's slug, with its middleware, as Filament does for the resource's own pages.
+- On a read-only storage (read-only containers, serverless) the generated page classes go to the system temporary directory. If no directory is writable, the error says how to choose one.
+- With a `mod` shortcut, `aria-keyshortcuts` declares both variants (`Meta+…` and `Control+…`) instead of only `Meta`.
+- While searching, the separator line no longer shows on top of the list when the block above it is filtered out.
+
+### Internal
+
+- Tests with cached routes, configured resources and `RelationManager::make([...])` entries.
+- CI: a job on the lowest allowed versions (Filament 4.13, Laravel 12, Livewire 3.8), browser tests on Filament 4 too, releases published from the changelog when a tag is pushed, Dependabot for the GitHub Actions.
+
 ## 1.2.0 - 2026-11-14
 
 ### Added

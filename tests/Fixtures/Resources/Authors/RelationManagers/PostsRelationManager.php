@@ -22,9 +22,15 @@ class PostsRelationManager extends RelationManager
         return $ownerRecord instanceof Author ? (string) $ownerRecord->posts()->count() : null;
     }
 
+    /**
+     * Set through PostsRelationManager::make(['note' => ...]).
+     */
+    public ?string $note = null;
+
     public function table(Table $table): Table
     {
         return $table
+            ->description($this->note)
             ->recordTitleAttribute('title')
             ->columns([
                 TextColumn::make('title')->searchable(),

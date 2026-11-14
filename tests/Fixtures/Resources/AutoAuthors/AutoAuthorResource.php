@@ -63,6 +63,7 @@ class AutoAuthorResource extends Resource
         return [
             'posts' => RelationManagers\PostsRelationManager::class,
             'notes' => RelationManagers\NotesRelationManager::class,
+            'featured-posts' => RelationManagers\PostsRelationManager::make(['note' => 'Only the featured ones']),
             RelationManagers\HiddenPageRelationManager::class,
         ];
     }

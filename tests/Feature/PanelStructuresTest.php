@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Team;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
@@ -77,5 +78,21 @@ describe('tenancy and SPA mode', function (): void {
     it('keeps records of other tenants out', function (): void {
         $this->get("/app/{$this->team->getKey()}/tenant-authors/{$this->stranger->getKey()}/posts")
             ->assertNotFound();
+    });
+});
+
+describe('resource configurations', function (): void {
+    it('gives a configured resource its relation pages under its own slug', function (): void {
+        $id = $this->author->getKey();
+
+        expect(Route::has('filament.admin.resources.vip-authors.relations.posts'))->toBeTrue();
+
+        $this->get("/admin/vip-authors/{$id}/posts")
+            ->assertOk()
+            ->assertSeeLivewire(PostsRelationManager::class);
+
+        $this->get("/admin/vip-authors/{$id}")
+            ->assertOk()
+            ->assertSee("/admin/vip-authors/{$id}/posts", escape: false);
     });
 });

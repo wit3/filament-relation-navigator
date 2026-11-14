@@ -29,6 +29,7 @@ class AdminPanelProvider extends PanelProvider
                 Resources\NoPagesAuthors\NoPagesAuthorResource::class,
                 Resources\Posts\PostResource::class,
                 Resources\ClusterAuthors\ClusterAuthorResource::class,
+                Resources\ConfiguredAuthors\ConfiguredAuthorResource::make('vip')->slug('vip-authors'),
             ])
             ->pages([Clusters\Settings::class])
             ->middleware([

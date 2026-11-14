@@ -4,6 +4,7 @@ namespace Wit3\FilamentRelationNavigator;
 
 use Filament\Resources\Resource;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Wit3\FilamentRelationNavigator\Pages\RelationPage;
 
 /**
@@ -75,9 +76,26 @@ final class GeneratedRelationPages
 
     public static function pathFor(string $class): string
     {
-        $directory = self::$cachePath ?? app()->storagePath('framework/cache');
+        return rtrim(self::directory(), '/').'/relation-page-'.sha1($class.'|'.self::VERSION).'.php';
+    }
 
-        return rtrim($directory, '/').'/relation-page-'.sha1($class.'|'.self::VERSION).'.php';
+    /**
+     * `storage/framework/cache`, or the system temporary directory when the
+     * storage is read-only (read-only containers, serverless).
+     */
+    private static function directory(): string
+    {
+        if (self::$cachePath !== null) {
+            return self::$cachePath;
+        }
+
+        $storage = app()->storagePath('framework/cache');
+
+        if (is_dir($storage) && is_writable($storage)) {
+            return $storage;
+        }
+
+        return rtrim(sys_get_temp_dir(), '/').'/filament-relation-navigator';
     }
 
     /**
@@ -97,8 +115,9 @@ final class GeneratedRelationPages
 
         $temporaryPath = $path.'.'.getmypid().'.'.bin2hex(random_bytes(4)).'.tmp';
 
-        file_put_contents($temporaryPath, self::code($class, $resource));
-        rename($temporaryPath, $path);
+        if (@file_put_contents($temporaryPath, self::code($class, $resource)) === false || ! @rename($temporaryPath, $path)) {
+            throw new RuntimeException("Cannot write the relation page class to [{$path}]. Make the directory writable, or choose another one with GeneratedRelationPages::useCachePath() in a service provider.");
+        }
 
         return $path;
     }
