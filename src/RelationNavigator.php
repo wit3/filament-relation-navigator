@@ -5,6 +5,7 @@ namespace Wit3\FilamentRelationNavigator;
 use Filament\Facades\Filament;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
+use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
 use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -14,17 +15,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
+use Wit3\FilamentRelationNavigator\Concerns\HasRelationNavigator;
 use Wit3\FilamentRelationNavigator\Concerns\HasRelationPages;
 use Wit3\FilamentRelationNavigator\Pages\RelationPage;
 
 final class RelationNavigator
 {
     /**
-     * The record pages that open the menu, before the relation pages.
-     *
-     * @var array<string>
+     * A page of the record is in the menu when it uses
+     * {@see HasRelationNavigator}: view, edit or any custom record page.
+     * Relation pages are listed separately, one per relation.
      */
-    public const RECORD_PAGES = ['view', 'edit'];
+    public static function isRecordPageInMenu(string $pageClass): bool
+    {
+        if (is_subclass_of($pageClass, RelationPage::class)) {
+            return false;
+        }
+
+        $traits = class_uses_recursive($pageClass);
+
+        return in_array(HasRelationNavigator::class, $traits, true)
+            && in_array(InteractsWithRecord::class, $traits, true);
+    }
 
     /**
      * @param  class-string<RelationManager> | RelationGroup | RelationManagerConfiguration  $manager
@@ -166,8 +178,9 @@ final class RelationNavigator
     }
 
     /**
-     * Every page of the record the user can open: view, edit and one per
-     * relation page, in the order of `getRelations()`.
+     * Every page of the record the user can open: the record pages with
+     * {@see HasRelationNavigator} in the order of `getPages()`, then one per
+     * relation page in the order of `getRelations()`.
      *
      * @param  class-string<resource>  $resource
      * @return array<RelationNavigatorItem>
@@ -177,13 +190,17 @@ final class RelationNavigator
         $items = [];
         $pages = $resource::getPages();
 
-        foreach (self::RECORD_PAGES as $pageKey) {
-            if (! array_key_exists($pageKey, $pages)) {
+        $seenPageClasses = [];
+
+        foreach ($pages as $pageKey => $registration) {
+            /** @var class-string<Page> $pageClass */
+            $pageClass = $registration->getPage();
+
+            if (isset($seenPageClasses[$pageClass]) || (! self::isRecordPageInMenu($pageClass))) {
                 continue;
             }
 
-            /** @var class-string<Page> $pageClass */
-            $pageClass = $pages[$pageKey]->getPage();
+            $seenPageClasses[$pageClass] = true;
 
             if (! $pageClass::canAccess(['record' => $record])) {
                 continue;

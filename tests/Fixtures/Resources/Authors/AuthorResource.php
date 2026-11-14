@@ -9,7 +9,9 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorHistory;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorRelationPage;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorStats;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\EditAuthor;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ListAuthors;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
@@ -63,6 +65,8 @@ class AuthorResource extends Resource
             'index' => ListAuthors::route('/'),
             'view' => ViewAuthor::route('/{record}'),
             'edit' => EditAuthor::route('/{record}/edit'),
+            'stats' => AuthorStats::route('/{record}/stats'),
+            'history' => AuthorHistory::route('/{record}/history'),
             ...AuthorRelationPage::relationRoutes(),
         ];
     }

@@ -7,6 +7,7 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\AuthorResource;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorRelationPage;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorStats;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PostsRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PublishedCommentsRelationManager;
@@ -94,7 +95,7 @@ it('builds the menu with the record pages and the visible relations', function (
     $items = RelationNavigator::getItems(AuthorResource::class, $this->author, 'relations.posts');
 
     expect(collect($items)->pluck('key')->all())
-        ->toBe(['view', 'edit', 'relations.posts', 'relations.published-comments', 'relations.activity'])
+        ->toBe(['view', 'edit', 'stats', 'relations.posts', 'relations.published-comments', 'relations.activity'])
         ->and(collect($items)->firstWhere('key', 'relations.posts')->badge)->toBe('2')
         ->and(collect($items)->firstWhere('key', 'relations.posts')->isActive)->toBeTrue()
         ->and(collect($items)->firstWhere('key', 'view')->isActive)->toBeFalse();
@@ -122,7 +123,27 @@ it('builds native record sub-navigation from the same items', function (): void 
 
     $navigation = RelationNavigator::getRecordSubNavigation($page);
 
-    expect($navigation)->toHaveCount(5)
+    expect($navigation)->toHaveCount(6)
         ->and($navigation[0]->isActive())->toBeTrue()
-        ->and($navigation[2]->getUrl())->toEndWith("/authors/{$this->author->getKey()}/posts");
+        ->and($navigation[3]->getUrl())->toEndWith("/authors/{$this->author->getKey()}/posts");
+});
+
+it('puts in the menu the custom record pages that use the trait, and only those', function (): void {
+    $id = $this->author->getKey();
+
+    $this->get("/admin/authors/{$id}/stats")
+        ->assertOk()
+        ->assertSee('fi-relation-navigator', escape: false)
+        ->assertSee('Author stats')
+        ->assertSee("/admin/authors/{$id}/posts", escape: false)
+        ->assertSee($this->author->name)
+        ->assertDontSee("/admin/authors/{$id}/history", escape: false);
+
+    $page = Livewire::test(AuthorStats::class, ['record' => $id])->instance();
+
+    expect(collect($page->getRelationNavigatorItems())->firstWhere('isActive', true)?->key)->toBe('stats');
+
+    $this->get("/admin/authors/{$id}/history")
+        ->assertOk()
+        ->assertDontSee('fi-relation-navigator', escape: false);
 });

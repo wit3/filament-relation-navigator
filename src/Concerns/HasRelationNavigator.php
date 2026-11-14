@@ -8,15 +8,24 @@ use Wit3\FilamentRelationNavigator\RelationNavigator;
 use Wit3\FilamentRelationNavigator\RelationNavigatorItem;
 
 /**
- * Turns the last breadcrumb of a record page ("View", "Edit", the relation
- * page) into a menu with the record's other pages and its relation pages.
+ * Turns the last breadcrumb of a record page into a menu with the record's
+ * pages and its relation pages, and puts the page itself in that menu.
  *
- * Add it to the resource's view / edit page. If the page already overrides
- * `getBreadcrumbs()`, pass your array through `withRelationNavigator()`:
+ * Add it to every record page you want in the menu: view, edit or a custom
+ * page. If the page already overrides `getBreadcrumbs()`, pass your array
+ * through `withRelationNavigator()`:
  *
  *     public function getBreadcrumbs(): array
  *     {
  *         return $this->withRelationNavigator([...]);
+ *     }
+ *
+ * A custom page that uses `InteractsWithRecord` itself has two
+ * `getBreadcrumbs()`: tell PHP which one wins.
+ *
+ *     use HasRelationNavigator, InteractsWithRecord {
+ *         HasRelationNavigator::getBreadcrumbs insteadof InteractsWithRecord;
+ *         InteractsWithRecord::getBreadcrumbs as getRecordBreadcrumbs;
  *     }
  */
 trait HasRelationNavigator
@@ -26,7 +35,13 @@ trait HasRelationNavigator
      */
     public function getBreadcrumbs(): array
     {
-        return $this->withRelationNavigator(parent::getBreadcrumbs());
+        // A custom page that uses InteractsWithRecord itself aliases its
+        // breadcrumbs as getRecordBreadcrumbs() (see the class docblock).
+        $breadcrumbs = method_exists($this, 'getRecordBreadcrumbs')
+            ? $this->getRecordBreadcrumbs()
+            : parent::getBreadcrumbs();
+
+        return $this->withRelationNavigator($breadcrumbs);
     }
 
     /**

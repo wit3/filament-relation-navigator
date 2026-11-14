@@ -8,7 +8,7 @@ between them from the breadcrumb.
 - The page renders the **relation manager you already have**: same table,
   filters, actions, badges and authorization. Nothing is duplicated.
 - The last breadcrumb ("View", "Edit", "Homes") opens a **menu** with the
-  record's pages and every relation page the user can see.
+  record pages you choose and every relation page the user can see.
 
 Works with Filament **v4** and **v5** (Livewire 3 and 4, Laravel 11–13).
 Tested on Filament 4.16 and 5.11.
@@ -59,7 +59,12 @@ route group (slug, cluster, parent resource, tenant) and writes the page
 class on demand in `storage/framework/cache`, the way Laravel's real-time
 facades do. It works with `route:cache`.
 
-### 2. Add the breadcrumb menu to the view / edit pages
+### 2. Choose the record pages in the breadcrumb menu
+
+Add `HasRelationNavigator` to every record page you want in the menu: the view
+page, the edit page, or any custom page of the record. A page is in the menu
+if, and only if, it uses the trait; on those pages the last breadcrumb opens
+the menu. The relation pages are always listed, after the record pages.
 
 ```php
 use Wit3\FilamentRelationNavigator\Concerns\HasRelationNavigator;
@@ -83,7 +88,23 @@ public function getBreadcrumbs(): array
 }
 ```
 
-The relation pages have the menu already.
+A custom page that uses `InteractsWithRecord` itself (instead of extending
+`ViewRecord` / `EditRecord`) gets two `getBreadcrumbs()` methods. Unless it
+defines its own, tell PHP which one wins:
+
+```php
+class UserStats extends Page
+{
+    use HasRelationNavigator, InteractsWithRecord {
+        HasRelationNavigator::getBreadcrumbs insteadof InteractsWithRecord;
+        InteractsWithRecord::getBreadcrumbs as getRecordBreadcrumbs;
+    }
+}
+```
+
+The menu uses the page's `$navigationLabel` and `$navigationIcon`, and shows
+it only when `canAccess()` allows it for the record. The relation pages have
+the menu already.
 
 ### Customising the relation pages (optional)
 
