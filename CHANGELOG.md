@@ -4,9 +4,13 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+## 1.6.2 - 2026-11-14
+
+A keyboard fix in the menu, and documentation for every minor version. No API changes.
+
 ### Fixed
 
-- Opening the menu with a click no longer takes the focus back to the search field when the arrow keys have already moved it to a page.
+- Opening the menu with a click no longer takes the focus back to the search field when the arrow keys have already moved it to a page. Menu views you published keep the old behaviour until you publish them again.
 
 ### Documentation
 
