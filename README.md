@@ -201,6 +201,11 @@ public static function getRelationPageFooterWidgets(): array
 
 ## The breadcrumb menu
 
+`HasRelationNavigator` needs a page with a record: `ViewRecord`, `EditRecord`
+and pages using `InteractsWithRecord` already have the two methods it
+declares, `getRecord()` and `hasRecord()`. On a page without a record PHP
+says so as soon as the class is loaded.
+
 A record page is in the menu if, and only if, it uses `HasRelationNavigator`:
 the view page, the edit page or any custom page of the record. On those pages
 the last breadcrumb opens the menu. The relation pages are always listed,
@@ -258,6 +263,7 @@ php artisan vendor:publish --tag=filament-relation-navigator-config
     'max_height' => '24rem',
     'separator' => true,    // record pages and relation pages in two blocks
     'mobile' => true,       // the menu above the heading on small screens
+    'shortcut' => 'alt+shift+r', // opens the menu; null turns it off
 ],
 ```
 
@@ -270,6 +276,42 @@ the menu opens and Enter opens the first match.
 
 **Keyboard**: from the search field, Down moves into the list; Up and Down
 move between the pages, Enter opens one, Escape closes the menu.
+
+### Shortcut and tooltip
+
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/tooltip-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/tooltip-light.png" alt="The tooltip of the menu button with its shortcut" width="470">
+</picture>
+
+The button that opens the menu has a tooltip with the shortcut, shown with
+Mac or Windows/Linux keys. The shortcut opens the menu from anywhere on the
+page, with the search field ready, like GitHub's repository switcher:
+<kbd>⌥</kbd> <kbd>⇧</kbd> <kbd>R</kbd> on a Mac, <kbd>Alt</kbd> <kbd>Shift</kbd> <kbd>R</kbd>
+elsewhere. Change it in the config or per page:
+
+```php
+'shortcut' => 'mod+shift+p', // mod is ⌘ on a Mac and Ctrl elsewhere
+```
+
+```php
+public function getRelationNavigatorShortcut(): ?string
+{
+    return null; // no shortcut on this page
+}
+```
+
+It is built not to get in the way:
+
+- it matches the physical key, so it works with any keyboard layout and with
+  Option on a Mac (where <kbd>⌥</kbd><kbd>⇧</kbd><kbd>R</kbd> types ‰);
+- it does nothing while you type in a field;
+- a shortcut of the panel's global search (`globalSearchKeyBindings()`) is
+  never taken: the menu then has no shortcut;
+- only the visible menu opens (breadcrumbs or small screens).
+
+Supported keys: `alt`, `shift`, `ctrl`, `meta`, `mod` plus a letter, a digit
+or `/ . , ;`.
 
 <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-github-search-dark.png">
@@ -358,11 +400,15 @@ A preset view receives:
 | `$heading`           | "Switch page", translated                                               |
 | `$isSearchable`      | Whether to show the search field                                        |
 | `$hasSeparator`      | Whether to split record pages and relation pages in two blocks          |
+| `$shortcut`          | The shortcut, or null                                                   |
+| `$shortcutKeys`      | The shortcut keys to show: `['mac' => [...], 'other' => [...]]`         |
 | `$searchPlaceholder` | "Find a page…", translated                                              |
 | `$emptyLabel`        | "No pages found.", translated                                           |
 | `$maxHeight`         | `menu.max_height`                                                       |
 
-Each item also has `isRelationPage()`. To reuse the search field, the list
+To give your button the tooltip and the shortcut, include
+`filament-relation-navigator::menu.partials.trigger-attributes` inside its
+tag. Each item also has `isRelationPage()`. To reuse the search field, the list
 (with the separator and the keyboard navigation) and the "no results" line,
 include `filament-relation-navigator::menu.partials.list` with `showCheck`.
 

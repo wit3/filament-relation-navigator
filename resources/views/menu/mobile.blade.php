@@ -49,6 +49,7 @@
                 type="button"
                 class="fi-relation-navigator-mobile-trigger"
                 aria-label="{{ __('filament-relation-navigator::navigator.open') }}"
+                @include('filament-relation-navigator::menu.partials.trigger-attributes', ['withTooltip' => false])
                 @if ($isSearchable)
                     x-on:click="setTimeout(() => $refs.panel?.querySelector('[data-relation-navigator-search]')?.focus(), 60)"
                 @endif

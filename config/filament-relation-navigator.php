@@ -54,6 +54,12 @@ return [
         // above the page heading there.
         'mobile' => true,
 
+        // Opens the menu from anywhere on the page, outside text fields:
+        // modifiers (alt, shift, ctrl, meta, or mod: ⌘ on a Mac, Ctrl
+        // elsewhere) plus a letter, a digit or / . , ; Null turns it off.
+        // A shortcut of the panel's global search is ignored, never doubled.
+        'shortcut' => 'alt+shift+r',
+
     ],
 
 ];

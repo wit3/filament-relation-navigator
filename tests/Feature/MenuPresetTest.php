@@ -1,8 +1,10 @@
 <?php
 
+use Filament\Facades\Filament;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\View;
 use Livewire\Livewire;
+use Wit3\FilamentRelationNavigator\Concerns\HasRelationNavigator;
 use Wit3\FilamentRelationNavigator\RelationNavigator;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
@@ -32,7 +34,7 @@ it('adds the search field to the simple preset', function (): void {
         ->assertSee('fi-relation-navigator-preset-simple', escape: false)
         ->assertSee('x-model="search"', escape: false)
         ->assertSee('Find a page…')
-        ->assertDontSee('Switch page');
+        ->assertDontSee('fi-relation-navigator-heading', escape: false);
 });
 
 it('renders the github preset with a caret, a heading and the current page checked', function (): void {
@@ -176,3 +178,65 @@ it('speaks the supported languages', function (string $locale, string $heading):
     ['pt_BR', 'Trocar de página'],
     ['nl', 'Pagina wisselen'],
 ]);
+
+it('shows the shortcut in a tooltip and binds it', function (): void {
+    $html = $this->get("/admin/authors/{$this->author->getKey()}/posts?preset=github")->getContent();
+
+    expect($html)
+        ->toContain('x-tooltip="{ content: &#039;Switch page&#039;')
+        ->toMatch('/⌥|\\\\u2325/u') // ⌥, raw or JSON-escaped depending on the Laravel version
+        ->toContain('x-on:keydown.window="! $event.repeat')
+        ->toContain('$event.code === &quot;KeyR&quot; &amp;&amp; $event.altKey === true &amp;&amp; $event.shiftKey === true')
+        ->toContain('aria-keyshortcuts="Alt+Shift+R"')
+        ->not->toContain('aria-label="Other pages of this record"'."\n            <!--[if BLOCK]>");
+});
+
+it('turns the shortcut off', function (): void {
+    config()->set('filament-relation-navigator.menu.shortcut', null);
+
+    $html = $this->get("/admin/authors/{$this->author->getKey()}/posts")->getContent();
+
+    expect($html)
+        ->not->toContain('x-on:keydown.window')
+        ->not->toContain('aria-keyshortcuts')
+        ->toContain('x-tooltip="{ content: &#039;Switch page&#039;');
+});
+
+it('spells shortcuts for a Mac and for everything else', function (): void {
+    expect(RelationNavigator::getShortcutKeys('alt+shift+r'))
+        ->toBe(['mac' => ['⌥', '⇧', 'R'], 'other' => ['Alt', 'Shift', 'R']])
+        ->and(RelationNavigator::getShortcutKeys('mod+k'))
+        ->toBe(['mac' => ['⌘', 'K'], 'other' => ['Ctrl', 'K']])
+        ->and(RelationNavigator::getShortcutKeys(null))
+        ->toBe(['mac' => [], 'other' => []]);
+});
+
+it('requires a page with a record', function (): void {
+    $trait = new ReflectionClass(HasRelationNavigator::class);
+
+    expect($trait->getMethod('getRecord')->isAbstract())->toBeTrue()
+        ->and($trait->getMethod('hasRecord')->isAbstract())->toBeTrue();
+});
+
+it('never takes a shortcut of the global search', function (): void {
+    Filament::getPanel('admin')->globalSearchKeyBindings(['mod+k', 'alt+shift+r']);
+
+    $html = $this->get("/admin/authors/{$this->author->getKey()}/posts")->getContent();
+
+    expect($html)->not->toContain('x-on:keydown.window')
+        ->and(RelationNavigator::clashesWithFilament('command+k'))->toBeTrue()
+        ->and(RelationNavigator::clashesWithFilament('ctrl+k'))->toBeTrue()
+        ->and(RelationNavigator::clashesWithFilament('alt+shift+p'))->toBeFalse();
+});
+
+it('matches the physical key, with mod as ⌘ on a Mac and Ctrl elsewhere', function (): void {
+    $condition = RelationNavigator::getShortcutCondition('mod+shift+p');
+
+    expect($condition)
+        ->toContain('$event.code === "KeyP"')
+        ->toContain('$event.shiftKey === true')
+        ->toContain('/Mac|iPhone|iPad/.test(navigator.userAgent) ? $event.metaKey === true')
+        ->toContain('input, textarea, select')
+        ->and(RelationNavigator::getShortcutCondition('alt+shift+7'))->toContain('"Digit7"')
+        ->and(RelationNavigator::getShortcutCondition('alt+shift'))->toBeNull();
+});

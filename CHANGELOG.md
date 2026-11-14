@@ -2,6 +2,19 @@
 
 All notable changes to `filament-relation-navigator` are documented here.
 
+## 1.2.0 - 2026-11-14
+
+### Added
+
+- **Tooltip** on the button that opens the menu: the heading and the shortcut keys, shown as ⌥ ⇧ R on a Mac and Alt Shift R elsewhere.
+- **Shortcut** that opens the menu from anywhere on the page with the search field ready, like GitHub's repository switcher. Config `menu.shortcut` (default `alt+shift+r`, `null` turns it off), or `getRelationNavigatorShortcut()` per page. It matches the physical key (any keyboard layout, Option on a Mac), does nothing while typing in a field, opens only the visible menu, and is never registered when it equals one of the panel's global search shortcuts.
+- `RelationNavigator::getShortcutKeys()`, `getShortcutCondition()` and `clashesWithFilament()`; `$shortcut` and `$shortcutKeys` for preset views, and the `menu.partials.trigger-attributes` partial for buttons of your own.
+
+### Changed
+
+- The caret of the `github` preset has a light background, lighter on hover, as on GitHub. Run `php artisan filament:assets` after updating.
+- `HasRelationNavigator` declares `getRecord()` and `hasRecord()` as abstract. Record pages already have them, so nothing changes for them. A page using the trait without a record, which already failed when rendered since 1.0.1, now fails when its class is loaded, with a clear PHP error; because the menu loads the record pages of the resource, this also breaks the other record pages of that resource until the trait is removed from that page.
+
 ## 1.1.0 - 2026-11-14
 
 New features, all backwards compatible.

@@ -44,6 +44,8 @@
 }
 
 .fi-relation-navigator-caret {
+    transition: background-color 0.15s ease;
+    background-color: rgb(0 0 0 / 0.04);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -55,13 +57,17 @@
 
 .fi-relation-navigator-caret:hover,
 .fi-relation-navigator-caret:focus-visible {
-    background-color: rgb(0 0 0 / 0.05);
+    background-color: rgb(0 0 0 / 0.1);
     outline: none;
+}
+
+:is(.dark) .fi-relation-navigator-caret {
+    background-color: rgb(255 255 255 / 0.06);
 }
 
 :is(.dark) .fi-relation-navigator-caret:hover,
 :is(.dark) .fi-relation-navigator-caret:focus-visible {
-    background-color: rgb(255 255 255 / 0.05);
+    background-color: rgb(255 255 255 / 0.16);
 }
 
 .fi-relation-navigator-heading {

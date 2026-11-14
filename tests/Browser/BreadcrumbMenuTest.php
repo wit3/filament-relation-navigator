@@ -79,3 +79,34 @@ it('shows the menu above the heading on a phone, and only there', function (): v
         ->assertMissing('.fi-relation-navigator-mobile-trigger')
         ->assertVisible('.fi-breadcrumbs');
 });
+
+it('explains the caret in a tooltip with the shortcut', function (): void {
+    visit("/admin/authors/{$this->author->getKey()}/posts")
+        ->hover('.fi-relation-navigator-caret')
+        ->assertPresent('[data-tippy-root] .fi-relation-navigator-kbd')
+        ->assertSeeIn('[data-tippy-root]', 'Switch page');
+});
+
+it('opens the menu with the shortcut, ready to search', function (): void {
+    visit("/admin/authors/{$this->author->getKey()}/posts")
+        ->wait(0.5) // let Alpine bind the shortcut
+        ->keys('.fi-main', 'Alt+Shift+KeyR')
+        ->assertVisible('[data-relation-navigator-search]:visible')
+        ->assertScript("document.activeElement.hasAttribute('data-relation-navigator-search')");
+});
+
+it('opens the small-screen menu with the shortcut on a phone', function (): void {
+    visit("/admin/authors/{$this->author->getKey()}/posts")
+        ->on()->mobile()
+        ->wait(0.5) // let Alpine bind the shortcut
+        ->keys('.fi-main', 'Alt+Shift+KeyR')
+        ->assertVisible('a[data-relation-navigator-label="Published comments"]:visible');
+});
+
+it('leaves the shortcut alone while typing', function (): void {
+    visit("/admin/authors/{$this->author->getKey()}/posts")
+        ->wait(0.5)
+        ->click('.fi-ta-search-field input')
+        ->keys('.fi-ta-search-field input', 'Alt+Shift+KeyR')
+        ->assertMissing('[data-relation-navigator-search]:visible');
+});

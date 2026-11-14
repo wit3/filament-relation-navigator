@@ -318,6 +318,136 @@ final class RelationNavigator
         return $menu instanceof Htmlable ? $menu : null;
     }
 
+    /**
+     * The keys of a Mousetrap shortcut as shown to people, on a Mac and
+     * elsewhere: 'alt+shift+r' gives ⌥ ⇧ R and Alt Shift R.
+     *
+     * @return array{mac: array<string>, other: array<string>}
+     */
+    public static function getShortcutKeys(?string $shortcut): array
+    {
+        $keys = ['mac' => [], 'other' => []];
+
+        if (blank($shortcut)) {
+            return $keys;
+        }
+
+        $names = [
+            'mod' => ['⌘', 'Ctrl'],
+            'command' => ['⌘', 'Win'],
+            'meta' => ['⌘', 'Win'],
+            'ctrl' => ['⌃', 'Ctrl'],
+            'control' => ['⌃', 'Ctrl'],
+            'alt' => ['⌥', 'Alt'],
+            'option' => ['⌥', 'Alt'],
+            'shift' => ['⇧', 'Shift'],
+        ];
+
+        foreach (explode('+', strtolower($shortcut)) as $key) {
+            [$mac, $other] = $names[$key] ?? [strtoupper($key), strtoupper($key)];
+
+            $keys['mac'][] = $mac;
+            $keys['other'][] = $other;
+        }
+
+        return $keys;
+    }
+
+    /**
+     * The JavaScript condition, for a `keydown.window` listener, that is true
+     * when the shortcut is pressed outside text fields. It compares the
+     * physical key (`event.code`), so it works with any keyboard layout and
+     * with Option on a Mac.
+     */
+    public static function getShortcutCondition(string $shortcut): ?string
+    {
+        $modifiers = ['alt' => false, 'shift' => false, 'ctrl' => false, 'meta' => false, 'mod' => false];
+        $code = null;
+
+        foreach (explode('+', strtolower($shortcut)) as $key) {
+            $modifier = match ($key) {
+                'alt', 'option' => 'alt',
+                'shift' => 'shift',
+                'ctrl', 'control' => 'ctrl',
+                'meta', 'command', 'cmd' => 'meta',
+                'mod' => 'mod',
+                default => null,
+            };
+
+            if ($modifier !== null) {
+                $modifiers[$modifier] = true;
+
+                continue;
+            }
+
+            $code = match (true) {
+                (bool) preg_match('/^[a-z]$/', $key) => 'Key'.strtoupper($key),
+                (bool) preg_match('/^[0-9]$/', $key) => 'Digit'.$key,
+                default => ['/' => 'Slash', '.' => 'Period', ',' => 'Comma', ';' => 'Semicolon', 'enter' => 'Enter', 'space' => 'Space'][$key] ?? null,
+            };
+        }
+
+        if ($code === null) {
+            return null;
+        }
+
+        $isMac = '/Mac|iPhone|iPad/.test(navigator.userAgent)';
+        $ctrl = $modifiers['mod'] ? "({$isMac} ? \$event.ctrlKey === ".json_encode($modifiers['ctrl']).' : $event.ctrlKey === true)' : '$event.ctrlKey === '.json_encode($modifiers['ctrl']);
+        $meta = $modifiers['mod'] ? "({$isMac} ? \$event.metaKey === true : \$event.metaKey === ".json_encode($modifiers['meta']).')' : '$event.metaKey === '.json_encode($modifiers['meta']);
+
+        return implode(' && ', [
+            '! $event.repeat',
+            '! $event.target.closest(\'input, textarea, select, [contenteditable]:not([contenteditable=false])\')',
+            '$event.code === '.json_encode($code),
+            '$event.altKey === '.json_encode($modifiers['alt']),
+            '$event.shiftKey === '.json_encode($modifiers['shift']),
+            $ctrl,
+            $meta,
+        ]);
+    }
+
+    /**
+     * Whether the shortcut is one of the panel's global search shortcuts.
+     */
+    public static function clashesWithFilament(string $shortcut, ?Panel $panel = null): bool
+    {
+        $panel ??= Filament::getCurrentOrDefaultPanel();
+
+        if (! $panel) {
+            return false;
+        }
+
+        $normalize = fn (string $binding): array => collect(explode('+', strtolower($binding)))
+            ->map(fn (string $key): string => match ($key) {
+                'option' => 'alt',
+                'control' => 'ctrl',
+                'command', 'cmd' => 'meta',
+                default => $key,
+            })
+            ->sort()
+            ->values()
+            ->all();
+
+        // 'mod' is ⌘ on a Mac and Ctrl elsewhere: compare both.
+        $candidates = str_contains($shortcut, 'mod')
+            ? [$normalize(str_replace('mod', 'meta', $shortcut)), $normalize(str_replace('mod', 'ctrl', $shortcut))]
+            : [$normalize($shortcut)];
+
+        foreach ($panel->getGlobalSearchKeyBindings() as $binding) {
+            $bindings = str_contains($binding, 'mod')
+                ? [$normalize(str_replace('mod', 'meta', $binding)), $normalize(str_replace('mod', 'ctrl', $binding))]
+                : [$normalize($binding)];
+
+            foreach ($bindings as $bound) {
+                if (in_array($bound, $candidates, true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public static function getActivePageKey(Page $page): ?string
     {
         if ($page instanceof RelationPage) {

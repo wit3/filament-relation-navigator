@@ -5,6 +5,7 @@ namespace Wit3\FilamentRelationNavigator\Concerns;
 use Filament\Resources\Resource;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use InvalidArgumentException;
 use Wit3\FilamentRelationNavigator\RelationNavigator;
@@ -33,6 +34,15 @@ use Wit3\FilamentRelationNavigator\RelationNavigatorItem;
  */
 trait HasRelationNavigator
 {
+    /**
+     * The trait needs a page with a record: ViewRecord, EditRecord or a page
+     * using InteractsWithRecord already has these. A page without a record
+     * fails when its class is loaded.
+     */
+    abstract public function getRecord(): Model;
+
+    abstract public function hasRecord(): bool;
+
     /**
      * @return array<string | int, string | Htmlable>
      */
@@ -98,6 +108,26 @@ trait HasRelationNavigator
     public function getRelationNavigatorPreset(): string
     {
         return (string) config('filament-relation-navigator.menu.preset', 'simple');
+    }
+
+    /**
+     * Opens the menu from anywhere on the page, outside text fields (config
+     * `menu.shortcut`): 'alt+shift+r', 'mod+shift+p'... 'mod' is ⌘ on a Mac
+     * and Ctrl elsewhere. Null turns it off; a shortcut of the panel's
+     * global search is ignored.
+     */
+    public function getRelationNavigatorShortcut(): ?string
+    {
+        $shortcut = config('filament-relation-navigator.menu.shortcut', 'alt+shift+r');
+
+        if (! is_string($shortcut) || blank($shortcut)) {
+            return null;
+        }
+
+        $shortcut = strtolower(str_replace(' ', '', $shortcut));
+
+        // Never take a shortcut that Filament's global search uses.
+        return RelationNavigator::clashesWithFilament($shortcut) ? null : $shortcut;
     }
 
     /**
@@ -225,6 +255,8 @@ trait HasRelationNavigator
             'isSearchable' => $this->isRelationNavigatorSearchable()
                 && (count($items) >= (int) config('filament-relation-navigator.menu.search_from', 0)),
             'hasSeparator' => (bool) config('filament-relation-navigator.menu.separator', true),
+            'shortcut' => $shortcut = $this->getRelationNavigatorShortcut(),
+            'shortcutKeys' => RelationNavigator::getShortcutKeys($shortcut),
         ];
     }
 }
