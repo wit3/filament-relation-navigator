@@ -6,7 +6,7 @@ import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statS
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { advisoriesFor } from './advisories.mjs'
-import { minorVersions } from './versions.mjs'
+import { latestRelease, olderMinorVersions } from './versions.mjs'
 
 const docs = fileURLToPath(new URL('..', import.meta.url))
 const work = join(docs, '.versions')
@@ -15,10 +15,10 @@ const site = 'https://wit3.github.io/filament-relation-navigator/'
 const basePath = '/filament-relation-navigator/'
 const banner = readFileSync(join(docs, 'scripts', 'banner.js'), 'utf8')
 
-const versions = minorVersions()
-const latest = versions[0]
+const latest = latestRelease()
+const versions = olderMinorVersions()
 
-if (!latest || !existsSync(dist)) {
+if (!latest.version || !existsSync(dist)) {
     console.error('Build the current site first, from a clone with the tags.')
     process.exit(1)
 }
@@ -27,7 +27,7 @@ rmSync(work, { recursive: true, force: true })
 execSync('git worktree prune', { cwd: join(docs, '..') })
 mkdirSync(work, { recursive: true })
 
-for (const { minor, version, tag } of versions.slice(1)) {
+for (const { minor, version, tag } of versions) {
     const source = join(work, `v${minor}`)
     const out = join(dist, `v${minor}`)
     const base = `${basePath}v${minor}/`

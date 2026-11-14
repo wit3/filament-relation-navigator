@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { defineConfig, type DefaultTheme } from 'vitepress'
 import llmstxt from 'vitepress-plugin-llms'
 import { advisoriesFor } from '../scripts/advisories.mjs'
-import { minorVersions } from '../scripts/versions.mjs'
+import { latestRelease, olderMinorVersions } from '../scripts/versions.mjs'
 
 const repository = 'https://github.com/wit3/filament-relation-navigator'
 const plugin = 'https://filamentphp.com/plugins/wit3-relation-navigator'
@@ -10,13 +10,11 @@ const packagist = 'https://packagist.org/packages/wit3/filament-relation-navigat
 const site = 'https://wit3.github.io/filament-relation-navigator/'
 
 // The latest release, from the changelog: its version, date and summary.
-const changelog = readFileSync(new URL('../../CHANGELOG.md', import.meta.url), 'utf8')
-const release = changelog.match(/^## (\d+\.\d+\.\d+) - (\d{4}-\d{2}-\d{2})\n+(?!#)([^\n]+)?/m)
-const latest = { version: release?.[1] ?? '', date: release?.[2] ?? '', summary: release?.[3] ?? '' }
+const latest = latestRelease()
 
 // Older minor versions, each with a site of its own under /vX.Y/ (built by
 // scripts/build-versions.mjs from the git tags).
-const olderVersions = minorVersions().filter(({ minor }) => minor !== latest.version.split('.').slice(0, 2).join('.'))
+const olderVersions = olderMinorVersions()
 
 // The banner (security issues of this version): shared with older versions.
 const bannerData = { version: latest.version, latest: latest.version, latestUrl: site, isLatest: true, advisories: advisoriesFor(latest.version) }

@@ -1,7 +1,8 @@
 // The minor versions of the package, from the git tags: each one with its
-// latest patch. The newest minor is the current site; the others get a site
-// of their own under /vX.Y/.
+// latest patch. The current site is the latest release in the changelog; the
+// other minors get a site of their own under /vX.Y/.
 import { execSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 
 function sortVersions(versions) {
     return versions.sort((a, b) => {
@@ -32,4 +33,21 @@ export function minorVersions() {
     }
 
     return [...latestPatch.entries()].map(([minor, version]) => ({ minor, version, tag: `v${version}` }))
+}
+
+// The latest release in the changelog: its version, date and summary. It
+// decides the current site, so a build that runs before the release tag
+// exists (the push of the release commit) builds the same sites as the tag.
+export function latestRelease() {
+    const changelog = readFileSync(new URL('../../CHANGELOG.md', import.meta.url), 'utf8')
+    const release = changelog.match(/^## (\d+\.\d+\.\d+) - (\d{4}-\d{2}-\d{2})\n+(?!#)([^\n]+)?/m)
+
+    return { version: release?.[1] ?? '', date: release?.[2] ?? '', summary: release?.[3] ?? '' }
+}
+
+// The minor versions with a site of their own: every one but the current.
+export function olderMinorVersions() {
+    const current = latestRelease().version.split('.').slice(0, 2).join('.')
+
+    return minorVersions().filter(({ minor }) => minor !== current)
 }
