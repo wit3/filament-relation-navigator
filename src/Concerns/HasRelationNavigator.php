@@ -5,6 +5,7 @@ namespace Wit3\FilamentRelationNavigator\Concerns;
 use Filament\Resources\Resource;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\Factory as ViewFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use InvalidArgumentException;
@@ -136,6 +137,106 @@ trait HasRelationNavigator
     public function isRelationNavigatorSearchable(): bool
     {
         return (bool) config('filament-relation-navigator.menu.searchable', true);
+    }
+
+    /**
+     * Buttons to the previous and next record, on the same page (config
+     * `record_navigation`, off by default: it adds two queries per page).
+     */
+    public function hasRelationNavigatorRecordNavigation(): bool
+    {
+        return (bool) config('filament-relation-navigator.record_navigation', false);
+    }
+
+    /**
+     * The records that previous and next walk through, ordered by key. By
+     * default the resource's own query (tenant and your scopes included);
+     * null for nested resources, which are not supported yet.
+     *
+     * @return Builder<Model> | null
+     */
+    public function getRelationNavigatorRecordNavigationQuery(): ?Builder
+    {
+        $resource = static::getResource();
+
+        if (! is_subclass_of($resource, Resource::class) || $resource::getParentResourceRegistration()) {
+            return null;
+        }
+
+        return $resource::getRecordRouteBindingEloquentQuery();
+    }
+
+    /**
+     * The previous and next record, each on the same page when it can open
+     * it, otherwise on its first page in the menu.
+     *
+     * @return array{previous: RelationNavigatorItem | null, next: RelationNavigatorItem | null}
+     */
+    public function getRelationNavigatorRecordNeighbours(): array
+    {
+        $neighbours = ['previous' => null, 'next' => null];
+
+        if (! $this->hasRelationNavigator() || ! $this->hasRelationNavigatorRecordNavigation()) {
+            return $neighbours;
+        }
+
+        $query = $this->getRelationNavigatorRecordNavigationQuery();
+
+        if (! $query) {
+            return $neighbours;
+        }
+
+        $record = $this->getRecord();
+        $keyName = $record->getQualifiedKeyName();
+
+        $records = [
+            'previous' => (clone $query)->reorder()->where($keyName, '<', $record->getKey())->orderByDesc($keyName)->first(),
+            'next' => (clone $query)->reorder()->where($keyName, '>', $record->getKey())->orderBy($keyName)->first(),
+        ];
+
+        $resource = static::getResource();
+
+        foreach ($records as $direction => $neighbour) {
+            if (! $neighbour instanceof Model || ! is_subclass_of($resource, Resource::class)) {
+                continue;
+            }
+
+            $items = RelationNavigator::getItems($resource, $neighbour, $this->getRelationNavigatorActivePageKey(), withBadges: false);
+            $item = collect($items)->firstWhere('isActive', true) ?? ($items[0] ?? null);
+
+            if (! $item) {
+                continue;
+            }
+
+            $title = $resource::getRecordTitle($neighbour);
+
+            $neighbours[$direction] = new RelationNavigatorItem(
+                key: $item->key,
+                label: $title instanceof Htmlable ? $title->toHtml() : (string) $title,
+                url: $item->url,
+            );
+        }
+
+        return $neighbours;
+    }
+
+    public function renderRelationNavigatorRecordNavigation(): ?Htmlable
+    {
+        $neighbours = $this->getRelationNavigatorRecordNeighbours();
+
+        if (! $neighbours['previous'] && ! $neighbours['next']) {
+            return null;
+        }
+
+        return new HtmlString(app(ViewFactory::class)->make(
+            $this->ensureRelationNavigatorView('filament-relation-navigator::record-navigation'),
+            [
+                'previous' => $neighbours['previous'],
+                'next' => $neighbours['next'],
+                'previousLabel' => __('filament-relation-navigator::navigator.previous_record'),
+                'nextLabel' => __('filament-relation-navigator::navigator.next_record'),
+            ],
+        )->render());
     }
 
     /**

@@ -52,6 +52,12 @@ class FilamentRelationNavigatorServiceProvider extends PackageServiceProvider
             fn (): ?Htmlable => RelationNavigator::renderMobileMenu(),
         );
 
+        // Previous and next record, before the header actions.
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::PAGE_HEADER_ACTIONS_BEFORE,
+            fn (): ?Htmlable => RelationNavigator::renderRecordNavigation(),
+        );
+
         // "Open as page" above the relation managers of the record pages.
         FilamentView::registerRenderHook(
             PanelsRenderHook::RESOURCE_RELATION_MANAGER_BEFORE,

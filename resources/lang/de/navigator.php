@@ -12,4 +12,8 @@ return [
 
     'open_as_page' => 'Als Seite öffnen',
 
+    'previous_record' => 'Vorheriger Datensatz',
+
+    'next_record' => 'Nächster Datensatz',
+
 ];

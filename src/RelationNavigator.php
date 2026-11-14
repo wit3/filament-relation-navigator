@@ -355,6 +355,23 @@ final class RelationNavigator
     }
 
     /**
+     * The previous and next record buttons of the page being rendered, if
+     * it uses HasRelationNavigator and turned them on.
+     */
+    public static function renderRecordNavigation(): ?Htmlable
+    {
+        $page = Livewire::current();
+
+        if (! $page instanceof Page || ! in_array(HasRelationNavigator::class, class_uses_recursive($page), true)) {
+            return null;
+        }
+
+        $buttons = method_exists($page, 'renderRelationNavigatorRecordNavigation') ? $page->renderRelationNavigatorRecordNavigation() : null;
+
+        return $buttons instanceof Htmlable ? $buttons : null;
+    }
+
+    /**
      * The "Open as page" link above a relation manager's table on the view
      * and edit pages (config `relation_manager_link`). Rendered by the
      * package through a render hook; never on the relation page itself.

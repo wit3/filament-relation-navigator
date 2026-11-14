@@ -12,4 +12,8 @@ return [
 
     'open_as_page' => 'Ouvrir comme page',
 
+    'previous_record' => 'Enregistrement précédent',
+
+    'next_record' => 'Enregistrement suivant',
+
 ];

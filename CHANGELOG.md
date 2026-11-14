@@ -6,6 +6,8 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ### Added
 
+- **Previous and next record** buttons before the header actions of the pages with the menu (config `record_navigation`, default `false`). They open the neighbour by key on the same page (view, edit, a relation page), or on its first page in the menu when it cannot open that one, and are disabled at the ends. They use the resource's own query, so tenancy and your scopes apply. Per page: `hasRelationNavigatorRecordNavigation()`, `getRelationNavigatorRecordNavigationQuery()`, `getRelationNavigatorRecordNeighbours()`. Nested resources are not supported yet: they show no buttons.
+
 - **"Open as page"** link above the table of every relation manager that has its own page, on the view and edit pages (config `relation_manager_link`, default `true`). It links to the relation group's page for a manager inside a group, and tells apart two entries of the same manager (`PostsRelationManager::make([...])`) by their properties. `RelationNavigator::getRelationManagerPageUrl()` returns the same URL for your own buttons.
 
 ### Changed
