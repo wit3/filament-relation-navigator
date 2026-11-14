@@ -2,10 +2,12 @@
 
 # Relation Navigator for Filament
 
-[![Latest version on Packagist](https://img.shields.io/packagist/v/wit3/filament-relation-navigator.svg?style=flat-square)](https://packagist.org/packages/wit3/filament-relation-navigator)
-[![Tests](https://img.shields.io/github/actions/workflow/status/wit3/filament-relation-navigator/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/wit3/filament-relation-navigator/actions/workflows/tests.yml)
-[![Total downloads](https://img.shields.io/packagist/dt/wit3/filament-relation-navigator.svg?style=flat-square)](https://packagist.org/packages/wit3/filament-relation-navigator)
-[![License](https://img.shields.io/packagist/l/wit3/filament-relation-navigator.svg?style=flat-square)](LICENSE.md)
+<p class="filament-hidden">
+    <a href="https://packagist.org/packages/wit3/filament-relation-navigator"><img src="https://img.shields.io/packagist/v/wit3/filament-relation-navigator.svg?style=flat-square" alt="Latest version on Packagist"></a>
+    <a href="https://github.com/wit3/filament-relation-navigator/actions/workflows/tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/wit3/filament-relation-navigator/tests.yml?branch=main&label=tests&style=flat-square" alt="Tests"></a>
+    <a href="https://packagist.org/packages/wit3/filament-relation-navigator"><img src="https://img.shields.io/packagist/dt/wit3/filament-relation-navigator.svg?style=flat-square" alt="Total downloads"></a>
+    <a href="LICENSE.md"><img src="https://img.shields.io/packagist/l/wit3/filament-relation-navigator.svg?style=flat-square" alt="License"></a>
+</p>
 
 Give every relation manager of a Filament resource **its own page**, and jump
 between them from a **menu in the breadcrumb**.
@@ -26,19 +28,6 @@ between them from a **menu in the breadcrumb**.
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-dark.png">
     <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-light.png" alt="The orders of a customer on their own page, with the breadcrumb menu open">
 </picture>
-
-## Contents
-
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Quick start](#quick-start)
-- [Relation pages](#relation-pages)
-- [Header, actions and widgets](#header-actions-and-widgets)
-- [The breadcrumb menu](#the-breadcrumb-menu)
-- [Menu presets](#menu-presets)
-- [Customising the relation pages](#customising-the-relation-pages)
-- [Native record sub-navigation](#native-record-sub-navigation)
-- [How it works](#how-it-works)
 
 ## Requirements
 
