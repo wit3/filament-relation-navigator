@@ -28,6 +28,18 @@ class AuthorResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    /**
+     * Switched by the tests of the resource-level options.
+     *
+     * @var array<string, mixed>
+     */
+    public static array $options = [];
+
+    public static function hasRelationPageLinks(): bool
+    {
+        return static::$options['hasRelationPageLinks'] ?? true;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([

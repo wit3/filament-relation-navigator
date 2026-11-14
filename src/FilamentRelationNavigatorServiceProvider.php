@@ -3,11 +3,13 @@
 namespace Wit3\FilamentRelationNavigator;
 
 use Filament\Panel;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\Support\Htmlable;
+use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Wit3\FilamentRelationNavigator\Commands\MakeMenuPresetCommand;
@@ -58,11 +60,14 @@ class FilamentRelationNavigatorServiceProvider extends PackageServiceProvider
             fn (): ?Htmlable => RelationNavigator::renderRecordNavigation(),
         );
 
-        // "Open as page" above the relation managers of the record pages.
-        FilamentView::registerRenderHook(
-            PanelsRenderHook::RESOURCE_RELATION_MANAGER_BEFORE,
-            fn (): ?Htmlable => RelationNavigator::renderRelationManagerLink(),
-        );
+        // "Open as page" in the header of the relation managers' tables. A
+        // link, never mounted: it only has to be there when the table renders,
+        // lazy loading included (which builds the table again).
+        Livewire::listen('render', function (mixed $component): void {
+            if ($component instanceof RelationManager) {
+                RelationNavigator::addRelationPageAction($component);
+            }
+        });
 
         FilamentAsset::register([
             Css::make('filament-relation-navigator', __DIR__.'/../resources/css/relation-navigator.css'),

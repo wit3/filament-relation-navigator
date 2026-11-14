@@ -1,6 +1,7 @@
 <?php
 
 use Livewire\Livewire;
+use Wit3\FilamentRelationNavigator\Concerns\InteractsWithRelationPage;
 use Wit3\FilamentRelationNavigator\RelationNavigator;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
@@ -24,9 +25,8 @@ it('links a relation manager on the view and edit pages to its page', function (
     $url = AuthorResource::getUrl('relations.posts', ['record' => $this->author]);
 
     Livewire::test(PostsRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => $pageClass])
-        ->assertSee('fi-relation-navigator-rm-link', escape: false)
-        ->assertSee($url, escape: false)
-        ->assertSee('Open as page');
+        ->assertSee('Open as page')
+        ->assertSee($url, escape: false);
 })->with([
     'view' => ViewAuthor::class,
     'edit' => EditAuthor::class,
@@ -42,7 +42,7 @@ it('shows the link on the view page', function (): void {
 
     $this->get("/admin/authors/{$id}?relation=0")
         ->assertOk()
-        ->assertSee('fi-relation-navigator-rm-link', escape: false)
+        ->assertSee('Open as page')
         ->assertSee("/admin/authors/{$id}/published-comments", escape: false);
 });
 
@@ -52,7 +52,7 @@ it('does not link a relation manager to the relation page it is on', function (s
     $this->get("/admin/authors/{$this->author->getKey()}/{$slug}")
         ->assertOk()
         ->assertSee('Published comments')
-        ->assertDontSee('fi-relation-navigator-rm-link', escape: false);
+        ->assertDontSee('Open as page');
 })->with([
     'its own page' => 'published-comments',
     'the page of its group' => 'activity',
@@ -62,12 +62,12 @@ it('does not link a relation manager on a relation page class', function (): voi
     Livewire::test(PostsRelationManager::class, [
         'ownerRecord' => $this->author,
         'pageClass' => RelationNavigator::getRelationPageClass(AuthorResource::class),
-    ])->assertDontSee('fi-relation-navigator-rm-link', escape: false);
+    ])->assertDontSee('Open as page');
 });
 
 it('does not link a relation manager without a page', function (): void {
     Livewire::test(HiddenPageRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => ViewAuthor::class])
-        ->assertDontSee('fi-relation-navigator-rm-link', escape: false);
+        ->assertDontSee('Open as page');
 });
 
 it('tells apart two entries of the same relation manager by their properties', function (): void {
@@ -87,5 +87,56 @@ it('turns the link off', function (): void {
     config()->set('filament-relation-navigator.relation_manager_link', false);
 
     Livewire::test(PostsRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => ViewAuthor::class])
-        ->assertDontSee('fi-relation-navigator-rm-link', escape: false);
+        ->assertDontSee('Open as page');
+});
+
+it('puts the action first in the header of the table', function (): void {
+    $component = Livewire::test(PostsRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => ViewAuthor::class]);
+
+    $names = collect($component->instance()->getTable()->getHeaderActions())
+        ->map(fn ($action) => $action->getName())
+        ->all();
+
+    expect($names[0])->toBe(RelationNavigator::RELATION_PAGE_ACTION)
+        ->and(array_count_values($names)[RelationNavigator::RELATION_PAGE_ACTION])->toBe(1);
+});
+
+it('turns the action off on a relation manager', function (string $how): void {
+    $manager = match ($how) {
+        'property' => new class extends PostsRelationManager
+        {
+            use InteractsWithRelationPage;
+
+            protected static bool $hasRelationPageLink = false;
+        },
+        'method' => new class extends PostsRelationManager
+        {
+            public static function hasRelationPageLink(): bool
+            {
+                return false;
+            }
+        },
+    };
+
+    $manager->ownerRecord = $this->author;
+    $manager->pageClass = ViewAuthor::class;
+
+    expect(RelationNavigator::hasRelationPageAction($manager))->toBeFalse();
+
+    $plain = new PostsRelationManager;
+    $plain->ownerRecord = $this->author;
+    $plain->pageClass = ViewAuthor::class;
+
+    expect(RelationNavigator::hasRelationPageAction($plain))->toBeTrue();
+})->with(['property', 'method']);
+
+it('turns the action off on a resource', function (): void {
+    AuthorResource::$options = ['hasRelationPageLinks' => false];
+
+    try {
+        Livewire::test(PostsRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => ViewAuthor::class])
+            ->assertDontSee('Open as page');
+    } finally {
+        AuthorResource::$options = [];
+    }
 });

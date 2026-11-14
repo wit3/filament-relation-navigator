@@ -2,6 +2,7 @@
 
 namespace Wit3\FilamentRelationNavigator;
 
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
@@ -13,6 +14,8 @@ use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\RelationManagers\RelationManagerConfiguration;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\IconPosition;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +30,11 @@ use Wit3\FilamentRelationNavigator\Pages\RelationPage;
 
 final class RelationNavigator
 {
+    /**
+     * The name of the "Open as page" action in a relation manager's table.
+     */
+    public const RELATION_PAGE_ACTION = 'relationNavigatorOpenPage';
+
     /**
      * A page of the record is in the menu when it uses
      * {@see HasRelationNavigator}: view, edit or any custom record page.
@@ -400,9 +408,87 @@ final class RelationNavigator
     }
 
     /**
-     * The "Open as page" link above a relation manager's table on the view
-     * and edit pages (config `relation_manager_link`). Rendered by the
-     * package through a render hook; never on the relation page itself.
+     * The "Open as page" action in the header of a relation manager's table,
+     * on the view and edit pages. Added by the package to every relation
+     * manager that has its own page; see {@see self::hasRelationPageAction()}.
+     */
+    public static function addRelationPageAction(RelationManager $manager): void
+    {
+        if (! self::hasRelationPageAction($manager)) {
+            return;
+        }
+
+        // A lazy relation manager mounts without its table: it gets the
+        // action on the request that loads it.
+        $table = new \ReflectionProperty($manager, 'table');
+
+        if (! $table->isInitialized($manager)) {
+            return;
+        }
+
+        $table = $manager->getTable();
+
+        foreach ($table->getHeaderActions() as $action) {
+            if ($action instanceof Action && $action->getName() === self::RELATION_PAGE_ACTION) {
+                return;
+            }
+        }
+
+        $url = false;
+        $resolveUrl = function () use ($manager, &$url): ?string {
+            if ($url === false) {
+                $url = self::isOnRelationPage() ? null : self::getRelationManagerPageUrl($manager);
+            }
+
+            return $url;
+        };
+
+        // First, so that the relation manager's own actions keep the end.
+        $table->headerActions([
+            Action::make(self::RELATION_PAGE_ACTION)
+                ->label(__('filament-relation-navigator::navigator.open_as_page'))
+                ->icon(Heroicon::ArrowUpRight)
+                ->iconPosition(IconPosition::After)
+                ->link()
+                ->color('gray')
+                ->url($resolveUrl)
+                ->visible(fn (): bool => $resolveUrl() !== null),
+            ...$table->getHeaderActions(),
+        ]);
+    }
+
+    /**
+     * The action shows unless it is turned off in the config
+     * (`relation_manager_link`), on the resource (`hasRelationPageLinks()`)
+     * or on the relation manager (`hasRelationPageLink()`).
+     */
+    public static function hasRelationPageAction(RelationManager $manager): bool
+    {
+        if (! config('filament-relation-navigator.relation_manager_link', true)) {
+            return false;
+        }
+
+        $managerClass = $manager::class;
+
+        if (method_exists($managerClass, 'hasRelationPageLink') && ! $managerClass::hasRelationPageLink()) {
+            return false;
+        }
+
+        $pageClass = $manager->getPageClass();
+
+        if (! is_subclass_of($pageClass, Page::class)) {
+            return false;
+        }
+
+        $resource = $pageClass::getResource();
+
+        return ! (method_exists($resource, 'hasRelationPageLinks') && ! $resource::hasRelationPageLinks());
+    }
+
+    /**
+     * @deprecated 1.4.0 The link is now an action in the header of the
+     *     relation manager's table, added by the package. This still renders
+     *     the link of 1.3.0, for a render hook of your own.
      */
     public static function renderRelationManagerLink(): ?Htmlable
     {
