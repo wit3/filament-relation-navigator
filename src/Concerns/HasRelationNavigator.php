@@ -37,6 +37,16 @@ use Wit3\FilamentRelationNavigator\RelationNavigatorItem;
  *         HasRelationNavigator::getBreadcrumbs insteadof InteractsWithRecord;
  *         InteractsWithRecord::getBreadcrumbs as getRecordBreadcrumbs;
  *     }
+ *
+ * Every option (preset, search, badges, shortcut, small screens, previous
+ * and next record, tab redirects) is read from the page, then from a static
+ * method with the same name on the resource, then from the config:
+ *
+ *     // On the resource: no search on any of its pages.
+ *     public static function isRelationNavigatorSearchable(): bool
+ *     {
+ *         return false;
+ *     }
  */
 trait HasRelationNavigator
 {
@@ -72,7 +82,7 @@ trait HasRelationNavigator
      */
     public function shouldRedirectRelationNavigatorTabs(): bool
     {
-        return (bool) config('filament-relation-navigator.redirect_relation_tabs', false);
+        return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.redirect_relation_tabs', false));
     }
 
     /**
@@ -164,7 +174,7 @@ trait HasRelationNavigator
      */
     public function hasRelationNavigatorBadges(): bool
     {
-        return (bool) config('filament-relation-navigator.menu.badges', true);
+        return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.badges', true));
     }
 
     /**
@@ -173,7 +183,7 @@ trait HasRelationNavigator
      */
     public function hasDeferredRelationNavigatorBadges(): bool
     {
-        return config('filament-relation-navigator.menu.badges', true) === 'lazy';
+        return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): bool => config('filament-relation-navigator.menu.badges', true) === 'lazy');
     }
 
     /**
@@ -215,7 +225,7 @@ trait HasRelationNavigator
      */
     public function getRelationNavigatorPreset(): string
     {
-        return (string) config('filament-relation-navigator.menu.preset', 'github');
+        return (string) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.preset', 'github'));
     }
 
     /**
@@ -226,7 +236,7 @@ trait HasRelationNavigator
      */
     public function getRelationNavigatorShortcut(): ?string
     {
-        $shortcut = config('filament-relation-navigator.menu.shortcut', 'alt+shift+r');
+        $shortcut = $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.shortcut', 'alt+shift+r'));
 
         if (! is_string($shortcut) || blank($shortcut)) {
             return null;
@@ -243,7 +253,7 @@ trait HasRelationNavigator
      */
     public function isRelationNavigatorSearchable(): bool
     {
-        return (bool) config('filament-relation-navigator.menu.searchable', true);
+        return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.searchable', true));
     }
 
     /**
@@ -252,7 +262,7 @@ trait HasRelationNavigator
      */
     public function hasRelationNavigatorRecordNavigation(): bool
     {
-        return (bool) config('filament-relation-navigator.record_navigation', false);
+        return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.record_navigation', false));
     }
 
     /**
@@ -357,6 +367,22 @@ trait HasRelationNavigator
     }
 
     /**
+     * Every option of the menu has three levels: this page (override the
+     * method), its resource (a static method with the same name, for all
+     * its pages) and the config (for all resources).
+     */
+    private function resolveRelationNavigatorOption(string $method, \Closure $fromConfig): mixed
+    {
+        $resource = static::getResource();
+
+        if (method_exists($resource, $method)) {
+            return $resource::$method();
+        }
+
+        return $fromConfig();
+    }
+
+    /**
      * The menu view, checked: it comes from the config or from a page
      * override, so a typo gets a clear message.
      *
@@ -434,7 +460,7 @@ trait HasRelationNavigator
      */
     public function hasRelationNavigatorMobileMenu(): bool
     {
-        return (bool) config('filament-relation-navigator.menu.mobile', true);
+        return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.mobile', true));
     }
 
     public function renderRelationNavigatorMobileMenu(): ?Htmlable

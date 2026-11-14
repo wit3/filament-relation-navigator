@@ -306,3 +306,28 @@ it('renders the badges with the page by default', function (): void {
         ->not->toContain('fi-relation-navigator-badge-loading')
         ->toContain('x-init="false && new IntersectionObserver');
 });
+
+it('reads the options from the page, then the resource, then the config', function (): void {
+    AuthorResource::$options = ['preset' => 'simple', 'recordNavigation' => true];
+    Author::create(['name' => 'Charles Babbage']);
+
+    try {
+        $page = Livewire::test(ViewAuthor::class, ['record' => $this->author->getKey()])->instance();
+
+        expect($page->getRelationNavigatorPreset())->toBe('simple')
+            ->and($page->hasRelationNavigatorRecordNavigation())->toBeTrue()
+            // Not set on the resource: the config.
+            ->and($page->isRelationNavigatorSearchable())->toBeTrue();
+
+        $this->get("/admin/authors/{$this->author->getKey()}")
+            ->assertSee('fi-relation-navigator-preset-simple', escape: false)
+            ->assertSee('fi-relation-navigator-record-navigation', escape: false);
+
+        // Another resource keeps the config.
+        $this->get("/admin/auto-authors/{$this->author->getKey()}")
+            ->assertSee('fi-relation-navigator-preset-github', escape: false)
+            ->assertDontSee('fi-relation-navigator-record-navigation', escape: false);
+    } finally {
+        AuthorResource::$options = [];
+    }
+});

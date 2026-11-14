@@ -40,6 +40,19 @@ class AuthorResource extends Resource
         return static::$options['hasRelationPageLinks'] ?? true;
     }
 
+    /**
+     * Resource-level options of the menu: the option, else the config.
+     */
+    public static function getRelationNavigatorPreset(): string
+    {
+        return static::$options['preset'] ?? config('filament-relation-navigator.menu.preset', 'github');
+    }
+
+    public static function hasRelationNavigatorRecordNavigation(): bool
+    {
+        return static::$options['recordNavigation'] ?? (bool) config('filament-relation-navigator.record_navigation', false);
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
