@@ -102,12 +102,12 @@ trait HasRelationNavigator
     }
 
     /**
-     * One of the presets in the config (`simple`, `github` or yours), or a
-     * view name.
+     * One of the presets in the config (`github`, the default, `simple` or
+     * yours), or a view name.
      */
     public function getRelationNavigatorPreset(): string
     {
-        return (string) config('filament-relation-navigator.menu.preset', 'simple');
+        return (string) config('filament-relation-navigator.menu.preset', 'github');
     }
 
     /**
@@ -131,11 +131,11 @@ trait HasRelationNavigator
     }
 
     /**
-     * A search field on top of the list, whatever the preset.
+     * A search field on top of the list, whatever the preset (on by default).
      */
     public function isRelationNavigatorSearchable(): bool
     {
-        return (bool) config('filament-relation-navigator.menu.searchable', false);
+        return (bool) config('filament-relation-navigator.menu.searchable', true);
     }
 
     /**

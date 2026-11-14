@@ -9,13 +9,14 @@ return [
     |
     | `preset` picks one of `presets`:
     |
+    | - github (default): the last breadcrumb stays text, a caret next to it
+    |           opens a panel with a heading and a check on the current page
+    |           (like GitHub's "Switch repository").
     | - simple: the last breadcrumb itself opens the list.
-    | - github: the last breadcrumb stays text, a caret next to it opens a
-    |           panel with a heading and a check on the current page (like
-    |           GitHub's "Switch repository").
     |
     | `searchable` adds a search field on top of the list, whatever the
-    | preset; Enter opens the first match.
+    | preset; Enter opens the first match. For the menu of 1.2 and earlier,
+    | set `'preset' => 'simple'` and `'searchable' => false`.
     |
     | Add your own preset by pointing a name to any view, or publish the
     | package views and change them:
@@ -29,14 +30,14 @@ return [
 
     'menu' => [
 
-        'preset' => 'simple',
+        'preset' => 'github',
 
         'presets' => [
             'simple' => 'filament-relation-navigator::menu.simple',
             'github' => 'filament-relation-navigator::menu.github',
         ],
 
-        'searchable' => false,
+        'searchable' => true,
 
         // With `searchable`, the search field appears from this many items.
         'search_from' => 0,

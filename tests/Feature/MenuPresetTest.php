@@ -18,14 +18,35 @@ beforeEach(function (): void {
     $this->author->posts()->create(['title' => 'Notes on the Analytical Engine']);
 });
 
-it('uses the simple preset without search by default', function (): void {
+it('uses the github preset with the search field by default', function (): void {
+    $this->get("/admin/authors/{$this->author->getKey()}")
+        ->assertOk()
+        ->assertSee('fi-relation-navigator-preset-github', escape: false)
+        ->assertSee('x-model="search"', escape: false);
+});
+
+it('keeps the menu of 1.2 with the simple preset and no search', function (): void {
+    config()->set('filament-relation-navigator.menu.preset', 'simple');
+    config()->set('filament-relation-navigator.menu.searchable', false);
+
     $this->get("/admin/authors/{$this->author->getKey()}")
         ->assertOk()
         ->assertSee('fi-relation-navigator-preset-simple', escape: false)
+        ->assertDontSee('fi-relation-navigator-caret', escape: false)
         ->assertDontSee('x-model="search"', escape: false);
 });
 
+it('falls back to the github preset with search when the config has no menu keys', function (): void {
+    config()->set('filament-relation-navigator.menu', []);
+
+    $this->get("/admin/authors/{$this->author->getKey()}")
+        ->assertOk()
+        ->assertSee('fi-relation-navigator-preset-github', escape: false)
+        ->assertSee('x-model="search"', escape: false);
+});
+
 it('adds the search field to the simple preset', function (): void {
+    config()->set('filament-relation-navigator.menu.preset', 'simple');
     config()->set('filament-relation-navigator.menu.searchable', true);
     config()->set('filament-relation-navigator.menu.mobile', false);
 
@@ -39,6 +60,7 @@ it('adds the search field to the simple preset', function (): void {
 
 it('renders the github preset with a caret, a heading and the current page checked', function (): void {
     config()->set('filament-relation-navigator.menu.preset', 'github');
+    config()->set('filament-relation-navigator.menu.searchable', false);
 
     $this->get("/admin/authors/{$this->author->getKey()}/posts")
         ->assertOk()
@@ -142,6 +164,7 @@ it('leaves pages without the trait alone on small screens', function (): void {
 });
 
 it('separates the record pages from the relation pages', function (): void {
+    config()->set('filament-relation-navigator.menu.preset', 'simple');
     $html = $this->get("/admin/authors/{$this->author->getKey()}")->getContent();
     $menu = str($html)->after('fi-relation-navigator-preset-simple')->before('</nav>');
 

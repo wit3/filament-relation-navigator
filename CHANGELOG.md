@@ -4,6 +4,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+### Changed
+
+- **The default menu is now the `github` preset with the search field** (`menu.preset` = `github`, `menu.searchable` = `true`): it is the one with the most features. Apps that published the config keep what they set. To keep the menu of 1.2 and earlier, set `'preset' => 'simple'` and `'searchable' => false` in `config/filament-relation-navigator.php`, or override `getRelationNavigatorPreset()` and `isRelationNavigatorSearchable()` on the page.
+
 ## 1.2.1 - 2026-11-14
 
 Bug fixes and tests. No API changes.
