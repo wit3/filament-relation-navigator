@@ -63,6 +63,17 @@ it('moves through the menu with the keyboard', function (): void {
         ->assertPathIs("/admin/authors/{$id}/edit");
 });
 
+it('keeps the focus where the keyboard moved it right after the menu opens', function (): void {
+    // Opening the menu focuses the search field a moment later; arrows
+    // pressed in that moment must not lose their place.
+    visit("/admin/authors/{$this->author->getKey()}/posts")
+        ->click('.fi-relation-navigator-caret')
+        ->keys('[data-relation-navigator-search]:visible', 'ArrowDown')
+        ->keys('[data-relation-navigator-label="View"]:visible', 'ArrowDown')
+        ->wait(0.3)
+        ->assertScript('document.activeElement.dataset.relationNavigatorLabel', 'Edit');
+});
+
 it('shows the menu above the heading on a phone, and only there', function (): void {
     $id = $this->author->getKey();
 

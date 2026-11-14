@@ -22,7 +22,7 @@
             aria-label="{{ __('filament-relation-navigator::navigator.open') }}"
             @include('filament-relation-navigator::menu.partials.trigger-attributes')
             @if ($isSearchable)
-                x-on:click="setTimeout(() => $refs.panel?.querySelector('[data-relation-navigator-search]')?.focus(), 60)"
+                x-on:click="setTimeout(() => $refs.panel?.contains(document.activeElement) || $refs.panel?.querySelector('[data-relation-navigator-search]')?.focus(), 60)"
             @endif
         >
             <span>{{ $label }}</span>

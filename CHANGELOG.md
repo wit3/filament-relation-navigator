@@ -4,6 +4,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+### Fixed
+
+- Opening the menu with a click no longer takes the focus back to the search field when the arrow keys have already moved it to a page.
+
 ### Documentation
 
 - Documentation for every minor version, at `/vX.Y/` and in the versions menu: from its own site where it had one (1.4 onwards), else its README and changelog.
