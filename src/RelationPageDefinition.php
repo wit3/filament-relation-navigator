@@ -45,6 +45,16 @@ final class RelationPageDefinition
 
     public function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
+        // The resource can veto a relation page for a record: the place for
+        // checks a view page makes in its own authorizeAccess() or
+        // getRelationManagers(), which relation pages do not run.
+        $resource = method_exists($pageClass, 'getResource') ? $pageClass::getResource() : null;
+        $canAccess = is_string($resource) ? [$resource, 'canAccessRelationPage'] : null;
+
+        if ($canAccess !== null && method_exists($resource, 'canAccessRelationPage') && is_callable($canAccess) && ! $canAccess($ownerRecord, $this->slug)) {
+            return false;
+        }
+
         if ($this->manager instanceof RelationGroup) {
             return (bool) count($this->getGroup($ownerRecord, $pageClass)->getManagers());
         }

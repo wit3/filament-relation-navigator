@@ -6,8 +6,10 @@ use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Panel;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
+use Filament\Resources\Pages\EditRecord;
 use Filament\Resources\Pages\Page;
 use Filament\Resources\Pages\PageRegistration;
+use Filament\Resources\Pages\ViewRecord;
 use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\RelationManagers\RelationManagerConfiguration;
@@ -122,6 +124,10 @@ abstract class RelationPage extends Page
 
         abort_unless($definition !== null, 404);
 
+        // The record's policy first, through its response: a policy that
+        // denies as not found gives a 404, like on the view page.
+        static::authorizeRecordAccess($this->getRecord());
+
         abort_unless(static::canAccess(['record' => $this->getRecord()]), 403);
 
         abort_unless($definition->canViewForRecord($this->getRecord(), static::getContextPageClass()), 403);
@@ -154,7 +160,32 @@ abstract class RelationPage extends Page
      */
     public static function canAccessRecord(Model $record): bool
     {
-        return RelationNavigator::canAccessRecordPage(static::getContextPageClass(), $record);
+        $contextPageClass = static::getContextPageClass();
+
+        // Without a view or an edit page to stand for, the `view` policy:
+        // never open.
+        if (! is_subclass_of($contextPageClass, ViewRecord::class) && ! is_subclass_of($contextPageClass, EditRecord::class)) {
+            return static::getResource()::canView($record);
+        }
+
+        return RelationNavigator::canAccessRecordPage($contextPageClass, $record);
+    }
+
+    /**
+     * Like the view (or edit) page does when it mounts: throws the policy's
+     * response, so a denial "as not found" is a 404.
+     */
+    protected static function authorizeRecordAccess(Model $record): void
+    {
+        $resource = static::getResource();
+
+        if (is_subclass_of(static::getContextPageClass(), EditRecord::class)) {
+            $resource::authorizeEdit($record);
+
+            return;
+        }
+
+        $resource::authorizeView($record);
     }
 
     /**
@@ -367,6 +398,17 @@ abstract class RelationPage extends Page
         foreach (array_filter([static::$contextPage, 'view', 'edit']) as $pageKey) {
             if (array_key_exists($pageKey, $pages)) {
                 return $pages[$pageKey]->getPage();
+            }
+        }
+
+        // A view (or edit) page registered under another key.
+        foreach ([ViewRecord::class, EditRecord::class] as $type) {
+            foreach ($pages as $registration) {
+                $page = $registration->getPage();
+
+                if (is_string($page) && is_subclass_of($page, $type)) {
+                    return $page;
+                }
             }
         }
 

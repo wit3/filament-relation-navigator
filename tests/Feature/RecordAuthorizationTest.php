@@ -47,3 +47,41 @@ it('lists nothing for a record the user cannot view', function (): void {
 
     expect($keys->filter(fn (string $key): bool => in_array($key, ['view', 'edit'], true) || str_starts_with($key, 'relations.')))->toBeEmpty();
 });
+
+it('denies the relation pages of a record the user cannot view, wherever the view page is', function (string $path): void {
+    $secret = Author::create(['name' => 'Secret']);
+
+    $this->get("/admin/{$path}/{$secret->getKey()}/posts")->assertForbidden();
+
+    $author = Author::create(['name' => 'Ada Lovelace']);
+
+    $this->get("/admin/{$path}/{$author->getKey()}/posts")->assertOk();
+})->with([
+    'a view page under another key' => 'keyed-authors',
+    'no view or edit page' => 'index-only-authors',
+]);
+
+it('answers 404 like the view page when the policy denies as not found', function (): void {
+    $hidden = Author::create(['name' => 'Hidden']);
+
+    $this->get("/admin/authors/{$hidden->getKey()}")->assertNotFound();
+    $this->get("/admin/authors/{$hidden->getKey()}/posts")->assertNotFound();
+    $this->get("/admin/auto-authors/{$hidden->getKey()}/posts")->assertNotFound();
+});
+
+it('lets the resource veto a relation page for a record', function (): void {
+    $author = Author::create(['name' => 'Ada Lovelace']);
+
+    AuthorResource::$options['canAccessRelationPage'] = fn ($record, string $slug): bool => $slug !== 'posts';
+
+    try {
+        $this->get("/admin/authors/{$author->getKey()}/posts")->assertForbidden();
+        $this->get("/admin/authors/{$author->getKey()}/published-comments")->assertOk();
+
+        expect(collect(RelationNavigator::getItems(AuthorResource::class, $author))->pluck('key'))
+            ->not->toContain('relations.posts')
+            ->toContain('relations.published-comments');
+    } finally {
+        AuthorResource::$options = [];
+    }
+});

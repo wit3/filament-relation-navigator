@@ -9,6 +9,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorHistory;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorRelationPage;
@@ -45,6 +46,11 @@ class AuthorResource extends Resource
     public static function configureRelationPageAction(Action $action): Action
     {
         return isset(static::$options['relationPageAction']) ? (static::$options['relationPageAction'])($action) : $action;
+    }
+
+    public static function canAccessRelationPage(Model $record, string $slug): bool
+    {
+        return isset(static::$options['canAccessRelationPage']) ? (static::$options['canAccessRelationPage'])($record, $slug) : true;
     }
 
     public static function hasRelationPageGlobalSearchActions(): bool

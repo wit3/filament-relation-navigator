@@ -2,6 +2,7 @@
 
 namespace Wit3\FilamentRelationNavigator\Tests\Fixtures\Policies;
 
+use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 
@@ -16,8 +17,13 @@ class AuthorPolicy
         return true;
     }
 
-    public function view(Model $user, Author $author): bool
+    public function view(Model $user, Author $author): Response|bool
     {
+        // "Hidden" is denied as if it did not exist.
+        if ($author->name === 'Hidden') {
+            return Response::denyAsNotFound();
+        }
+
         return $author->name !== 'Secret';
     }
 
