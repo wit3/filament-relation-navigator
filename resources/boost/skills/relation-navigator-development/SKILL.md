@@ -73,6 +73,7 @@ Each option is read from the page method, then from a static method with the sam
 | `getRelationNavigatorShortcut(): ?string` | `menu.shortcut` | `alt+shift+r` |
 | `hasRelationNavigatorMobileMenu(): bool` | `menu.mobile` | `true` |
 | `hasRelationNavigatorRecordNavigation(): bool` | `record_navigation` | `false` |
+| `shouldRelationNavigatorRecordNavigationFollowList(): bool` (previous/next follow the list's sort and filters) | `record_navigation_follows_list` | `true` |
 | `shouldRedirectRelationNavigatorTabs(): bool` | `redirect_relation_tabs` | `false` |
 
 ```php

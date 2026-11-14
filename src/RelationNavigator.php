@@ -8,6 +8,7 @@ use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\ListRecords;
 use Filament\Resources\Pages\Page;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Resources\RelationManagers\RelationGroup;
@@ -20,6 +21,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -412,6 +414,82 @@ final class RelationNavigator
         $buttons = method_exists($page, 'renderRelationNavigatorRecordNavigation') ? $page->renderRelationNavigatorRecordNavigation() : null;
 
         return $buttons instanceof Htmlable ? $buttons : null;
+    }
+
+    /**
+     * The most records a list remembers for previous and next.
+     */
+    public const REMEMBERED_LIST_SIZE = 100;
+
+    /**
+     * Remembers the records a resource's list shows, in its order (sort,
+     * filters, search, tab, grouping), for previous and next on the record
+     * pages. Called by the package when the list renders; the records are
+     * the ones the table has already loaded.
+     */
+    public static function rememberListRecords(ListRecords $list): void
+    {
+        $resource = $list::getResource();
+
+        if (! is_subclass_of($resource, Resource::class) || ! self::listFeedsRecordNavigation($resource)) {
+            return;
+        }
+
+        $records = $list->getTableRecords();
+        $records = ($records instanceof Collection) ? $records : collect($records->items());
+
+        session()->put(self::rememberedListSessionKey($resource), $records
+            ->take(self::REMEMBERED_LIST_SIZE)
+            ->map(fn (Model $record): string => (string) $record->getKey())
+            ->values()
+            ->all());
+    }
+
+    /**
+     * The keys of the records the resource's list last showed this user.
+     *
+     * @param  class-string<resource>  $resource
+     * @return list<string> | null
+     */
+    public static function getRememberedListKeys(string $resource): ?array
+    {
+        $keys = session()->get(self::rememberedListSessionKey($resource));
+
+        return is_array($keys) ? array_values(array_map('strval', $keys)) : null;
+    }
+
+    /**
+     * On the list page there is no record page to ask: the resource or the
+     * config decide.
+     *
+     * @param  class-string<resource>  $resource
+     */
+    private static function listFeedsRecordNavigation(string $resource): bool
+    {
+        $navigation = method_exists($resource, 'hasRelationNavigatorRecordNavigation')
+            ? (bool) $resource::hasRelationNavigatorRecordNavigation()
+            : (bool) config('filament-relation-navigator.record_navigation', false);
+
+        $followsList = method_exists($resource, 'shouldRelationNavigatorRecordNavigationFollowList')
+            ? (bool) $resource::shouldRelationNavigatorRecordNavigationFollowList()
+            : (bool) config('filament-relation-navigator.record_navigation_follows_list', true);
+
+        return $navigation && $followsList;
+    }
+
+    /**
+     * One list per panel, tenant, resource and resource configuration.
+     *
+     * @param  class-string<resource>  $resource
+     */
+    private static function rememberedListSessionKey(string $resource): string
+    {
+        return 'filament-relation-navigator.lists.'.md5(implode('|', [
+            Filament::getCurrentOrDefaultPanel()?->getId(),
+            Filament::getTenant()?->getKey(),
+            $resource,
+            Filament::getCurrentResourceConfigurationKey(),
+        ]));
     }
 
     /**

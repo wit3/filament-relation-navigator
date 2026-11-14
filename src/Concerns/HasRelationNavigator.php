@@ -304,23 +304,16 @@ trait HasRelationNavigator
         }
 
         $record = $this->getRecord();
-        $keyName = $record->getQualifiedKeyName();
-
-        $candidates = [
-            'previous' => (clone $query)->reorder()->where($keyName, '<', $record->getKey())->orderByDesc($keyName),
-            'next' => (clone $query)->reorder()->where($keyName, '>', $record->getKey())->orderBy($keyName),
-        ];
-
         $resource = static::getResource();
 
         if (! is_subclass_of($resource, Resource::class)) {
             return $neighbours;
         }
 
-        foreach ($candidates as $direction => $candidateQuery) {
+        foreach ($this->getRelationNavigatorRecordNavigationCandidates($query, $record) as $direction => $candidates) {
             // The nearest record the user can view: a few at most, so that a
             // run of hidden records does not turn into many queries.
-            foreach ($candidateQuery->limit(5)->get() as $neighbour) {
+            foreach ($candidates as $neighbour) {
                 if (! $resource::canView($neighbour)) {
                     continue;
                 }
@@ -345,6 +338,61 @@ trait HasRelationNavigator
         }
 
         return $neighbours;
+    }
+
+    /**
+     * Up to five records before and after this one, nearest first: in the
+     * order of the list the user came from (sort, filters, search, tab) when
+     * the record is in it, otherwise by key.
+     *
+     * @param  Builder<Model>  $query
+     * @return array{previous: iterable<Model>, next: iterable<Model>}
+     */
+    private function getRelationNavigatorRecordNavigationCandidates(Builder $query, Model $record): array
+    {
+        $resource = static::getResource();
+
+        $listKeys = (is_subclass_of($resource, Resource::class) && $this->shouldRelationNavigatorRecordNavigationFollowList())
+            ? RelationNavigator::getRememberedListKeys($resource)
+            : null;
+
+        $position = $listKeys === null ? false : array_search((string) $record->getKey(), $listKeys, true);
+
+        if ($listKeys !== null && $position !== false) {
+            // In the list: its neighbours only, never a jump to the key order.
+            $fetch = function (array $keys) use ($query): iterable {
+                if ($keys === []) {
+                    return [];
+                }
+
+                $records = (clone $query)->whereKey($keys)->get()->keyBy(fn (Model $model): string => (string) $model->getKey());
+
+                return collect($keys)->map(fn (string $key): ?Model => $records->get($key))->filter()->all();
+            };
+
+            return [
+                'previous' => $fetch(array_reverse(array_slice($listKeys, max(0, $position - 5), min(5, $position)))),
+                'next' => $fetch(array_slice($listKeys, $position + 1, 5)),
+            ];
+        }
+
+        $keyName = $record->getQualifiedKeyName();
+
+        return [
+            'previous' => (clone $query)->reorder()->where($keyName, '<', $record->getKey())->orderByDesc($keyName)->limit(5)->get(),
+            'next' => (clone $query)->reorder()->where($keyName, '>', $record->getKey())->orderBy($keyName)->limit(5)->get(),
+        ];
+    }
+
+    /**
+     * Previous and next follow the list the user came from (config
+     * `record_navigation_follows_list`, on by default). The list remembers
+     * its records only when record navigation is on in the config or on the
+     * resource, not on a single page.
+     */
+    public function shouldRelationNavigatorRecordNavigationFollowList(): bool
+    {
+        return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.record_navigation_follows_list', true));
     }
 
     public function renderRelationNavigatorRecordNavigation(): ?Htmlable

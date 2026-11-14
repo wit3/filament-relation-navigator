@@ -1,11 +1,14 @@
 <?php
 
 use Illuminate\Support\Facades\Gate;
+use Wit3\FilamentRelationNavigator\RelationNavigator;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Team;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Policies\AuthorPolicy;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\AuthorResource;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\AutoAuthors\AutoAuthorResource;
 
 beforeEach(function (): void {
     $this->user = User::create(['name' => 'Admin', 'email' => 'admin@example.com', 'password' => 'secret']);
@@ -131,4 +134,66 @@ it('skips the records the user cannot view, without showing their names', functi
     expect(neighbourUrl($html, 'next'))->toBeNull();
 
     $this->get("/admin/authors/{$this->third->getKey()}/posts")->assertForbidden();
+});
+
+describe('following the list', function (): void {
+    it('follows the order of the list the user came from', function (): void {
+        // Names sorted descending: Grace, Charles, Ada.
+        $this->get('/admin/authors?sort=name:desc')->assertOk();
+
+        $html = $this->get("/admin/authors/{$this->second->getKey()}/posts")->getContent();
+
+        expect(neighbourUrl($html, 'previous'))->toEndWith("/admin/authors/{$this->third->getKey()}/posts")
+            ->and(neighbourUrl($html, 'next'))->toEndWith("/admin/authors/{$this->first->getKey()}/posts");
+    });
+
+    it('stops at the ends of the list instead of jumping to the key order', function (): void {
+        $this->get('/admin/authors?sort=name:desc')->assertOk();
+
+        // Grace (third) is first in the list, Ada (first) is last.
+        $html = $this->get("/admin/authors/{$this->third->getKey()}")->getContent();
+
+        expect(neighbourUrl($html, 'previous'))->toBeNull()
+            ->and(neighbourUrl($html, 'next'))->toEndWith("/admin/authors/{$this->second->getKey()}");
+
+        $html = $this->get("/admin/authors/{$this->first->getKey()}")->getContent();
+
+        expect(neighbourUrl($html, 'next'))->toBeNull();
+    });
+
+    it('keeps to the records the search left in the list', function (): void {
+        $this->get('/admin/authors?search=Charles')->assertOk();
+
+        // Alone in the list: no neighbours, so no buttons.
+        $this->get("/admin/authors/{$this->second->getKey()}")
+            ->assertOk()
+            ->assertDontSee('fi-relation-navigator-record-navigation', escape: false);
+    });
+
+    it('uses the key order for a record that is not in the list', function (): void {
+        $this->get('/admin/authors?search=Charles')->assertOk();
+
+        $html = $this->get("/admin/authors/{$this->first->getKey()}")->getContent();
+
+        expect(neighbourUrl($html, 'next'))->toEndWith("/admin/authors/{$this->second->getKey()}");
+    });
+
+    it('uses the key order when following the list is off', function (): void {
+        config()->set('filament-relation-navigator.record_navigation_follows_list', false);
+
+        $this->get('/admin/authors?sort=name:desc')->assertOk();
+
+        $html = $this->get("/admin/authors/{$this->second->getKey()}")->getContent();
+
+        expect(neighbourUrl($html, 'previous'))->toEndWith("/admin/authors/{$this->first->getKey()}")
+            ->and(neighbourUrl($html, 'next'))->toEndWith("/admin/authors/{$this->third->getKey()}");
+    });
+
+    it('keeps one list per resource', function (): void {
+        $this->get('/admin/authors?sort=name:desc')->assertOk();
+
+        expect(RelationNavigator::getRememberedListKeys(AuthorResource::class))
+            ->toBe([(string) $this->third->getKey(), (string) $this->second->getKey(), (string) $this->first->getKey()])
+            ->and(RelationNavigator::getRememberedListKeys(AutoAuthorResource::class))->toBeNull();
+    });
 });

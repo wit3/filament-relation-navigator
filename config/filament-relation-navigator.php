@@ -107,6 +107,10 @@ return [
 
     'record_navigation' => false,
 
+    // Previous and next follow the list the user came from: its sort,
+    // filters, search and tab (up to 100 records), instead of the key order.
+    'record_navigation_follows_list' => true,
+
     /*
     |--------------------------------------------------------------------------
     | Links to relation manager tabs

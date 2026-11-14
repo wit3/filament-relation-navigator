@@ -55,6 +55,7 @@ Every option is read from the record page (override the method), then from a sta
 | `getRelationNavigatorShortcut(): ?string` (`alt+shift+r`, `mod+…`; null = off) | `menu.shortcut` | `alt+shift+r` |
 | `hasRelationNavigatorMobileMenu(): bool` | `menu.mobile` | `true` |
 | `hasRelationNavigatorRecordNavigation(): bool` (previous/next record, same page) | `record_navigation` | `false` |
+| `shouldRelationNavigatorRecordNavigationFollowList(): bool` (previous/next follow the list's sort and filters) | `record_navigation_follows_list` | `true` |
 | `shouldRedirectRelationNavigatorTabs(): bool` (`?relation=x` opens the relation page) | `redirect_relation_tabs` | `false` |
 
 The "Open as page" action of relation manager tables: config `relation_manager_link`, resource `hasRelationPageLinks(): bool`, relation manager `hasRelationPageLink(): bool`. All must allow it.

@@ -6,6 +6,7 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ### Changed
 
+- **Previous and next follow the list the user came from** (config `record_navigation_follows_list`, default `true`; `shouldRelationNavigatorRecordNavigationFollowList()` on a page or resource): its sort, filters, search and tab, up to 100 records, instead of the key order. They stop at the ends of that list. Records not in the list, or with the option off, still walk by key. The list remembers its records in the session only when record navigation is on in the config or on the resource.
 - "Open as page" opens a relation manager's own page before the page of a relation group it also belongs to (it used to open whichever came first in `getRelations()`). A manager that exists only inside a group still opens the group's page.
 
 ### Added

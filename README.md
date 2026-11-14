@@ -311,6 +311,20 @@ render:
 'record_navigation' => true,
 ```
 
+They follow **the list the user came from**: its sort, filters, search and
+tab, as on screen (up to 100 records). From the first or the last record of
+that list there is nothing further, rather than a jump to another order. A
+record that is not in the list (opened from a link) walks by key. To always
+walk by key:
+
+```php
+'record_navigation_follows_list' => false,
+```
+
+The list remembers its records only when record navigation is on in the
+config or on the resource (`hasRelationNavigatorRecordNavigation()`), since
+the list page cannot ask a record page.
+
 They walk through the resource's own query (`getRecordRouteBindingEloquentQuery()`),
 so tenancy and your scopes apply, and skip the records the user cannot view.
 Per page:
@@ -498,6 +512,7 @@ config:
 | `getRelationNavigatorShortcut(): ?string` | `menu.shortcut` |
 | `hasRelationNavigatorMobileMenu(): bool` | `menu.mobile` |
 | `hasRelationNavigatorRecordNavigation(): bool` | `record_navigation` |
+| `shouldRelationNavigatorRecordNavigationFollowList(): bool` | `record_navigation_follows_list` |
 | `shouldRedirectRelationNavigatorTabs(): bool` | `redirect_relation_tabs` |
 
 ```php
