@@ -84,7 +84,7 @@ public static function hasRelationNavigatorRecordNavigation(): bool
 }
 ```
 
-"Open as page" action in relation manager tables: config `relation_manager_link`, resource `public static function hasRelationPageLinks(): bool`, relation manager `protected static bool $hasRelationPageLink = false;` (with `InteractsWithRelationPage`) or `public static function hasRelationPageLink(): bool`. All three must allow it.
+"Open as page" action in relation manager tables: config `relation_manager_link`, resource `public static function hasRelationPageLinks(): bool`, relation manager `protected static bool $hasRelationPageLink = false;` (with `InteractsWithRelationPage`) or `public static function hasRelationPageLink(): bool`. All three must allow it. Its look: config `relation_manager_action` (`style`: link, button, icon_button; `label`, `icon`, `icon_position`, `color`, `size`, `new_tab`); anything else through `RelationNavigator::configureRelationPageActionUsing(fn (Action $action, RelationManager $manager) => ...)` in a service provider, or `public static function configureRelationPageAction(Action $action): Action` on a resource or relation manager.
 
 ## Header, actions and widgets on relation pages
 

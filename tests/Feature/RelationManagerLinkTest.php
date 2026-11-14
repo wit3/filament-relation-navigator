@@ -159,3 +159,51 @@ it('turns the action off on a resource', function (): void {
         AuthorResource::$options = [];
     }
 });
+
+describe('customising the action', function (): void {
+    afterEach(function (): void {
+        RelationNavigator::flushRelationPageActionConfigurations();
+        AuthorResource::$options = [];
+        PostsRelationManager::$configureRelationPageActionUsing = null;
+    });
+
+    $render = fn () => Livewire::test(PostsRelationManager::class, ['ownerRecord' => test()->author, 'pageClass' => ViewAuthor::class]);
+
+    it('is a link by default', function () use ($render): void {
+        $html = $render()->html();
+
+        expect($html)->toMatch('#<a[^>]+class="[^"]*fi-link[^"]*"[^>]*>[\s\S]*?Open as page#');
+    });
+
+    it('becomes a button or an icon button from the config', function (string $style, string $class) use ($render): void {
+        config()->set('filament-relation-navigator.relation_manager_action.style', $style);
+
+        expect($render()->html())->toMatch('#<a[^>]+class="[^"]*'.$class.'[^"]*"#');
+    })->with([
+        'button' => ['button', 'fi-btn'],
+        'icon button' => ['icon_button', 'fi-icon-btn'],
+    ]);
+
+    it('takes its label, icon and target from the config', function () use ($render): void {
+        config()->set('filament-relation-navigator.relation_manager_action', [
+            'label' => 'Full page',
+            'icon' => null,
+            'new_tab' => true,
+        ]);
+
+        $action = RelationNavigator::makeRelationPageAction($render()->instance());
+
+        expect($action->getLabel())->toBe('Full page')
+            ->and($action->getIcon())->toBeNull()
+            ->and($action->shouldOpenUrlInNewTab())->toBeTrue();
+    });
+
+    it('can be changed from a service provider, a resource and a relation manager, in this order', function () use ($render): void {
+        RelationNavigator::configureRelationPageActionUsing(fn ($action) => $action->label('global'));
+        AuthorResource::$options['relationPageAction'] = fn ($action) => $action->label($action->getLabel().' > resource');
+        PostsRelationManager::$configureRelationPageActionUsing = fn ($action) => $action->label($action->getLabel().' > manager');
+
+        expect(RelationNavigator::makeRelationPageAction($render()->instance())->getLabel())->toBe('global > resource > manager')
+            ->and($render()->html())->toContain('global &gt; resource &gt; manager');
+    });
+});

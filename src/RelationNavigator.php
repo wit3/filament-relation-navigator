@@ -2,6 +2,7 @@
 
 namespace Wit3\FilamentRelationNavigator;
 
+use Closure;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Navigation\NavigationItem;
@@ -627,16 +628,101 @@ final class RelationNavigator
 
         // First, so that the relation manager's own actions keep the end.
         $table->headerActions([
-            Action::make(self::RELATION_PAGE_ACTION)
-                ->label(__('filament-relation-navigator::navigator.open_as_page'))
-                ->icon(Heroicon::ArrowUpRight)
-                ->iconPosition(IconPosition::After)
-                ->link()
-                ->color('gray')
+            self::makeRelationPageAction($manager)
                 ->url($resolveUrl)
                 ->visible(fn (): bool => $resolveUrl() !== null),
             ...$table->getHeaderActions(),
         ]);
+    }
+
+    /**
+     * @var array<Closure(Action, RelationManager): mixed>
+     */
+    private static array $relationPageActionConfigurations = [];
+
+    /**
+     * Changes the "Open as page" action of every relation manager, from a
+     * service provider. The callback receives the action (already set up from
+     * the config) and the relation manager; it changes the action in place
+     * or returns a new one.
+     *
+     *     RelationNavigator::configureRelationPageActionUsing(
+     *         fn (Action $action) => $action->button()->label('Full page'),
+     *     );
+     *
+     * @param  Closure(Action, RelationManager): mixed  $callback
+     */
+    public static function configureRelationPageActionUsing(Closure $callback): void
+    {
+        self::$relationPageActionConfigurations[] = $callback;
+    }
+
+    public static function flushRelationPageActionConfigurations(): void
+    {
+        self::$relationPageActionConfigurations = [];
+    }
+
+    /**
+     * The "Open as page" action, without its URL: from the config
+     * (`relation_manager_action`), then the callbacks of
+     * configureRelationPageActionUsing(), then `configureRelationPageAction()`
+     * on the resource and on the relation manager.
+     */
+    public static function makeRelationPageAction(RelationManager $manager): Action
+    {
+        $options = (array) config('filament-relation-navigator.relation_manager_action', []);
+
+        $label = filled($options['label'] ?? null)
+            ? (string) __((string) $options['label'])
+            : (string) __('filament-relation-navigator::navigator.open_as_page');
+
+        $action = Action::make(self::RELATION_PAGE_ACTION)
+            ->label($label)
+            ->color($options['color'] ?? 'gray');
+
+        $icon = array_key_exists('icon', $options) ? $options['icon'] : Heroicon::ArrowUpRight;
+
+        if (filled($icon)) {
+            $action
+                ->icon($icon)
+                ->iconPosition(($options['icon_position'] ?? 'after') === 'before' ? IconPosition::Before : IconPosition::After);
+        }
+
+        match ($options['style'] ?? 'link') {
+            'button' => $action->button(),
+            'icon_button', 'icon-button', 'icon' => $action->iconButton()->tooltip($label),
+            default => $action->link(),
+        };
+
+        if (filled($options['size'] ?? null)) {
+            $action->size($options['size']);
+        }
+
+        if ($options['new_tab'] ?? false) {
+            $action->openUrlInNewTab();
+        }
+
+        foreach (self::$relationPageActionConfigurations as $configure) {
+            $result = $configure($action, $manager);
+            $action = ($result instanceof Action) ? $result : $action;
+        }
+
+        $pageClass = $manager->getPageClass();
+        $classes = [
+            is_subclass_of($pageClass, Page::class) ? $pageClass::getResource() : null,
+            $manager::class,
+        ];
+
+        foreach (array_filter($classes) as $class) {
+            $configure = [$class, 'configureRelationPageAction'];
+
+            if (method_exists($class, 'configureRelationPageAction') && is_callable($configure)) {
+                $result = $configure($action, $manager);
+                $action = ($result instanceof Action) ? $result : $action;
+            }
+        }
+
+        return $action;
     }
 
     /**

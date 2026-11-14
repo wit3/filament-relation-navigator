@@ -298,6 +298,40 @@ public static function hasRelationPageLink(): bool
 }
 ```
 
+### Its look
+
+A link with an arrow by default. Change it in the config:
+
+```php
+'relation_manager_action' => [
+    'style' => 'button',        // link, button or icon_button (the label becomes a tooltip)
+    'label' => 'Full page',     // text or translation key; null: "Open as page", translated
+    'icon' => 'heroicon-m-arrow-top-right-on-square', // any Filament icon, or null
+    'icon_position' => 'after', // or before
+    'color' => 'gray',
+    'size' => null,             // sm, md, lg...
+    'new_tab' => false,
+],
+```
+
+Or change the Filament action itself, for everything else. Every level gets
+the action as the previous one left it:
+
+```php
+// A service provider: every relation manager
+RelationNavigator::configureRelationPageActionUsing(
+    fn (Action $action, RelationManager $relationManager) => $action->outlined()->badge('new'),
+);
+```
+
+```php
+// A resource, or a relation manager: only there
+public static function configureRelationPageAction(Action $action): Action
+{
+    return $action->iconButton()->tooltip('Open the orders on their own page');
+}
+```
+
 `RelationNavigator::getRelationManagerPageUrl($relationManager)` returns the
 same URL, for a button of your own.
 <!-- #endregion open-as-page -->

@@ -2,6 +2,7 @@
 
 namespace Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors;
 
+use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\Resource;
@@ -39,6 +40,11 @@ class AuthorResource extends Resource
     public static function hasRelationPageLinks(): bool
     {
         return static::$options['hasRelationPageLinks'] ?? true;
+    }
+
+    public static function configureRelationPageAction(Action $action): Action
+    {
+        return isset(static::$options['relationPageAction']) ? (static::$options['relationPageAction'])($action) : $action;
     }
 
     public static function hasRelationPageGlobalSearchActions(): bool

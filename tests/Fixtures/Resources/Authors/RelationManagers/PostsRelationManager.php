@@ -2,6 +2,7 @@
 
 namespace Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers;
 
+use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -21,6 +22,18 @@ class PostsRelationManager extends RelationManager
      * Switched by the global search tests.
      */
     public static bool $globalSearchAction = true;
+
+    /**
+     * Switched by the tests of the "Open as page" action.
+     *
+     * @var (\Closure(Action): Action) | null
+     */
+    public static ?\Closure $configureRelationPageActionUsing = null;
+
+    public static function configureRelationPageAction(Action $action): Action
+    {
+        return static::$configureRelationPageActionUsing ? (static::$configureRelationPageActionUsing)($action) : $action;
+    }
 
     public static function hasRelationPageGlobalSearchAction(): bool
     {

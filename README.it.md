@@ -294,6 +294,40 @@ public static function hasRelationPageLink(): bool
 }
 ```
 
+### Il suo aspetto
+
+Di default è un link con una freccia. Cambialo nella config:
+
+```php
+'relation_manager_action' => [
+    'style' => 'button',        // link, button o icon_button (l'etichetta diventa un tooltip)
+    'label' => 'Pagina intera', // testo o chiave di traduzione; null: «Apri come pagina», tradotto
+    'icon' => 'heroicon-m-arrow-top-right-on-square', // qualsiasi icona di Filament, o null
+    'icon_position' => 'after', // o before
+    'color' => 'gray',
+    'size' => null,             // sm, md, lg...
+    'new_tab' => false,
+],
+```
+
+Oppure modifica direttamente l'azione di Filament, per tutto il resto. Ogni
+livello riceve l'azione come l'ha lasciata il precedente:
+
+```php
+// Un service provider: tutti i relation manager
+RelationNavigator::configureRelationPageActionUsing(
+    fn (Action $action, RelationManager $relationManager) => $action->outlined()->badge('nuovo'),
+);
+```
+
+```php
+// Una resource, o un relation manager: solo lì
+public static function configureRelationPageAction(Action $action): Action
+{
+    return $action->iconButton()->tooltip('Apri gli ordini nella loro pagina');
+}
+```
+
 `RelationNavigator::getRelationManagerPageUrl($relationManager)` restituisce
 lo stesso URL, per un pulsante tuo.
 <!-- #endregion open-as-page -->

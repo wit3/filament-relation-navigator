@@ -77,6 +77,22 @@ return [
 
     'relation_manager_link' => true,
 
+    // Its look. `style`: link, button or icon_button (the label becomes a
+    // tooltip). `label`: text or translation key (null: "Open as page",
+    // translated). `icon`: any Filament icon, or null for none. For more,
+    // RelationNavigator::configureRelationPageActionUsing() in a service
+    // provider, or configureRelationPageAction() on a resource or a relation
+    // manager.
+    'relation_manager_action' => [
+        'style' => 'link',
+        'label' => null,
+        'icon' => 'heroicon-m-arrow-up-right',
+        'icon_position' => 'after',
+        'color' => 'gray',
+        'size' => null,
+        'new_tab' => false,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Global search

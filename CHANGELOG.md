@@ -4,6 +4,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+### Added
+
+- **"Open as page" can be customised**: config `relation_manager_action` (`style`: `link`, `button` or `icon_button`; `label`, `icon`, `icon_position`, `color`, `size`, `new_tab`), `RelationNavigator::configureRelationPageActionUsing()` for any change to the Filament action, and `configureRelationPageAction()` on a resource or a relation manager. `RelationNavigator::makeRelationPageAction()` builds it.
+
 ## 1.5.0 - 2026-11-14
 
 Six improvements: global search links, per-relation titles, "Open as page" on group pages, lazy tab badges in the menu, previous/next that follow the list, and the documentation in Italian. Two behaviour changes, both in "Changed".
