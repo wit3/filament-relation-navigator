@@ -354,3 +354,13 @@ it('loads a lazy tab badge when the menu opens, and the others with the page', f
 
     expect($navigation->first(fn ($item): bool => $item->getLabel() === 'Published comments')?->getBadge())->toBe('7');
 });
+
+it('accepts only plain preset names and package presets', function (string $name, string $from): void {
+    $this->artisan('make:filament-relation-navigator-preset', ['name' => $name, '--from' => $from])
+        ->assertFailed();
+
+    expect(File::exists(resource_path('views/evil.blade.php')))->toBeFalse();
+})->with([
+    'a path in the name' => ['../../evil', 'github'],
+    'a path in --from' => ['compact', '../menu/github'],
+]);

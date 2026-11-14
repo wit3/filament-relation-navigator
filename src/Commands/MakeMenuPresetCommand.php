@@ -27,9 +27,17 @@ class MakeMenuPresetCommand extends Command
         }
 
         $name = Str::kebab($name);
+
+        // Plain names only: the name becomes a path.
+        if (! preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $name)) {
+            $this->components->error("[{$name}] is not a valid preset name: use letters, digits and dashes.");
+
+            return self::FAILURE;
+        }
+
         $source = __DIR__."/../../resources/views/menu/{$from}.blade.php";
 
-        if (! $files->exists($source)) {
+        if (! in_array($from, ['simple', 'github'], true) || ! $files->exists($source)) {
             $this->components->error("There is no [{$from}] preset to start from. Use simple or github.");
 
             return self::FAILURE;
