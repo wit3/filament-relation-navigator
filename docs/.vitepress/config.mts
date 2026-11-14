@@ -1,8 +1,40 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig, type DefaultTheme } from 'vitepress'
 import llmstxt from 'vitepress-plugin-llms'
 
 const repository = 'https://github.com/wit3/filament-relation-navigator'
 const plugin = 'https://filamentphp.com/plugins/wit3-relation-navigator'
+const packagist = 'https://packagist.org/packages/wit3/filament-relation-navigator'
+const site = 'https://wit3.github.io/filament-relation-navigator/'
+
+// The latest release, from the changelog: its version, date and summary.
+const changelog = readFileSync(new URL('../../CHANGELOG.md', import.meta.url), 'utf8')
+const release = changelog.match(/^## (\d+\.\d+\.\d+) - (\d{4}-\d{2}-\d{2})\n+(?!#)([^\n]+)?/m)
+const latest = { version: release?.[1] ?? '', date: release?.[2] ?? '', summary: release?.[3] ?? '' }
+
+function versionMenu(prefix: string, t: Record<string, string>): DefaultTheme.NavItemWithChildren {
+    return {
+        text: `v${latest.version}`,
+        items: [
+            { text: t.changelog, link: `${prefix}/reference/changelog` },
+            { text: t.upgrade, link: `${prefix}/reference/upgrade` },
+            { text: t.releases, link: `${repository}/releases` },
+            { text: 'Packagist', link: packagist },
+        ],
+    }
+}
+
+function communityMenu(t: Record<string, string>): DefaultTheme.NavItemWithChildren {
+    return {
+        text: t.community,
+        items: [
+            { text: t.discussions, link: `${repository}/discussions` },
+            { text: t.issues, link: `${repository}/issues` },
+            { text: t.security, link: `${repository}/security` },
+            { text: t.filament, link: plugin },
+        ],
+    }
+}
 
 function sidebar(prefix: string, t: Record<string, string>): DefaultTheme.SidebarItem[] {
     const link = (path: string) => `${prefix}${path}`
@@ -37,9 +69,17 @@ function sidebar(prefix: string, t: Record<string, string>): DefaultTheme.Sideba
             ],
         },
         {
+            text: t.help,
+            items: [
+                { text: t.recipes, link: link('/guide/recipes') },
+                { text: t.troubleshooting, link: link('/guide/troubleshooting') },
+            ],
+        },
+        {
             text: t.reference,
             items: [
                 { text: t.configuration, link: link('/reference/configuration') },
+                { text: t.api, link: link('/reference/api') },
                 { text: t.howItWorks, link: link('/reference/how-it-works') },
                 { text: t.ai, link: link('/reference/ai-agents') },
                 { text: t.upgrade, link: link('/reference/upgrade') },
@@ -57,6 +97,9 @@ const en = {
     previousNext: 'Previous and next record', tabs: 'Links to relation manager tabs', globalSearch: 'Global search',
     subNavigation: 'Native record sub-navigation', reference: 'Reference', configuration: 'Configuration',
     howItWorks: 'How it works', ai: 'AI agents', upgrade: 'Upgrade guide', changelog: 'Changelog', contributing: 'Contributing',
+    api: 'API reference', help: 'Help', recipes: 'Recipes', troubleshooting: 'Troubleshooting',
+    releases: 'GitHub releases', community: 'Community', discussions: 'Questions and ideas', issues: 'Bug reports',
+    security: 'Report a vulnerability', filament: 'Filament plugin page',
 }
 
 const it = {
@@ -66,6 +109,9 @@ const it = {
     previousNext: 'Record precedente e successivo', tabs: 'Link alle schede', globalSearch: 'Ricerca globale',
     subNavigation: 'Sotto-navigazione nativa', reference: 'Riferimenti', configuration: 'Configurazione',
     howItWorks: 'Come funziona', ai: 'Agenti AI', upgrade: 'Guida all\'aggiornamento', changelog: 'Changelog', contributing: 'Contribuire',
+    api: 'Riferimento API', help: 'Aiuto', recipes: 'Ricette', troubleshooting: 'Problemi comuni',
+    releases: 'Release su GitHub', community: 'Community', discussions: 'Domande e idee', issues: 'Segnalare un bug',
+    security: 'Segnalare una vulnerabilità', filament: 'Pagina del plugin su Filament',
 }
 
 export default defineConfig({
@@ -75,6 +121,7 @@ export default defineConfig({
     base: '/filament-relation-navigator/',
     cleanUrls: true,
     lastUpdated: true,
+    sitemap: { hostname: site },
     head: [
         ['meta', { property: 'og:image', content: 'https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/social-preview.jpg' }],
         ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
@@ -97,10 +144,11 @@ export default defineConfig({
             lang: 'en-US',
             themeConfig: {
                 nav: [
-                    { text: 'Guide', link: '/guide/installation' },
+                    { text: 'Guide', link: '/guide/quick-start' },
                     { text: 'Configuration', link: '/reference/configuration' },
-                    { text: 'Changelog', link: '/reference/changelog' },
-                    { text: 'Filament plugin', link: plugin },
+                    { text: 'API', link: '/reference/api' },
+                    communityMenu(en),
+                    versionMenu('', en),
                 ],
                 sidebar: sidebar('', en),
                 editLink: {
@@ -118,10 +166,11 @@ export default defineConfig({
             description: 'Una pagina vera per ogni relation manager di Filament e un menu con ricerca nella breadcrumb. Filament v4 e v5.',
             themeConfig: {
                 nav: [
-                    { text: 'Guida', link: '/it/guide/installation' },
+                    { text: 'Guida', link: '/it/guide/quick-start' },
                     { text: 'Configurazione', link: '/it/reference/configuration' },
-                    { text: 'Changelog', link: '/it/reference/changelog' },
-                    { text: 'Plugin su Filament', link: plugin },
+                    { text: 'API', link: '/it/reference/api' },
+                    communityMenu(it),
+                    versionMenu('/it', it),
                 ],
                 sidebar: sidebar('/it', it),
                 editLink: {
@@ -138,7 +187,7 @@ export default defineConfig({
                 returnToTopLabel: 'Torna su',
                 langMenuLabel: 'Cambia lingua',
                 footer: {
-                    message: 'Rilasciato con licenza MIT.',
+                    message: `Versione ${latest.version} del ${latest.date.split('-').reverse().join('/')} · Licenza MIT.`,
                     copyright: 'Copyright © Salvatore Scalzi',
                 },
             },
@@ -164,10 +213,12 @@ export default defineConfig({
                 },
             },
         },
+        // Read by the theme (the hero's "latest release" link).
+        latest,
         outline: { level: [2, 3] },
         socialLinks: [{ icon: 'github', link: repository }],
         footer: {
-            message: 'Released under the MIT License.',
+            message: `Version ${latest.version}, released ${latest.date} · MIT License.`,
             copyright: 'Copyright © Salvatore Scalzi',
         },
     },

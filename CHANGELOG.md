@@ -4,6 +4,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+### Documentation
+
+- The site shows the latest release (home page, menu and footer, read from this changelog) and adds a configuration reference with defaults and levels, an API reference, recipes, troubleshooting, community links and a sitemap, in English and Italian.
+
 ## 1.6.0 - 2026-11-14
 
 A security fix for relation pages of resources whose view page is not registered as `view` (or that have none), security hardening from an audit, badges loaded when the menu opens by default, and a customisable "Open as page" action.
