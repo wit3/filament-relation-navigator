@@ -124,7 +124,8 @@ return [
 
     'record_navigation' => false,
 
-    // Previous and next follow the list the user came from: its sort,
+    // Previous and next follow the list the user came from (the list page,
+    // or the parent's relation manager for a nested resource): its sort,
     // filters, search and tab (up to 100 records), instead of the key order.
     'record_navigation_follows_list' => true,
 

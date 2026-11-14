@@ -7,6 +7,10 @@ composer update wit3/filament-relation-navigator
 php artisan filament:assets
 ```
 
+## To 1.7
+
+Nothing to change. When record navigation is on, **nested resources show previous and next** too, within the same parent record, in the order of the parent's relation manager when the nested resource is its related resource (`$relatedResource`). To hide them on a nested resource, return `false` from `hasRelationNavigatorRecordNavigation()` on its pages or on the resource.
+
 ## To 1.6
 
 Nothing to change.

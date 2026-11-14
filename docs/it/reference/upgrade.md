@@ -7,6 +7,10 @@ composer update wit3/filament-relation-navigator
 php artisan filament:assets
 ```
 
+## Alla 1.7
+
+Niente da cambiare. Quando la navigazione tra record è attiva, **anche le resource annidate mostrano precedente e successivo**, dentro lo stesso record genitore, nell'ordine della relation manager del genitore quando la resource annidata è la sua related resource (`$relatedResource`). Per nasconderli su una resource annidata, restituisci `false` da `hasRelationNavigatorRecordNavigation()` sulle sue pagine o sulla resource.
+
 ## Alla 1.6
 
 Niente da cambiare.

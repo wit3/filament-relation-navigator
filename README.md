@@ -415,7 +415,11 @@ public function getRelationNavigatorRecordNavigationQuery(): ?Builder
 }
 ```
 
-Nested resources are not supported yet: they show no buttons.
+On a **nested resource** they stay within the parent: from one of a
+customer's orders to the next order of the same customer. The list there is
+the parent's relation manager: they follow its order when the nested resource
+is its related resource (`protected static ?string $relatedResource`), except
+with the `cookie` session driver, which keeps the parent's list only.
 <!-- #endregion previous-and-next-record -->
 
 ## Links to relation manager tabs

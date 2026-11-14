@@ -35,6 +35,7 @@ class TestCase extends Orchestra
         Fixtures\Resources\Authors\RelationManagers\PostsRelationManager::$globalSearchAction = true;
         Fixtures\Resources\Authors\RelationManagers\PostsRelationManager::$menuBadge = true;
         Fixtures\Resources\Authors\RelationManagers\PostsRelationManager::$configureRelationPageActionUsing = null;
+        Fixtures\Resources\Authors\RelationManagers\PostsRelationManager::$relatedResourceForTests = null;
 
         parent::tearDown();
     }

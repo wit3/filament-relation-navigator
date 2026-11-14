@@ -47,7 +47,7 @@ Una pagina di relazione richiede il `canAccess()` della pagina di visualizzazion
 ## Mancano precedente e successivo
 
 - Sono spenti di default: `record_navigation`.
-- Spariscono quando non c'è un altro record, e sulle resource annidate.
+- Spariscono quando non c'è un altro record (su una resource annidata, nessun altro record dello stesso genitore).
 - Per seguire l'ordine della lista, la lista deve essere stata aperta in questa sessione, con la navigazione attiva nella config o sulla resource.
 
 ## «A directory that only this user can write»

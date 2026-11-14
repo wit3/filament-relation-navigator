@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Livewire;
 use Wit3\FilamentRelationNavigator\RelationNavigator;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Team;
@@ -10,7 +11,9 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Policies\AuthorPolicy;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\AuthorResource;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ListAuthors;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PostsRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\AutoAuthors\AutoAuthorResource;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Posts\PostResource;
 
 beforeEach(function (): void {
     $this->user = User::create(['name' => 'Admin', 'email' => 'admin@example.com', 'password' => 'secret']);
@@ -93,13 +96,82 @@ it('never leaves the tenant', function (): void {
         ->and($html)->not->toContain('Stranger');
 });
 
-it('leaves nested resources alone', function (): void {
-    $post = $this->second->posts()->create(['title' => 'Notes']);
-    $this->second->posts()->create(['title' => 'More notes']);
+describe('nested resources', function (): void {
+    beforeEach(function (): void {
+        // Keys interleaved between parents: 1 and 3 are Charles's, 2 is Ada's.
+        $this->notes = $this->second->posts()->create(['title' => 'Notes']);
+        $this->stray = $this->first->posts()->create(['title' => 'Stray']);
+        $this->sketches = $this->second->posts()->create(['title' => 'Sketches']);
+    });
 
-    $this->get("/admin/authors/{$this->second->getKey()}/posts/{$post->getKey()}")
-        ->assertOk()
-        ->assertDontSee('fi-relation-navigator-record-navigation', escape: false);
+    it('walks the records of the same parent only', function (string $path): void {
+        $base = "/admin/authors/{$this->second->getKey()}/posts";
+
+        $html = $this->get("{$base}/{$this->notes->getKey()}{$path}")->assertOk()->getContent();
+
+        expect(neighbourUrl($html, 'previous'))->toBeNull()
+            ->and(neighbourUrl($html, 'next'))->toEndWith("{$base}/{$this->sketches->getKey()}{$path}")
+            ->and($html)->not->toContain('Stray');
+
+        $html = $this->get("{$base}/{$this->sketches->getKey()}{$path}")->assertOk()->getContent();
+
+        expect(neighbourUrl($html, 'previous'))->toEndWith("{$base}/{$this->notes->getKey()}{$path}")
+            ->and(neighbourUrl($html, 'next'))->toBeNull();
+    })->with([
+        'view page' => '',
+        'relation page' => '/revisions',
+    ]);
+
+    it('shows no buttons for the only record of its parent', function (): void {
+        $this->get("/admin/authors/{$this->first->getKey()}/posts/{$this->stray->getKey()}")
+            ->assertOk()
+            ->assertDontSee('fi-relation-navigator-record-navigation', escape: false);
+    });
+
+    it('follows the relation manager table the user came from', function (): void {
+        PostsRelationManager::$relatedResourceForTests = PostResource::class;
+
+        // Titles sorted descending: Sketches, then Notes (the reverse of the key order).
+        Livewire::test(PostsRelationManager::class, ['ownerRecord' => $this->second, 'pageClass' => ViewAuthor::class])
+            ->call('sortTable', 'title', 'desc');
+
+        expect(RelationNavigator::getRememberedListKeys(PostResource::class))
+            ->toBe([(string) $this->sketches->getKey(), (string) $this->notes->getKey()]);
+
+        $base = "/admin/authors/{$this->second->getKey()}/posts";
+        $html = $this->get("{$base}/{$this->sketches->getKey()}")->assertOk()->getContent();
+
+        expect(neighbourUrl($html, 'previous'))->toBeNull()
+            ->and(neighbourUrl($html, 'next'))->toEndWith("{$base}/{$this->notes->getKey()}");
+    });
+
+    it('remembers no list from a relation manager whose related resource is not nested', function (): void {
+        PostsRelationManager::$relatedResourceForTests = AutoAuthorResource::class;
+
+        Livewire::test(PostsRelationManager::class, ['ownerRecord' => $this->second, 'pageClass' => ViewAuthor::class]);
+
+        expect(RelationNavigator::getRememberedListKeys(AutoAuthorResource::class))->toBeNull();
+    });
+
+    it('keeps the parent list with the cookie session driver, which has room for one', function (): void {
+        config()->set('session.driver', 'cookie');
+        PostsRelationManager::$relatedResourceForTests = PostResource::class;
+
+        $this->get('/admin/authors?sort=name:desc')->assertOk();
+
+        // The view page of an author loads its posts table.
+        Livewire::test(PostsRelationManager::class, ['ownerRecord' => $this->second, 'pageClass' => ViewAuthor::class]);
+
+        expect(RelationNavigator::getRememberedListKeys(AuthorResource::class))
+            ->toBe([(string) $this->third->getKey(), (string) $this->second->getKey(), (string) $this->first->getKey()])
+            ->and(RelationNavigator::getRememberedListKeys(PostResource::class))->toBeNull();
+    });
+
+    it('remembers no list from a relation manager without a related resource', function (): void {
+        Livewire::test(PostsRelationManager::class, ['ownerRecord' => $this->second, 'pageClass' => ViewAuthor::class]);
+
+        expect(RelationNavigator::getRememberedListKeys(PostResource::class))->toBeNull();
+    });
 });
 
 it('can be turned on for one page only', function (): void {

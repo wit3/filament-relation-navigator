@@ -66,10 +66,12 @@ class FilamentRelationNavigatorServiceProvider extends PackageServiceProvider
         // link, never mounted: it only has to be there when the table renders,
         // lazy loading included (which builds the table again).
         // Previous and next follow the list the user came from: the list
+        // page, or the relation manager table of a nested resource,
         // remembers the records it shows.
         Livewire::listen('render', function (mixed $component): void {
             if ($component instanceof RelationManager) {
                 RelationNavigator::addRelationPageAction($component);
+                RelationNavigator::rememberListRecords($component);
             } elseif ($component instanceof ListRecords) {
                 RelationNavigator::rememberListRecords($component);
             }

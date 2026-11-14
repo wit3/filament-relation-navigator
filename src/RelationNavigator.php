@@ -586,15 +586,25 @@ final class RelationNavigator
      *
      * Remembers the records a resource's list shows, in its order (sort,
      * filters, search, tab, grouping), for previous and next on the record
-     * pages. Called by the package when the list renders; the records are
-     * the ones the table has already loaded.
+     * pages. The list is the resource's list page or, for a nested resource,
+     * the parent's relation manager table that lists it (its related
+     * resource). Called by the package when the table renders; the records
+     * are the ones the table has already loaded.
      */
-    public static function rememberListRecords(ListRecords $list): void
+    public static function rememberListRecords(ListRecords|RelationManager $list): void
     {
-        $resource = $list::getResource();
+        $resource = ($list instanceof RelationManager) ? $list::getRelatedResource() : $list::getResource();
 
         // A table that defers loading has not run its query yet: never force it.
-        if (! is_subclass_of($resource, Resource::class) || ! self::listFeedsRecordNavigation($resource) || ! $list->isTableLoaded()) {
+        if ($resource === null || ! is_subclass_of($resource, Resource::class) || ! self::listFeedsRecordNavigation($resource) || ! $list->isTableLoaded()) {
+            return;
+        }
+
+        // A relation manager table only for a nested resource: it renders on
+        // the parent's pages, where a list of its own would replace the one
+        // the user follows. Never with the cookie session driver, which keeps
+        // one list only: the parent's.
+        if (($list instanceof RelationManager) && ((! $resource::getParentResourceRegistration()) || (config('session.driver') === 'cookie'))) {
             return;
         }
 

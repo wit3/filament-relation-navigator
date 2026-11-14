@@ -47,7 +47,7 @@ A relation page needs the view page's `canAccess()`, the record's `view` policy 
 ## Previous and next are missing
 
 - They are off by default: `record_navigation`.
-- They hide when there is no other record, and on nested resources.
+- They hide when there is no other record (on a nested resource, no other record of the same parent).
 - To follow the list's order, the list must have been opened in this session, with record navigation on in the config or on the resource.
 
 ## "A directory that only this user can write"

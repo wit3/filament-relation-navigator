@@ -412,7 +412,11 @@ public function getRelationNavigatorRecordNavigationQuery(): ?Builder
 }
 ```
 
-Le resource annidate non sono ancora supportate: non mostrano i pulsanti.
+Su una **resource annidata** restano dentro il genitore: da un ordine di un
+cliente all'ordine successivo dello stesso cliente. Lì la lista è la relation
+manager del genitore: ne seguono l'ordine quando la resource annidata è la sua
+related resource (`protected static ?string $relatedResource`), tranne con il
+driver di sessione `cookie`, che tiene solo la lista del genitore.
 <!-- #endregion previous-and-next-record -->
 
 ## Link alle schede dei relation manager

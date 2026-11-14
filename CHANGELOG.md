@@ -4,6 +4,15 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+## 1.7.0 - 2026-11-14
+
+Previous and next record on nested resources. No API changes.
+
+### Added
+
+- Previous and next record on nested resources, within the same parent record: from one of a customer's orders to the next order of the same customer, on the view, edit and relation pages.
+- On a nested resource they follow the parent's relation manager table the user came from (sort, filters, search), when the nested resource is its related resource (`$relatedResource`). Not with the `cookie` session driver, which keeps the parent's list only.
+
 ## 1.6.2 - 2026-11-14
 
 A keyboard fix in the menu, and documentation for every minor version. No API changes.

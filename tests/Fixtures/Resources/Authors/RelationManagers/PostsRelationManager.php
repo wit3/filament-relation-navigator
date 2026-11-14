@@ -4,6 +4,7 @@ namespace Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Relati
 
 use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -22,6 +23,19 @@ class PostsRelationManager extends RelationManager
      * Switched by the global search tests.
      */
     public static bool $globalSearchAction = true;
+
+    /**
+     * Switched by the tests of previous and next: rows that open PostResource.
+     *
+     * @var class-string | null
+     */
+    public static ?string $relatedResourceForTests = null;
+
+    #[Unexposed]
+    public static function getRelatedResource(): ?string
+    {
+        return static::$relatedResourceForTests ?? parent::getRelatedResource();
+    }
 
     /**
      * Switched by the tests of the menu badges.
@@ -66,7 +80,7 @@ class PostsRelationManager extends RelationManager
             ->description($this->note)
             ->recordTitleAttribute('title')
             ->columns([
-                TextColumn::make('title')->searchable(),
+                TextColumn::make('title')->searchable()->sortable(),
             ]);
     }
 }

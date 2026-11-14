@@ -304,8 +304,9 @@ trait HasRelationNavigator
 
     /**
      * The records that previous and next walk through, ordered by key. By
-     * default the resource's own query (tenant and your scopes included);
-     * null for nested resources, which are not supported yet.
+     * default the resource's own query (tenant and your scopes included); on
+     * a nested resource, only the records of the same parent, as Filament
+     * finds them.
      *
      * @return Builder<Model> | null
      */
@@ -314,11 +315,21 @@ trait HasRelationNavigator
     {
         $resource = static::getResource();
 
-        if (! is_subclass_of($resource, Resource::class) || $resource::getParentResourceRegistration()) {
+        if (! is_subclass_of($resource, Resource::class)) {
             return null;
         }
 
-        return $resource::getRecordRouteBindingEloquentQuery();
+        $query = $resource::getRecordRouteBindingEloquentQuery();
+
+        if (! $resource::getParentResourceRegistration()) {
+            return $query;
+        }
+
+        // Every resource page knows its parent record (Filament resolves it
+        // from the URL and checks it).
+        $parentRecord = $this->getParentRecord();
+
+        return $parentRecord ? $resource::scopeEloquentQueryToParent($query, $parentRecord) : null;
     }
 
     /**
@@ -383,7 +394,8 @@ trait HasRelationNavigator
     /**
      * Up to five records before and after this one, nearest first: in the
      * order of the list the user came from (sort, filters, search, tab) when
-     * the record is in it, otherwise by key.
+     * the record is in it, otherwise by key. The list is the resource's list
+     * page or, for a nested resource, the parent's relation manager table.
      *
      * @param  Builder<Model>  $query
      * @return array{previous: iterable<Model>, next: iterable<Model>}

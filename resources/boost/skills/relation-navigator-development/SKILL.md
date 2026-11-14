@@ -136,7 +136,7 @@ Off by default. Config `global_search_actions` (`true`, or the most links per re
 
 ## Previous and next record
 
-Off by default (`record_navigation`). When on, the buttons follow the list the user came from (sort, filters, search, tab; `record_navigation_follows_list`, on by default) and walk by key for records not in it. The list only remembers its records when record navigation is on in the config or on the resource. Nested resources are not supported.
+Off by default (`record_navigation`). When on, the buttons follow the list the user came from (sort, filters, search, tab; `record_navigation_follows_list`, on by default) and walk by key for records not in it. The list is the resource's list page, and it only remembers its records when record navigation is on in the config or on the resource. On nested resources the buttons stay within the parent record and follow the parent's relation manager when the nested resource is its `$relatedResource` (not with the `cookie` session driver).
 
 ## Custom menu preset
 
