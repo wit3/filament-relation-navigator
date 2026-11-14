@@ -119,8 +119,15 @@ public static function getRelationPageTitle(Model $ownerRecord): string|Htmlable
     return "Orders of {$ownerRecord->name}";
 }
 
-public static function getRelationPageSubheading(Model $ownerRecord): string|Htmlable|null;
-public static function getRelationPageBreadcrumb(Model $ownerRecord): ?string;
+public static function getRelationPageSubheading(Model $ownerRecord): string|Htmlable|null
+{
+    return 'Last 12 months';
+}
+
+public static function getRelationPageBreadcrumb(Model $ownerRecord): ?string
+{
+    return 'Orders';
+}
 ```
 
 ## Global search links

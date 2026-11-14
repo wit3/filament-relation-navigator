@@ -32,6 +32,8 @@ final class GeneratedRelationPages
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * The name of the generated class; it is written when first autoloaded.
      *
      * @param  class-string<resource>  $resource
@@ -42,6 +44,8 @@ final class GeneratedRelationPages
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * @return class-string<resource> | null
      */
     public static function resourceFor(string $class): ?string
@@ -55,12 +59,17 @@ final class GeneratedRelationPages
         return is_subclass_of($resource, Resource::class) ? $resource : null;
     }
 
+    /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     */
     public static function isGenerated(string $class): bool
     {
         return str_starts_with($class, self::NAMESPACE_PREFIX);
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * The autoloader, registered by the service provider.
      */
     public static function load(string $class): void
@@ -74,6 +83,9 @@ final class GeneratedRelationPages
         require_once self::ensureFile($class, $resource);
     }
 
+    /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     */
     public static function pathFor(string $class): string
     {
         return rtrim(self::directory(), '/').'/relation-page-'.sha1($class.'|'.self::VERSION).'.php';

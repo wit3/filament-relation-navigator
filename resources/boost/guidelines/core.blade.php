@@ -39,6 +39,8 @@ class ViewCustomer extends ViewRecord
 protected static bool $hasRelationPage = false;      // no page for this one
 protected static ?string $relationPageSlug = 'bills'; // custom slug
 protected static bool $hasRelationPageLink = false;  // no "Open as page" action in its table
+protected static bool $hasRelationPageGlobalSearchAction = false; // no global search link
+protected static bool $hasRelationNavigatorBadge = false;         // no badge in the menu (the tab keeps it)
 </code-snippet>
 @endverbatim
 

@@ -38,6 +38,8 @@ final class RelationNavigator
     public const RELATION_PAGE_ACTION = 'relationNavigatorOpenPage';
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * A page of the record is in the menu when it uses
      * {@see HasRelationNavigator}: view, edit or any custom record page.
      * Relation pages are listed separately, one per relation.
@@ -73,6 +75,8 @@ final class RelationNavigator
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * @param  class-string<RelationManager> | RelationGroup | RelationManagerConfiguration  $manager
      * @return class-string<RelationManager> | null
      */
@@ -134,6 +138,8 @@ final class RelationNavigator
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * @param  class-string<resource>  $resource
      * @return class-string<RelationPage> | null
      */
@@ -151,6 +157,8 @@ final class RelationNavigator
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * @param  class-string<resource>  $resource
      * @return class-string<RelationPage> | null
      */
@@ -171,6 +179,8 @@ final class RelationNavigator
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * Cheap check before any class is generated: the resource uses
      * {@see HasRelationPages}, or one of its relation managers has
      * `hasRelationPage(): true`.
@@ -199,6 +209,8 @@ final class RelationNavigator
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * Routes of the generated relation pages, inside each resource's own
      * route group (slug, cluster, parent resource, tenant).
      */
@@ -256,6 +268,8 @@ final class RelationNavigator
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * Livewire must know the generated pages on every request, cached
      * routes included.
      */
@@ -284,6 +298,9 @@ final class RelationNavigator
         }
     }
 
+    /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     */
     public static function getLivewireComponentName(string $page): string
     {
         return collect(explode('\\', $page))
@@ -415,6 +432,8 @@ final class RelationNavigator
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * The current panel may not have the route (a resource in two panels).
      *
      * @param  class-string<resource>  $resource
@@ -425,6 +444,8 @@ final class RelationNavigator
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * The small-screen menu of the page being rendered, if it uses
      * HasRelationNavigator.
      */
@@ -442,6 +463,8 @@ final class RelationNavigator
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * The previous and next record buttons of the page being rendered, if
      * it uses HasRelationNavigator and turned them on.
      */
@@ -464,6 +487,8 @@ final class RelationNavigator
     private static array $viewsWithDeferredBadges = [];
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * Whether menu views can load deferred badges: they call the page's
      * getRelationNavigatorBadges(), themselves or through the package's list
      * partial. Views published before 1.3, or presets of your own that render
@@ -534,16 +559,22 @@ final class RelationNavigator
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * The most records a list remembers for previous and next.
      */
     public const REMEMBERED_LIST_SIZE = 100;
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * ...and at most this many bytes of keys, comma-separated.
      */
     public const REMEMBERED_LIST_BYTES = 1024;
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * The most lists remembered at once, the oldest dropped first.
      */
     public const REMEMBERED_LISTS = 5;
@@ -551,6 +582,8 @@ final class RelationNavigator
     private const REMEMBERED_LISTS_SESSION_KEY = 'filament-relation-navigator.lists';
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * Remembers the records a resource's list shows, in its order (sort,
      * filters, search, tab, grouping), for previous and next on the record
      * pages. Called by the package when the list renders; the records are
@@ -610,6 +643,8 @@ final class RelationNavigator
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * The keys of the records the resource's list last showed this user.
      *
      * @param  class-string<resource>  $resource
@@ -795,9 +830,10 @@ final class RelationNavigator
     }
 
     /**
-     * @var array<Closure(Action, RelationManager): mixed>
+     * The container key of the callbacks of configureRelationPageActionUsing():
+     * one list per application, so they never pile up across apps or tests.
      */
-    private static array $relationPageActionConfigurations = [];
+    private const ACTION_CONFIGURATIONS = 'filament-relation-navigator.relation-page-action-configurations';
 
     /**
      * Changes the "Open as page" action of every relation manager, from a
@@ -813,12 +849,27 @@ final class RelationNavigator
      */
     public static function configureRelationPageActionUsing(Closure $callback): void
     {
-        self::$relationPageActionConfigurations[] = $callback;
+        self::relationPageActionConfigurations()->append($callback);
     }
 
+    /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     */
     public static function flushRelationPageActionConfigurations(): void
     {
-        self::$relationPageActionConfigurations = [];
+        app()->forgetInstance(self::ACTION_CONFIGURATIONS);
+    }
+
+    /**
+     * @return \ArrayObject<int, Closure(Action, RelationManager): mixed>
+     */
+    private static function relationPageActionConfigurations(): \ArrayObject
+    {
+        if (! app()->bound(self::ACTION_CONFIGURATIONS)) {
+            app()->instance(self::ACTION_CONFIGURATIONS, new \ArrayObject);
+        }
+
+        return app(self::ACTION_CONFIGURATIONS);
     }
 
     /**
@@ -862,7 +913,7 @@ final class RelationNavigator
             $action->openUrlInNewTab();
         }
 
-        foreach (self::$relationPageActionConfigurations as $configure) {
+        foreach (self::relationPageActionConfigurations() as $configure) {
             $result = $configure($action, $manager);
             $action = ($result instanceof Action) ? $result : $action;
         }
@@ -1233,6 +1284,9 @@ final class RelationNavigator
         return false;
     }
 
+    /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     */
     public static function getActivePageKey(Page $page): ?string
     {
         if ($page instanceof RelationPage) {

@@ -36,7 +36,7 @@ sua**, e passa dall'una all'altra con un **menu nella breadcrumb**.
 | --------- | -------------------- |
 | PHP       | 8.2+                 |
 | Laravel   | 12, 13               |
-| Filament  | 4.x, 5.x             |
+| Filament  | 4.13+, 5.x           |
 <!-- #endregion requirements -->
 
 ## Installazione
@@ -144,11 +144,13 @@ Un relation manager condiviso da due resource si attiva per entrambe: usa
 | `SupportTicketsRelationManager::class` (senza chiave) | `/customers/1/support-tickets` |
 | `RelationGroup::make('Activity', [...])`        | `/customers/1/activity`     |
 
-Vince la chiave di `getRelations()`; senza chiave, lo slug è il nome della
-relazione in kebab-case (o l'etichetta del gruppo). Un relation manager può
-scegliere il suo con `protected static ?string $relationPageSlug = 'tickets';`.
-Gli slug uguali a una chiave di pagina della resource (`edit`, `view`...)
-vengono saltati.
+Vince lo slug scelto dal relation manager
+(`protected static ?string $relationPageSlug = 'tickets';`), poi la chiave di
+`getRelations()`, poi il nome della relazione in kebab-case (o l'etichetta del
+gruppo: dai una chiave ai gruppi, perché un'etichetta tradotta cambia con la
+lingua). Gli slug uguali a una chiave di pagina della resource (`edit`,
+`view`...) vengono saltati, e così una seconda relazione con uno slug già
+preso.
 
 Ogni pagina è una rotta con nome, `relations.{slug}`:
 
@@ -329,8 +331,9 @@ Di default è un link con una freccia. Cambialo nella config:
 ],
 ```
 
-Oppure modifica direttamente l'azione di Filament, per tutto il resto. Ogni
-livello riceve l'azione come l'ha lasciata il precedente:
+Oppure modifica direttamente l'azione di Filament, per tutto il resto tranne
+il suo URL e quando compare, che decide il package. Ogni livello riceve
+l'azione come l'ha lasciata il precedente:
 
 ```php
 // Un service provider: tutti i relation manager

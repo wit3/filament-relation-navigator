@@ -45,7 +45,7 @@ between them from a **menu in the breadcrumb**.
 | -------- | -------------------- |
 | PHP      | 8.2+                 |
 | Laravel  | 12, 13               |
-| Filament | 4.x, 5.x             |
+| Filament | 4.13+, 5.x           |
 <!-- #endregion requirements -->
 
 ## Installation
@@ -153,10 +153,12 @@ resource's `hasRelationPage()` to leave one of them out.
 | `SupportTicketsRelationManager::class` (no key) | `/customers/1/support-tickets` |
 | `RelationGroup::make('Activity', [...])`        | `/customers/1/activity`     |
 
-The key in `getRelations()` wins; without a key, the slug is the kebab-cased
-relationship name (or the group label). A relation manager can pick its own
-with `protected static ?string $relationPageSlug = 'tickets';`. Slugs equal to
-one of the resource's page keys (`edit`, `view`...) are skipped.
+A relation manager's own slug wins
+(`protected static ?string $relationPageSlug = 'tickets';`), then the key in
+`getRelations()`, then the kebab-cased relationship name (or the group label:
+give groups a key, since a translated label changes with the language). Slugs
+equal to one of the resource's page keys (`edit`, `view`...) are skipped, and
+so is a second relation with a slug already taken.
 
 Each page is a named route, `relations.{slug}`:
 
@@ -331,8 +333,9 @@ A link with an arrow by default. Change it in the config:
 ],
 ```
 
-Or change the Filament action itself, for everything else. Every level gets
-the action as the previous one left it:
+Or change the Filament action itself, for everything else but its URL and
+when it shows, which the package sets. Every level gets the action as the
+previous one left it:
 
 ```php
 // A service provider: every relation manager

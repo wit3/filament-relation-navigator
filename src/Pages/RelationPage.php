@@ -172,6 +172,8 @@ abstract class RelationPage extends Page
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * Like the view (or edit) page does when it mounts: throws the policy's
      * response, so a denial "as not found" is a 404.
      */
@@ -351,6 +353,8 @@ abstract class RelationPage extends Page
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * Slugs that would shadow the resource's own pages (`/{record}/edit`).
      *
      * @return array<string>
@@ -440,6 +444,9 @@ abstract class RelationPage extends Page
         return static::class;
     }
 
+    /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     */
     protected static function resolveRelationPageFromRoute(): ?string
     {
         $route = request()->route();
@@ -489,6 +496,8 @@ abstract class RelationPage extends Page
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * A static method of the page's relation manager, for this page only:
      * `getRelationPageTitle()`, `getRelationPageSubheading()` or
      * `getRelationPageBreadcrumb()`, given the owner record. Null when the
@@ -705,6 +714,8 @@ abstract class RelationPage extends Page
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * The relation manager when it defines the hook, otherwise the resource.
      *
      * @return class-string | null
@@ -723,6 +734,8 @@ abstract class RelationPage extends Page
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * @return array<mixed>
      */
     protected function collectRelationPageHooks(string $method): array
@@ -736,6 +749,9 @@ abstract class RelationPage extends Page
         ];
     }
 
+    /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     */
     #[Unexposed]
     public function getRelationManagerComponent(): Component
     {
@@ -760,6 +776,8 @@ abstract class RelationPage extends Page
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * @param  class-string<RelationManager> | RelationManagerConfiguration  $manager
      */
     protected function makeRelationManagerLivewireComponent(string|RelationManagerConfiguration $manager, string $key): Livewire
@@ -777,6 +795,8 @@ abstract class RelationPage extends Page
     }
 
     /**
+     * @internal Package plumbing: not covered by semantic versioning.
+     *
      * @return array<string, mixed>
      */
     protected function getRelationManagerLivewireData(): array

@@ -115,7 +115,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Two buttons before the header actions of the pages with the menu: they
-    | open the previous or the next record (by key) on the same page. Off by
+    | open the previous or the next record on the same page. Off by
     | default: they add a few queries per render. Per page, override
     | hasRelationNavigatorRecordNavigation(); to change the records,
     | getRelationNavigatorRecordNavigationQuery(). Not for nested resources.

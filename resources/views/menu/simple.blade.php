@@ -2,7 +2,8 @@
     Preset "simple": the last breadcrumb itself opens the list.
 
     Data: $label (string | Htmlable), $items (array<RelationNavigatorItem>),
-    $heading, $searchPlaceholder, $emptyLabel, $maxHeight, $isSearchable.
+    $heading, $searchPlaceholder, $emptyLabel, $maxHeight, $isSearchable,
+    $hasSeparator, $hasDeferredBadges, $shortcut, $shortcutKeys.
 --}}
 @php
     use Filament\Support\Icons\Heroicon;
