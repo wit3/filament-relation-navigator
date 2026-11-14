@@ -11,6 +11,9 @@ php artisan filament:assets
 
 Niente da cambiare.
 
+- Dalla 1.6.1 l'impianto interno del package è marcato `@internal` (vedi il changelog): se chiami `RelationNavigator::optsIn()`, `registerRoutes()` o funzioni simili, passa a quello che elenca il [riferimento API](/it/reference/api).
+- Dalla 1.6.1 la versione minima di Filament è la 4.13.
+
 - **I badge del menu arrivano quando apri il menu**, non con la pagina. Per il comportamento di prima: `'badges' => true`. Le viste del menu pubblicate prima della 1.3, e i preset tuoi, continuano a riceverli con la pagina.
 - L'azione «Apri come pagina» ha nuove opzioni (`relation_manager_action`) e nuovi agganci: vedi [Apri come pagina](/it/guide/open-as-page).
 

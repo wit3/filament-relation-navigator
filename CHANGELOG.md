@@ -4,6 +4,32 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+## 1.6.1 - 2026-11-14
+
+Fixes from a review of the whole package, faster relation pages, and the documentation site. No API changes.
+
+### Fixed
+
+- "Open as page" links only to a relation page the user can open: the relation manager's `canViewForRecord()` and the resource's `canAccessRelationPage()` were not checked, so the link could end in a 403. It picks the best page the user can open.
+- Relation group badges: the color callback receives the badge, as in the tab, and a lazy group badge (`deferBadge()`) is lazy in the menu too.
+- Menu views that cannot load badges later (published before 1.3, presets of your own) get lazy tab badges with the page too: nothing disappears.
+- Shortcuts: the `cmd` alias works everywhere (tooltip, `aria-keyshortcuts`), a shortcut that cannot be matched is no longer advertised, and one returned by a page method is normalized and kept away from the global search like the config's.
+- `configureRelationPageAction()` also works as an instance method on a relation manager.
+- Previous and next: the remembered list is one compact string (about 170 numeric keys or 30 UUIDs per KB, so up to 100 records as documented), only one list is kept with the `cookie` session driver, records the user can edit but not view are offered, and neighbour queries skip the resource's eager loads.
+- The `?relation=` redirect leaves a reload of the view page alone, so its tabs stay reachable.
+- Properties of configured relation managers that are models or objects are compared by value, so "Open as page" stays after a table interaction.
+- No global search links for nested resources (their URLs need each result's parent).
+- A relation group without a string key whose label has no slug (a non-Latin script) gets `group-{key}` instead of no page.
+- Resources registered only through a configuration get their Livewire components registered.
+- The "Open as page" icon is the same with or without a published config.
+
+### Changed
+
+- Relation pages work out their definitions, context page and class once per request: a relation page reads the resource's `getRelations()` 2 times instead of 66, a view page 3 instead of 19.
+- Filament 4.13 is now the lowest version allowed in `composer.json`, as tested since 1.2.1.
+- Package plumbing that was public or protected is marked `@internal` (`RelationNavigator::optsIn()`, `registerRoutes()`, `supportsDeferredBadges()`, the remembered-list methods and constants, most of `GeneratedRelationPages`, `RelationPage`'s protected helpers): not covered by semantic versioning from now on. Everything documented in the API reference stays.
+- `configureRelationPageActionUsing()` callbacks live in the application container: one list per application.
+
 ### Documentation
 
 - The site shows the latest release (home page, menu and footer, read from this changelog) and adds a configuration reference with defaults and levels, an API reference, recipes, troubleshooting, community links and a sitemap, in English and Italian.

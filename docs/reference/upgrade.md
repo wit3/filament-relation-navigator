@@ -11,6 +11,9 @@ php artisan filament:assets
 
 Nothing to change.
 
+- From 1.6.1, package plumbing is marked `@internal` (see the changelog): if you call `RelationNavigator::optsIn()`, `registerRoutes()` or similar helpers, move to what the [API reference](/reference/api) lists.
+- Filament 4.13 is the lowest version allowed from 1.6.1.
+
 - **Menu badges are loaded when the menu opens**, not with the page. For the old behaviour: `'badges' => true`. Menu views published before 1.3, and presets of your own, keep getting them with the page.
 - The "Open as page" action has new options (`relation_manager_action`) and hooks: see [Open as page](/guide/open-as-page).
 

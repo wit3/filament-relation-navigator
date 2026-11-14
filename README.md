@@ -370,7 +370,7 @@ render:
 ```
 
 They follow **the list the user came from**: its sort, filters, search and
-tab, as on screen (up to 100 records). From the first or the last record of
+tab, as on screen (up to 100 records; about 30 with UUID keys). From the first or the last record of
 that list there is nothing further, rather than a jump to another order. A
 record that is not in the list (opened from a link) walks by key. To always
 walk by key:

@@ -368,7 +368,7 @@ query a ogni render:
 ```
 
 Seguono **la lista da cui arrivi**: il suo ordinamento, i filtri, la ricerca e
-la scheda, come a schermo (fino a 100 record). Dal primo o dall'ultimo record
+la scheda, come a schermo (fino a 100 record; circa 30 con chiavi UUID). Dal primo o dall'ultimo record
 di quella lista non si va oltre, invece di saltare a un altro ordine. Un
 record che non è nella lista (aperto da un link) segue l'ordine delle
 chiavi. Per seguire sempre l'ordine delle chiavi:
