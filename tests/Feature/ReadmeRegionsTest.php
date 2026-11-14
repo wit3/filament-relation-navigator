@@ -1,8 +1,8 @@
 <?php
 
 /**
- * The documentation site includes README sections by region: the English
- * and the Italian README must have the same, balanced regions.
+ * The documentation site includes README sections by region: every
+ * translated README must have the same, balanced regions as the English one.
  */
 function readmeRegions(string $file): array
 {
@@ -16,15 +16,15 @@ function readmeRegions(string $file): array
     return $opened[1];
 }
 
-it('has the same documentation regions in every README', function (): void {
-    expect(readmeRegions('README.it.md'))->toBe(readmeRegions('README.md'));
-});
+it('has the same documentation regions in every README', function (string $readme): void {
+    expect(readmeRegions($readme))->toBe(readmeRegions('README.md'));
+})->with(fn (): array => array_map('basename', glob(__DIR__.'/../../README.*.md')));
 
 it('includes only regions that exist', function (): void {
     $regions = readmeRegions('README.md');
 
-    foreach (glob(__DIR__.'/../../docs/{,it/}{guide,reference}/*.md', GLOB_BRACE) as $page) {
-        preg_match_all('/@include: [.\/]+README(?:\.it)?\.md#([a-z0-9]+(?:-[a-z0-9]+)*)/', file_get_contents($page), $includes);
+    foreach (glob(__DIR__.'/../../docs/{,*/}{guide,reference}/*.md', GLOB_BRACE) as $page) {
+        preg_match_all('/@include: [.\/]+README(?:\.[a-z]{2})?\.md#([a-z0-9]+(?:-[a-z0-9]+)*)/', file_get_contents($page), $includes);
 
         foreach ($includes[1] as $region) {
             expect($regions)->toContain($region);

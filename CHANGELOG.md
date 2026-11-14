@@ -4,6 +4,19 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+## 1.8.0 - 2026-11-14
+
+25 more languages in the package, and the documentation in eight more. No API changes.
+
+### Added
+
+- Translations for Arabic, Bulgarian, Catalan, Chinese (simplified and traditional), Czech, Danish, Finnish, Greek, Hebrew, Hungarian, Indonesian, Japanese, Korean, Norwegian, Persian, Polish, Portuguese (Portugal), Romanian, Russian, Slovak, Swedish, Turkish, Ukrainian and Vietnamese: 32 languages, with Filament's codes.
+- In right to left languages the previous and next arrows turn around, as in Filament's pagination.
+
+### Documentation
+
+- The documentation and the README in Spanish, Portuguese, French, German, Chinese, Japanese, Russian and Arabic (right to left), besides English and Italian. English is the reference: every translated page says so and links to it.
+
 ## 1.7.0 - 2026-11-14
 
 Previous and next record on nested resources. No API changes.

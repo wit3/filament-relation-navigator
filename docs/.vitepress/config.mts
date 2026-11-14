@@ -3,6 +3,7 @@ import { defineConfig, type DefaultTheme } from 'vitepress'
 import llmstxt from 'vitepress-plugin-llms'
 import { advisoriesFor } from '../scripts/advisories.mjs'
 import { latestRelease, olderMinorVersions } from '../scripts/versions.mjs'
+import { translatedLocales, type TranslatedLocale } from './locales.mts'
 
 const repository = 'https://github.com/wit3/filament-relation-navigator'
 const plugin = 'https://filamentphp.com/plugins/wit3-relation-navigator'
@@ -130,6 +131,47 @@ const it = {
     security: 'Segnalare una vulnerabilità', filament: 'Pagina del plugin su Filament', olderVersions: 'Versioni precedenti',
 }
 
+// A locale translated from English (docs/<code>/, README.<code>.md): its
+// strings are in .vitepress/locales/<code>.json.
+function translatedLocale({ code, label, lang, dir, strings: s }: TranslatedLocale) {
+    return {
+        label,
+        lang,
+        dir,
+        link: `/${code}/`,
+        title: 'Relation Navigator',
+        titleTemplate: `:title · ${s.titleTemplate}`,
+        description: s.description,
+        themeConfig: {
+            nav: [
+                { text: s.nav.guide, link: `/${code}/guide/quick-start` },
+                { text: s.nav.configuration, link: `/${code}/reference/configuration` },
+                { text: s.nav.api, link: `/${code}/reference/api` },
+                communityMenu(s.t),
+                versionMenu(`/${code}`, s.t),
+            ],
+            sidebar: sidebar(`/${code}`, s.t),
+            editLink: { pattern: `${repository}/edit/main/README.${code}.md`, text: s.editLink },
+            outline: { level: [2, 3] as [number, number], label: s.outline },
+            docFooter: { prev: s.docFooterPrev, next: s.docFooterNext },
+            lastUpdated: { text: s.lastUpdated },
+            darkModeSwitchLabel: s.darkModeSwitchLabel,
+            lightModeSwitchTitle: s.lightModeSwitchTitle,
+            darkModeSwitchTitle: s.darkModeSwitchTitle,
+            sidebarMenuLabel: s.sidebarMenuLabel,
+            returnToTopLabel: s.returnToTopLabel,
+            langMenuLabel: s.langMenuLabel,
+            footer: {
+                message: s.footer.replace('{version}', latest.version).replace('{date}', latest.date),
+                copyright: 'Copyright © Salvatore Scalzi',
+            },
+            // Read by the theme: the notice on every page and the hero's link.
+            translationNotice: { text: s.notice, link: s.noticeLink },
+            latestReleaseLabels: s.latestRelease,
+        },
+    }
+}
+
 export default defineConfig({
     title: 'Relation Navigator',
     titleTemplate: ':title · Relation Navigator for Filament',
@@ -147,12 +189,12 @@ export default defineConfig({
     // The sources of older versions, checked out to build their sites.
     srcExclude: ['.versions/**', 'scripts/**'],
     // llms.txt and llms-full.txt for AI agents, plus a .md version of each
-    // page. English only: the Italian pages would double them.
+    // page. English only: the translated pages would double them.
     vite: {
         plugins: [llmstxt({
             title: 'Relation Navigator for Filament',
             description: 'A real page for every Filament relation manager (/customers/1/orders) and a searchable menu in the breadcrumb. Filament v4 and v5. Package: wit3/filament-relation-navigator.',
-            ignoreFiles: ['it/**', '.versions/**'],
+            ignoreFiles: ['it/**', ...translatedLocales.map(({ code }) => `${code}/**`), '.versions/**'],
         })],
     },
     markdown: {
@@ -210,14 +252,28 @@ export default defineConfig({
                     message: `Versione ${latest.version} del ${latest.date.split('-').reverse().join('/')} · Licenza MIT.`,
                     copyright: 'Copyright © Salvatore Scalzi',
                 },
+                latestReleaseLabels: { label: 'Ultima versione', whatsNew: 'Novità' },
             },
         },
+        ...Object.fromEntries(translatedLocales.map((locale) => [locale.code, translatedLocale(locale)])),
     },
     themeConfig: {
         search: {
             provider: 'local',
             options: {
                 locales: {
+                    ...Object.fromEntries(translatedLocales.map(({ code, strings: { search: t } }) => [code, {
+                        translations: {
+                            button: { buttonText: t.buttonText, buttonAriaLabel: t.buttonAriaLabel },
+                            modal: {
+                                displayDetails: t.displayDetails,
+                                resetButtonTitle: t.resetButtonTitle,
+                                backButtonTitle: t.backButtonTitle,
+                                noResultsText: t.noResultsText,
+                                footer: { selectText: t.selectText, navigateText: t.navigateText, closeText: t.closeText },
+                            },
+                        },
+                    }])),
                     it: {
                         translations: {
                             button: { buttonText: 'Cerca', buttonAriaLabel: 'Cerca' },

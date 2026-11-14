@@ -2,26 +2,27 @@
 import { computed } from 'vue'
 import { useData, withBase } from 'vitepress'
 
-// The latest release, read from the changelog by the config.
-const { theme, lang } = useData()
+// The latest release, read from the changelog by the config, with the
+// labels of the current language.
+const { theme, lang, localeIndex } = useData()
 
 const latest = computed(() => theme.value.latest as { version: string, date: string })
-const isItalian = computed(() => lang.value.startsWith('it'))
+const labels = computed(() => (theme.value.latestReleaseLabels ?? { label: 'Latest release', whatsNew: 'What\'s new' }) as { label: string, whatsNew: string })
 
-const date = computed(() => new Date(`${latest.value.date}T12:00:00Z`).toLocaleDateString(isItalian.value ? 'it-IT' : 'en-US', {
+const date = computed(() => new Date(`${latest.value.date}T12:00:00Z`).toLocaleDateString(lang.value, {
     day: 'numeric', month: 'long', year: 'numeric',
 }))
 
-const link = computed(() => withBase(isItalian.value ? '/it/reference/changelog' : '/reference/changelog'))
+const link = computed(() => withBase(localeIndex.value === 'root' ? '/reference/changelog' : `/${localeIndex.value}/reference/changelog`))
 </script>
 
 <template>
     <a v-if="latest?.version" class="latest-release" :href="link">
         <span class="latest-release-version">v{{ latest.version }}</span>
         <span class="latest-release-text">
-            {{ isItalian ? 'Ultima versione' : 'Latest release' }} · {{ date }}
+            {{ labels.label }} · {{ date }}
         </span>
-        <span class="latest-release-more" aria-hidden="true">{{ isItalian ? 'Novità' : 'What\'s new' }} →</span>
+        <span class="latest-release-more" aria-hidden="true">{{ labels.whatsNew }} →</span>
     </a>
 </template>
 

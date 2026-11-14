@@ -209,7 +209,18 @@ it('speaks the supported languages', function (string $locale, string $heading):
     ['fr', 'Changer de page'],
     ['pt_BR', 'Trocar de página'],
     ['nl', 'Pagina wisselen'],
+    ['ja', 'ページを切り替え'],
+    ['ar', 'تبديل الصفحة'],
+    ['zh_CN', '切换页面'],
 ]);
+
+it('translates every string in every language', function (string $locale): void {
+    $english = require __DIR__.'/../../resources/lang/en/navigator.php';
+    $strings = require __DIR__."/../../resources/lang/{$locale}/navigator.php";
+
+    expect(array_keys($strings))->toBe(array_keys($english))
+        ->and(array_filter($strings, fn (mixed $string): bool => ! is_string($string) || trim($string) === ''))->toBe([]);
+})->with(fn (): array => array_map('basename', glob(__DIR__.'/../../resources/lang/*', GLOB_ONLYDIR)));
 
 it('shows the shortcut in a tooltip and binds it', function (): void {
     $html = $this->get("/admin/authors/{$this->author->getKey()}/posts?preset=github")->getContent();

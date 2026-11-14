@@ -3,8 +3,9 @@
 > **Documentazione:** guide, configurazione, aggiornamenti e ricerca su
 > **[wit3.github.io/filament-relation-navigator/it](https://wit3.github.io/filament-relation-navigator/it/)**.
 >
-> **In inglese:** la [documentazione](https://wit3.github.io/filament-relation-navigator/)
-> e il [README](https://github.com/wit3/filament-relation-navigator/blob/main/README.md) originale.
+> **In altre lingue:** la documentazione in
+> [English](https://wit3.github.io/filament-relation-navigator/) (l'originale) · [Español](https://wit3.github.io/filament-relation-navigator/es/) · [Português](https://wit3.github.io/filament-relation-navigator/pt/) · [Français](https://wit3.github.io/filament-relation-navigator/fr/) · [Deutsch](https://wit3.github.io/filament-relation-navigator/de/) · [中文](https://wit3.github.io/filament-relation-navigator/zh/) · [日本語](https://wit3.github.io/filament-relation-navigator/ja/) · [Русский](https://wit3.github.io/filament-relation-navigator/ru/) · [العربية](https://wit3.github.io/filament-relation-navigator/ar/).
+> Ogni lingua ha anche il suo README in questo repository (`README.md`, `README.es.md`...).
 
 <!-- #region intro -->
 Dai a ogni relation manager di una resource di Filament **una pagina tutta
@@ -652,8 +653,13 @@ public function hasRelationNavigatorMobileMenu(): bool
 
 ### Traduzioni
 
-Inglese, italiano, spagnolo, tedesco, francese, portoghese brasiliano e
-olandese. Pubblica le traduzioni per cambiarle o aggiungere una lingua:
+32 lingue, con gli stessi codici di Filament: arabo, bulgaro, catalano, cinese
+(semplificato e tradizionale), ceco, coreano, danese, ebraico, finlandese,
+francese, giapponese, greco, indonesiano, inglese, italiano, norvegese,
+olandese, persiano, polacco, portoghese (Portogallo e Brasile), rumeno, russo,
+slovacco, spagnolo, svedese, tedesco, turco, ucraino, ungherese e vietnamita.
+Nelle lingue da destra a sinistra le frecce precedente e successivo si
+girano. Pubblica le traduzioni per cambiarle o aggiungere una lingua:
 
 ```bash
 php artisan vendor:publish --tag=filament-relation-navigator-translations

@@ -6,10 +6,14 @@
 --}}
 @php
     use Filament\Support\Icons\Heroicon;
+
+    // Right to left languages (Arabic, Hebrew, Persian...): previous points
+    // right, as in Filament's pagination.
+    $isRtl = __('filament-panels::layout.direction') === 'rtl';
 @endphp
 
 <div class="fi-relation-navigator-record-navigation" style="display: flex; align-items: center; gap: 0.25rem;">
-    @foreach ([[$previous, $previousLabel, Heroicon::ChevronLeft], [$next, $nextLabel, Heroicon::ChevronRight]] as [$neighbour, $label, $icon])
+    @foreach ([[$previous, $previousLabel, $isRtl ? Heroicon::ChevronRight : Heroicon::ChevronLeft], [$next, $nextLabel, $isRtl ? Heroicon::ChevronLeft : Heroicon::ChevronRight]] as [$neighbour, $label, $icon])
         <x-filament::icon-button
             :tag="$neighbour ? 'a' : 'button'"
             :href="$neighbour?->url"

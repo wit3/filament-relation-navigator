@@ -12,8 +12,9 @@
 > **Documentation:** guides, configuration reference, upgrade guide and search on
 > **[wit3.github.io/filament-relation-navigator](https://wit3.github.io/filament-relation-navigator/)**.
 >
-> **Also in Italian:** the [documentation](https://wit3.github.io/filament-relation-navigator/it/)
-> and the [README](https://github.com/wit3/filament-relation-navigator/blob/main/README.it.md).
+> **In other languages:** the documentation in
+> [Italiano](https://wit3.github.io/filament-relation-navigator/it/) · [Español](https://wit3.github.io/filament-relation-navigator/es/) · [Português](https://wit3.github.io/filament-relation-navigator/pt/) · [Français](https://wit3.github.io/filament-relation-navigator/fr/) · [Deutsch](https://wit3.github.io/filament-relation-navigator/de/) · [中文](https://wit3.github.io/filament-relation-navigator/zh/) · [日本語](https://wit3.github.io/filament-relation-navigator/ja/) · [Русский](https://wit3.github.io/filament-relation-navigator/ru/) · [العربية](https://wit3.github.io/filament-relation-navigator/ar/).
+> Each one has its README in this repository too (`README.it.md`, `README.es.md`...).
 
 <!-- #region intro -->
 Give every relation manager of a Filament resource **its own page**, and jump
@@ -653,8 +654,13 @@ public function hasRelationNavigatorMobileMenu(): bool
 
 ### Translations
 
-English, Italian, Spanish, German, French, Brazilian Portuguese and Dutch.
-Publish the translations to change them or add a language:
+32 languages, with the same codes as Filament: Arabic, Bulgarian, Catalan,
+Chinese (simplified and traditional), Czech, Danish, Dutch, English, Finnish,
+French, German, Greek, Hebrew, Hungarian, Indonesian, Italian, Japanese,
+Korean, Norwegian, Persian, Polish, Portuguese (Portugal and Brazil),
+Romanian, Russian, Slovak, Spanish, Swedish, Turkish, Ukrainian and
+Vietnamese. In right to left languages the previous and next arrows turn
+around. Publish the translations to change them or add a language:
 
 ```bash
 php artisan vendor:publish --tag=filament-relation-navigator-translations

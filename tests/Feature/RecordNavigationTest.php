@@ -1,5 +1,6 @@
 <?php
 
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
@@ -172,6 +173,16 @@ describe('nested resources', function (): void {
 
         expect(RelationNavigator::getRememberedListKeys(PostResource::class))->toBeNull();
     });
+});
+
+it('points previous to the right in right to left languages', function (): void {
+    $chevron = fn (Heroicon $icon): string => \Filament\Support\generate_icon_html($icon)->toHtml();
+
+    app()->setLocale('ar');
+    $html = $this->get("/admin/authors/{$this->second->getKey()}")->assertOk()->getContent();
+    $navigation = str($html)->after('fi-relation-navigator-record-navigation')->before('</div>')->toString();
+
+    expect(strpos($navigation, $chevron(Heroicon::ChevronRight)))->toBeLessThan(strpos($navigation, $chevron(Heroicon::ChevronLeft)));
 });
 
 it('can be turned on for one page only', function (): void {

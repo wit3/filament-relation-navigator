@@ -51,3 +51,82 @@
         max-width: 500px;
     }
 }
+
+/*
+ * Right to left (Arabic). VitePress sets dir="rtl" but places the sidebar,
+ * the bar above it and the content with physical left and right: mirror them.
+ */
+html[dir='rtl'] .VPSidebar {
+    left: auto;
+    right: 0;
+    transform: translateX(100%);
+}
+
+html[dir='rtl'] .VPSidebar.open {
+    transform: translateX(0);
+}
+
+html[dir='rtl'] .VPLocalNav {
+    left: auto;
+    right: 0;
+}
+
+@media (min-width: 960px) {
+    html[dir='rtl'] .VPSidebar {
+        transform: translateX(0);
+    }
+
+    html[dir='rtl'] .VPContent.has-sidebar {
+        padding-left: 0;
+        padding-right: var(--vp-sidebar-width);
+    }
+
+    html[dir='rtl'] .VPNavBar.has-sidebar .title {
+        left: auto;
+        right: 0;
+    }
+
+    html[dir='rtl'] .VPNavBar.has-sidebar .content {
+        padding-left: 32px;
+        padding-right: var(--vp-sidebar-width);
+    }
+
+    html[dir='rtl'] .VPLocalNav.has-sidebar {
+        padding-left: 0;
+        padding-right: var(--vp-sidebar-width);
+    }
+}
+
+@media (min-width: 1440px) {
+    html[dir='rtl'] .VPSidebar {
+        padding-left: 0;
+        padding-right: max(32px, calc((100% - (var(--vp-layout-max-width) - 64px)) / 2));
+    }
+
+    html[dir='rtl'] .VPContent.has-sidebar {
+        padding-left: calc((100vw - var(--vp-layout-max-width)) / 2);
+        padding-right: calc((100vw - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width));
+    }
+
+    html[dir='rtl'] .VPNavBar.has-sidebar .title {
+        padding-left: 32px;
+        padding-right: max(32px, calc((100% - (var(--vp-layout-max-width) - 64px)) / 2));
+    }
+
+    html[dir='rtl'] .VPNavBar.has-sidebar .content {
+        padding-left: calc((100vw - var(--vp-layout-max-width)) / 2 + 32px);
+        padding-right: calc((100vw - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width));
+    }
+
+    html[dir='rtl'] .VPLocalNav.has-sidebar {
+        padding-left: 0;
+        padding-right: calc((100vw - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width));
+    }
+}
+
+/* Code reads left to right in every language. */
+html[dir='rtl'] div[class*='language-'],
+html[dir='rtl'] .vp-doc :not(pre) > code {
+    direction: ltr;
+    unicode-bidi: isolate;
+}
