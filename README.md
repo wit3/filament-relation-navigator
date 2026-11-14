@@ -201,6 +201,11 @@ Above the relation, a relation page can show part of the record's view,
 header actions and widgets. Define them on the resource for every relation
 page, or on a relation manager for its own page:
 
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-light.png" alt="A relation page with widgets, the customer card and a header action above the orders" width="880">
+</picture>
+
 ```php
 public static function relationPageHeader(Schema $schema): Schema
 {
@@ -291,7 +296,14 @@ an **Open as page** action in the header of its table, next to its title and
 before its own actions. It opens the relation manager's own page, or the
 page of its relation group when it has no page of its own. On a group's page
 the managers with a page of their own get the action too; on its own page a
-manager never links to itself. Turn it off where you need to:
+manager never links to itself.
+
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/open-as-page-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/open-as-page-light.png" alt="The Open as page action in the header of the Orders table, on the view page" width="880">
+</picture>
+
+Turn it off where you need to:
 
 ```php
 // config/filament-relation-navigator.php: everywhere
@@ -361,7 +373,10 @@ same URL, for a button of your own.
 <!-- #region previous-and-next-record -->
 Two buttons before the header actions open the previous or the next record
 **on the same page**: from a customer's invoices to the next customer's
-invoices. A record that cannot open that page opens on its first
+invoices.
+
+<img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/record-navigation.gif" alt="Previous and next record: from the invoices of one customer to the invoices of the next, with a tooltip naming the record" width="880">
+ A record that cannot open that page opens on its first
 page in the menu. They are off by default, since they add a few queries per
 render:
 
@@ -422,6 +437,11 @@ are.
 Global search results can link straight to the record's relation pages:
 search a customer, jump to its orders. Off by default, since it runs the
 relation managers' `canViewForRecord()` for every result:
+
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/global-search-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/global-search-light.png" alt="A customer in the global search results, with links to its orders, invoices, addresses and contacts" width="420">
+</picture>
 
 ```php
 // config/filament-relation-navigator.php

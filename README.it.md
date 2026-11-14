@@ -197,6 +197,11 @@ visualizzazione del record, azioni di testata e widget. Definiscili sulla
 resource per tutte le pagine di relazione, o su un relation manager per la
 sua pagina:
 
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-light.png" alt="Una pagina di relazione con widget, la scheda del cliente e un’azione di testata sopra gli ordini" width="880">
+</picture>
+
 ```php
 public static function relationPageHeader(Schema $schema): Schema
 {
@@ -288,8 +293,14 @@ una sua pagina riceve un'azione **Apri come pagina** nell'intestazione della
 tabella, accanto al titolo e prima delle sue azioni. Apre la pagina del
 relation manager, o quella del suo gruppo se non ne ha una propria. Sulla
 pagina di un gruppo l'azione compare anche sui manager che hanno una pagina
-propria; sulla sua pagina un manager non punta mai a se stesso. Spegnila dove
-serve:
+propria; sulla sua pagina un manager non punta mai a se stesso.
+
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/open-as-page-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/open-as-page-light.png" alt="L’azione Apri come pagina nell’intestazione della tabella Orders, sulla pagina di visualizzazione" width="880">
+</picture>
+
+Spegnila dove serve:
 
 ```php
 // config/filament-relation-navigator.php: ovunque
@@ -359,7 +370,10 @@ lo stesso URL, per un pulsante tuo.
 <!-- #region previous-and-next-record -->
 Due pulsanti prima delle azioni di testata aprono il record precedente o
 successivo **sulla stessa pagina**: dalle fatture di un cliente a quelle del
-cliente successivo. Un record che non può aprire quella pagina si apre sulla
+cliente successivo.
+
+<img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/record-navigation.gif" alt="Record precedente e successivo: dalle fatture di un cliente a quelle del successivo, con un tooltip che nomina il record" width="880">
+ Un record che non può aprire quella pagina si apre sulla
 sua prima pagina del menu. Sono spenti di default, perché aggiungono qualche
 query a ogni render:
 
@@ -421,6 +435,11 @@ I risultati della ricerca globale possono portare direttamente alle pagine
 delle relazioni del record: cerchi un cliente, salti ai suoi ordini. Spenta
 di default, perché esegue il `canViewForRecord()` dei relation manager per
 ogni risultato:
+
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/global-search-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/global-search-light.png" alt="Un cliente tra i risultati della ricerca globale, con i link a ordini, fatture, indirizzi e contatti" width="420">
+</picture>
 
 ```php
 // config/filament-relation-navigator.php

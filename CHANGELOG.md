@@ -7,6 +7,7 @@ All notable changes to `filament-relation-navigator` are documented here.
 ### Documentation
 
 - Documentation for every minor version, at `/vX.Y/` and in the versions menu: from its own site where it had one (1.4 onwards), else its README and changelog.
+- Screenshots of global search links, "Open as page" and the relation page header, and a GIF of previous and next record, in the README and the docs.
 - A banner on documentation of versions with a published security advisory: fixed and not dismissible for critical and high, dismissible for medium and low. Older versions without advisories say that a newer one exists.
 
 ## 1.6.1 - 2026-11-14
