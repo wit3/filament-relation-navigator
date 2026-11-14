@@ -57,6 +57,7 @@ export default defineConfig({
                     { text: 'Open as page', link: '/guide/open-as-page' },
                     { text: 'Previous and next record', link: '/guide/previous-and-next-record' },
                     { text: 'Links to relation manager tabs', link: '/guide/links-to-relation-manager-tabs' },
+                    { text: 'Global search', link: '/guide/global-search' },
                     { text: 'Native record sub-navigation', link: '/guide/native-record-sub-navigation' },
                 ],
             },

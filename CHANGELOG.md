@@ -10,6 +10,7 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ### Added
 
+- **Global search links to relation pages** (config `global_search_actions`: `false` by default, `true`, or the most links per result; resource `hasRelationPageGlobalSearchActions()`; relation manager `hasRelationPageGlobalSearchAction()` or `$hasRelationPageGlobalSearchAction`). `HasRelationPages` adds them to `getGlobalSearchResultActions()`; `RelationNavigator::getGlobalSearchResultActions()` for resources that define it themselves.
 - **"Open as page" on relation group pages**: a relation manager shown on its group's page links to its own page when it has one.
 - **Title, subheading and breadcrumb of one relation page** from its relation manager, given the owner record: `getRelationPageTitle()`, `getRelationPageSubheading()`, `getRelationPageBreadcrumb()` (static, optional, `null` keeps the default). The menu keeps the tab title.
 

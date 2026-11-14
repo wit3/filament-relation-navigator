@@ -344,6 +344,49 @@ Tabs without a relation page, or that the record cannot see, stay where they
 are.
 <!-- #endregion links-to-relation-manager-tabs -->
 
+## Global search
+
+<!-- #region global-search -->
+Global search results can link straight to the record's relation pages:
+search a customer, jump to its orders. Off by default, since it runs the
+relation managers' `canViewForRecord()` for every result:
+
+```php
+// config/filament-relation-navigator.php
+'global_search_actions' => 3, // true for all of them, or the most links per result
+```
+
+```php
+// On a resource: on or off for this resource only
+public static function hasRelationPageGlobalSearchActions(): bool
+{
+    return true;
+}
+```
+
+```php
+// On a relation manager (with InteractsWithRelationPage): never linked
+protected static bool $hasRelationPageGlobalSearchAction = false;
+```
+
+Resources with `HasRelationPages` get the links by themselves. A resource
+that defines `getGlobalSearchResultActions()` itself, or that opts in only
+from its relation managers, merges them in:
+
+```php
+public static function getGlobalSearchResultActions(Model $record): array
+{
+    return [
+        // ...your actions
+        ...RelationNavigator::getGlobalSearchResultActions(static::class, $record),
+    ];
+}
+```
+
+The links follow the same rules as the menu: only the relation pages the
+user can open.
+<!-- #endregion global-search -->
+
 ## Menu presets
 
 <!-- #region menu-presets -->

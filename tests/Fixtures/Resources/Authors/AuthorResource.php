@@ -41,6 +41,11 @@ class AuthorResource extends Resource
         return static::$options['hasRelationPageLinks'] ?? true;
     }
 
+    public static function hasRelationPageGlobalSearchActions(): bool
+    {
+        return static::$options['hasRelationPageGlobalSearchActions'] ?? (bool) config('filament-relation-navigator.global_search_actions', false);
+    }
+
     /**
      * Resource-level options of the menu: the option, else the config.
      */

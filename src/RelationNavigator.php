@@ -408,6 +408,84 @@ final class RelationNavigator
     }
 
     /**
+     * Links to the record's relation pages under a global search result
+     * (config `global_search_actions`: false, true or the most links to
+     * show). Resources with HasRelationPages get them by themselves; a
+     * resource that defines getGlobalSearchResultActions() merges them in:
+     *
+     *     public static function getGlobalSearchResultActions(Model $record): array
+     *     {
+     *         return [...RelationNavigator::getGlobalSearchResultActions(static::class, $record)];
+     *     }
+     *
+     * @param  class-string<resource>  $resource
+     * @return array<Action>
+     */
+    public static function getGlobalSearchResultActions(string $resource, Model $record): array
+    {
+        // Global search calls this for every result: leave early.
+        $limit = self::getGlobalSearchActionsLimit($resource);
+
+        if ($limit === 0) {
+            return [];
+        }
+
+        $relationPage = self::getRelationPageClass($resource);
+
+        if (! $relationPage || ! $relationPage::canAccess(['record' => $record])) {
+            return [];
+        }
+
+        $contextPageClass = $relationPage::getContextPageClass();
+        $actions = [];
+
+        foreach ($relationPage::getRelationPageDefinitions() as $slug => $definition) {
+            if (count($actions) >= $limit) {
+                break;
+            }
+
+            $managerClass = $definition->getManagerClass();
+
+            if ($managerClass && method_exists($managerClass, 'hasRelationPageGlobalSearchAction') && ! $managerClass::hasRelationPageGlobalSearchAction()) {
+                continue;
+            }
+
+            $pageKey = $relationPage::getPageKey((string) $slug);
+
+            if (! self::hasRoute($resource, $pageKey) || ! $definition->canViewForRecord($record, $contextPageClass)) {
+                continue;
+            }
+
+            $actions[] = Action::make('relationNavigator'.Str::studly((string) $slug))
+                ->label($definition->getTitle($record, $contextPageClass))
+                ->url($resource::getUrl($pageKey, ['record' => $record], shouldGuessMissingParameters: true));
+        }
+
+        return $actions;
+    }
+
+    /**
+     * How many relation links a global search result gets: 0 when off. The
+     * resource can turn them on or off with hasRelationPageGlobalSearchActions().
+     *
+     * @param  class-string<resource>  $resource
+     */
+    private static function getGlobalSearchActionsLimit(string $resource): int
+    {
+        $config = config('filament-relation-navigator.global_search_actions', false);
+
+        $enabled = method_exists($resource, 'hasRelationPageGlobalSearchActions')
+            ? (bool) $resource::hasRelationPageGlobalSearchActions()
+            : ($config !== false && $config !== null && $config !== 0);
+
+        if (! $enabled) {
+            return 0;
+        }
+
+        return (is_int($config) && $config > 0) ? $config : PHP_INT_MAX;
+    }
+
+    /**
      * The "Open as page" action in the header of a relation manager's table,
      * on the view and edit pages. Added by the package to every relation
      * manager that has its own page; see {@see self::hasRelationPageAction()}.

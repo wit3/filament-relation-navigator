@@ -79,6 +79,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Global search
+    |--------------------------------------------------------------------------
+    |
+    | Links to the record's relation pages under its global search results:
+    | false, true, or the most links to show per result. Per resource:
+    | hasRelationPageGlobalSearchActions(); per relation manager:
+    | hasRelationPageGlobalSearchAction(). They run the relation managers'
+    | canViewForRecord() for every result.
+    |
+    */
+
+    'global_search_actions' => false,
+
+    /*
+    |--------------------------------------------------------------------------
     | Previous and next record
     |--------------------------------------------------------------------------
     |

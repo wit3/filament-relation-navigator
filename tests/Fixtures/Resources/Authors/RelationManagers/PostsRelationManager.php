@@ -17,6 +17,16 @@ class PostsRelationManager extends RelationManager
 
     protected static string|\BackedEnum|null $icon = Heroicon::OutlinedDocumentText;
 
+    /**
+     * Switched by the global search tests.
+     */
+    public static bool $globalSearchAction = true;
+
+    public static function hasRelationPageGlobalSearchAction(): bool
+    {
+        return static::$globalSearchAction;
+    }
+
     public static function getBadge(Model $ownerRecord, string $pageClass): ?string
     {
         return $ownerRecord instanceof Author ? (string) $ownerRecord->posts()->count() : null;
