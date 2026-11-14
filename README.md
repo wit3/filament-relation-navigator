@@ -9,7 +9,11 @@
     <a href="LICENSE.md"><img src="https://img.shields.io/packagist/l/wit3/filament-relation-navigator.svg?style=flat-square" alt="License"></a>
 </p>
 
-**[Read the documentation →](https://wit3.github.io/filament-relation-navigator/)** Guides, configuration reference, upgrade guide and search. [In italiano](https://wit3.github.io/filament-relation-navigator/it/).
+> **Documentation:** guides, configuration reference, upgrade guide and search on
+> **[wit3.github.io/filament-relation-navigator](https://wit3.github.io/filament-relation-navigator/)**.
+>
+> **Also in Italian:** the [documentation](https://wit3.github.io/filament-relation-navigator/it/)
+> and the [README](https://github.com/wit3/filament-relation-navigator/blob/main/README.it.md).
 
 <!-- #region intro -->
 Give every relation manager of a Filament resource **its own page**, and jump

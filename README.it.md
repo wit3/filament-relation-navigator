@@ -1,6 +1,10 @@
 # Relation Navigator per Filament
 
-**[Leggi la documentazione →](https://wit3.github.io/filament-relation-navigator/it/)** Guide, configurazione, aggiornamenti e ricerca. [English](README.md).
+> **Documentazione:** guide, configurazione, aggiornamenti e ricerca su
+> **[wit3.github.io/filament-relation-navigator/it](https://wit3.github.io/filament-relation-navigator/it/)**.
+>
+> **In inglese:** la [documentazione](https://wit3.github.io/filament-relation-navigator/)
+> e il [README](https://github.com/wit3/filament-relation-navigator/blob/main/README.md) originale.
 
 <!-- #region intro -->
 Dai a ogni relation manager di una resource di Filament **una pagina tutta
