@@ -12,6 +12,7 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorHistory;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorRelationPage;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorStats;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorTimeline;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\EditAuthor;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ListAuthors;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
@@ -19,6 +20,7 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationMana
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\NotesRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PostsRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PublishedCommentsRelationManager;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\TimelineRelationManager;
 
 class AuthorResource extends Resource
 {
@@ -52,6 +54,7 @@ class AuthorResource extends Resource
             PublishedCommentsRelationManager::class,
             'notes' => NotesRelationManager::class,
             HiddenPageRelationManager::class,
+            TimelineRelationManager::class,
             'activity' => RelationGroup::make('Activity', [
                 PostsRelationManager::class,
                 PublishedCommentsRelationManager::class,
@@ -67,6 +70,7 @@ class AuthorResource extends Resource
             'edit' => EditAuthor::route('/{record}/edit'),
             'stats' => AuthorStats::route('/{record}/stats'),
             'history' => AuthorHistory::route('/{record}/history'),
+            'authorTimeline' => AuthorTimeline::route('/{record}/timeline'),
             ...AuthorRelationPage::relationRoutes(),
         ];
     }

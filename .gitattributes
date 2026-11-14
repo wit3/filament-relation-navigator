@@ -7,3 +7,6 @@
 /phpunit.xml.dist   export-ignore
 /pint.json          export-ignore
 /CHANGELOG.md       export-ignore
+/phpstan.neon.dist  export-ignore
+/package.json       export-ignore
+/package-lock.json  export-ignore

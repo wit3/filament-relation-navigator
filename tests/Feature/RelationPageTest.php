@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 use Wit3\FilamentRelationNavigator\RelationNavigator;
@@ -27,7 +28,7 @@ beforeEach(function (): void {
 
 it('derives one slug per relation manager', function (): void {
     expect(array_keys(AuthorRelationPage::getRelationPageDefinitions()))
-        ->toBe(['posts', 'published-comments', 'notes', 'activity']);
+        ->toBe(['posts', 'published-comments', 'notes', 'timeline', 'activity']);
 });
 
 it('registers one named route per relation page, after the record pages', function (): void {
@@ -146,4 +147,31 @@ it('puts in the menu the custom record pages that use the trait, and only those'
     $this->get("/admin/authors/{$id}/history")
         ->assertOk()
         ->assertDontSee('fi-relation-navigator', escape: false);
+});
+
+it('never replaces a page of the resource that has the same URL', function (): void {
+    $id = $this->author->getKey();
+
+    expect(Route::has('filament.admin.resources.authors.relations.timeline'))->toBeFalse();
+
+    $this->get("/admin/authors/{$id}/timeline")
+        ->assertOk()
+        ->assertSee('Author timeline page');
+
+    expect(collect(RelationNavigator::getItems(AuthorResource::class, $this->author))->pluck('key'))
+        ->not->toContain('relations.timeline');
+});
+
+it('computes each badge once per request', function (): void {
+    $queries = 0;
+    DB::listen(function ($query) use (&$queries): void {
+        if (str_contains($query->sql, 'count(*)') && str_contains($query->sql, '"posts"')) {
+            $queries++;
+        }
+    });
+
+    RelationNavigator::getItems(AuthorResource::class, $this->author);
+    RelationNavigator::getItems(AuthorResource::class, $this->author, 'relations.posts');
+
+    expect($queries)->toBe(1);
 });

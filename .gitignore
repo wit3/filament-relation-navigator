@@ -4,3 +4,6 @@
 /.phpunit.result.cache
 /workbench/vendor
 .DS_Store
+/.phpstan.cache
+/node_modules
+/tests/Browser/Screenshots

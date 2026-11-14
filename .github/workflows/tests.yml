@@ -30,6 +30,10 @@ jobs:
           extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite, intl, fileinfo
           coverage: none
 
+      - name: Drop the browser plugin on Pest 3
+        if: matrix.pest == '3.*'
+        run: composer remove --dev pestphp/pest-plugin-browser --no-update --no-interaction
+
       - name: Install dependencies
         run: |
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "filament/filament:${{ matrix.filament }}" --no-interaction --no-update
@@ -37,4 +41,34 @@ jobs:
           composer update --prefer-dist --no-interaction --with-all-dependencies
 
       - name: Run tests
-        run: vendor/bin/pest
+        run: vendor/bin/pest --testsuite=Feature
+
+  browser:
+    runs-on: ubuntu-latest
+
+    name: Browser · PHP 8.4 · Laravel 13 · Filament 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite, intl, fileinfo
+          coverage: none
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - run: composer install --prefer-dist --no-interaction
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Publish Filament's assets
+        run: vendor/bin/testbench filament:assets
+
+      - name: Run browser tests
+        run: vendor/bin/pest --testsuite=Browser

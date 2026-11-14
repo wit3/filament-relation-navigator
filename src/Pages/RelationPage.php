@@ -152,14 +152,34 @@ abstract class RelationPage extends Page
         foreach (array_keys(static::getRelationPageDefinitions()) as $slug) {
             $registrations[static::getPageKey($slug)] = new PageRegistration(
                 page: static::class,
-                route: fn (Panel $panel): Route => RouteFacade::get(static::getRelationRoutePath($slug), static::class)
-                    ->defaults(static::ROUTE_PARAMETER, $slug)
-                    ->middleware(static::getRouteMiddleware($panel))
-                    ->withoutMiddleware(static::getWithoutRouteMiddleware($panel)),
+                route: function (Panel $panel) use ($slug): ?Route {
+                    // A page of the resource with the same URL wins: never replace it.
+                    if (self::isRouteTaken(static::getRelationRoutePath($slug))) {
+                        return null;
+                    }
+
+                    return RouteFacade::get(static::getRelationRoutePath($slug), static::class)
+                        ->defaults(static::ROUTE_PARAMETER, $slug)
+                        ->middleware(static::getRouteMiddleware($panel))
+                        ->withoutMiddleware(static::getWithoutRouteMiddleware($panel));
+                },
             );
         }
 
         return $registrations;
+    }
+
+    /**
+     * Whether a GET route already answers this path in the current route
+     * group (resource slug, cluster, parent resource, tenant).
+     */
+    private static function isRouteTaken(string $path): bool
+    {
+        $groupStack = RouteFacade::getGroupStack();
+        $domain = (string) (end($groupStack)['domain'] ?? '');
+        $uri = trim(trim(RouteFacade::getLastGroupPrefix(), '/').'/'.trim($path, '/'), '/');
+
+        return isset(RouteFacade::getRoutes()->getRoutesByMethod()['GET'][$domain.$uri]);
     }
 
     public static function getRelationRoutePath(string $slug): string
@@ -216,8 +236,8 @@ abstract class RelationPage extends Page
             return $key;
         }
 
-        if ($manager instanceof RelationGroup) {
-            return Str::slug($manager->getLabel());
+        if ($manager instanceof RelationGroup || $managerClass === null) {
+            return Str::slug($manager instanceof RelationGroup ? $manager->getLabel() : (string) $key);
         }
 
         return Str::kebab($managerClass::getRelationshipName());
@@ -293,6 +313,8 @@ abstract class RelationPage extends Page
         $reserved = [];
 
         foreach ($pageKeys as $pageKey) {
+            $pageKey = (string) $pageKey;
+
             if (str_starts_with($pageKey, static::PAGE_KEY_PREFIX)) {
                 continue;
             }
@@ -433,7 +455,7 @@ abstract class RelationPage extends Page
         // a relation page without it would lose the way back to its record.
         if (! static::getResource()::hasRecordTitle()) {
             $recordUrl = $this->getRecordBreadcrumbUrl();
-            $last = array_pop($breadcrumbs);
+            $last = array_pop($breadcrumbs) ?? $this->getBreadcrumb();
 
             $recordTitle = $this->getOwnerRecordTitle() ?? $this->getRecordTitle();
 
@@ -588,10 +610,14 @@ abstract class RelationPage extends Page
     public function getRelationManagerComponent(): Component
     {
         $definition = $this->getRelationPageDefinition();
+
+        abort_if($definition === null, 404);
+
         $ownerRecord = $this->getRecord();
         $contextPageClass = static::getContextPageClass();
+        $manager = $definition->manager;
 
-        if ($definition->isGroup()) {
+        if ($manager instanceof RelationGroup) {
             $managers = $definition->getGroup($ownerRecord, $contextPageClass)->getManagers();
 
             return Group::make(collect($managers)
@@ -600,7 +626,7 @@ abstract class RelationPage extends Page
                 ->all());
         }
 
-        return $this->makeRelationManagerLivewireComponent($definition->manager, $this->relationPage);
+        return $this->makeRelationManagerLivewireComponent($manager, $this->relationPage);
     }
 
     /**
@@ -608,7 +634,7 @@ abstract class RelationPage extends Page
      */
     protected function makeRelationManagerLivewireComponent(string|RelationManagerConfiguration $manager, string $key): Livewire
     {
-        $managerClass = RelationNavigator::normalizeManagerClass($manager);
+        $managerClass = ($manager instanceof RelationManagerConfiguration) ? $manager->relationManager : $manager;
 
         $properties = ($manager instanceof RelationManagerConfiguration)
             ? [...$managerClass::getDefaultProperties(), ...$manager->getProperties()]

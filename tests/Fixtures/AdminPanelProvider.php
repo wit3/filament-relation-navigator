@@ -27,7 +27,10 @@ class AdminPanelProvider extends PanelProvider
                 Resources\AutoAuthors\AutoAuthorResource::class,
                 Resources\OptInAuthors\OptInAuthorResource::class,
                 Resources\NoPagesAuthors\NoPagesAuthorResource::class,
+                Resources\Posts\PostResource::class,
+                Resources\ClusterAuthors\ClusterAuthorResource::class,
             ])
+            ->pages([Clusters\Settings::class])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

@@ -32,6 +32,7 @@ class AutoAuthorResource extends Resource
         ]);
     }
 
+    /** @return array<Action> */
     public static function getRelationPageHeaderActions(): array
     {
         return [
@@ -41,6 +42,7 @@ class AutoAuthorResource extends Resource
         ];
     }
 
+    /** @return array<class-string> */
     public static function getRelationPageHeaderWidgets(): array
     {
         return [AuthorStats::class];

@@ -11,6 +11,7 @@ use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\RelationManagers\RelationManagerConfiguration;
 use Filament\Resources\Resource;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -93,6 +94,11 @@ final class RelationNavigator
 
         $page = GeneratedRelationPages::classFor($resource);
 
+        // Autoloads (and writes) the generated class.
+        if (! is_subclass_of($page, RelationPage::class)) {
+            return null;
+        }
+
         return filled($page::getRelationPageDefinitions()) ? $page : null;
     }
 
@@ -131,7 +137,7 @@ final class RelationNavigator
     public static function registerRoutes(Panel $panel): void
     {
         foreach ($panel->getResources() as $resource) {
-            $page = self::getGeneratedRelationPageClass($resource);
+            $page = is_subclass_of($resource, Resource::class) ? self::getGeneratedRelationPageClass($resource) : null;
 
             if (! $page) {
                 continue;
@@ -163,7 +169,7 @@ final class RelationNavigator
 
                 $registered[$resource] = true;
 
-                if ($page = self::getGeneratedRelationPageClass($resource)) {
+                if (is_subclass_of($resource, Resource::class) && ($page = self::getGeneratedRelationPageClass($resource))) {
                     Livewire::component(self::getLivewireComponentName($page), $page);
                 }
             }
@@ -206,9 +212,11 @@ final class RelationNavigator
                 continue;
             }
 
+            $label = $pageClass::getNavigationLabel();
+
             $items[] = new RelationNavigatorItem(
                 key: $pageKey,
-                label: (string) $pageClass::getNavigationLabel(),
+                label: $label instanceof Htmlable ? $label->toHtml() : $label,
                 url: $resource::getUrl($pageKey, ['record' => $record], shouldGuessMissingParameters: true),
                 icon: $pageClass::getNavigationIcon(),
                 isActive: $activePageKey === $pageKey,
@@ -261,12 +269,14 @@ final class RelationNavigator
      */
     public static function getRecordSubNavigation(Page $page): array
     {
-        if (! method_exists($page, 'getRecord')) {
+        $resource = $page::getResource();
+
+        if (! method_exists($page, 'getRecord') || ! is_subclass_of($resource, Resource::class)) {
             return [];
         }
 
         $items = self::getItems(
-            $page::getResource(),
+            $resource,
             $page->getRecord(),
             self::getActivePageKey($page),
         );

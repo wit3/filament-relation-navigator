@@ -3,6 +3,7 @@
 namespace Wit3\FilamentRelationNavigator\Commands;
 
 use Filament\Facades\Filament;
+use Filament\Resources\Resource;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
@@ -18,7 +19,8 @@ class MakeRelationPageCommand extends Command
 
     public function handle(Filesystem $files): int
     {
-        $resource = $this->resolveResource((string) $this->argument('resource'));
+        $argument = $this->argument('resource');
+        $resource = is_string($argument) ? $this->resolveResource($argument) : null;
 
         if (! $resource) {
             $this->components->error('Resource not found. Pass its full class name, e.g. App\\Filament\\Resources\\Users\\UserResource.');
@@ -29,7 +31,15 @@ class MakeRelationPageCommand extends Command
         $resourceBasename = class_basename($resource);
         $class = Str::beforeLast($resourceBasename, 'Resource').'RelationPage';
         $namespace = Str::beforeLast($resource, '\\').'\\Pages';
-        $path = dirname((new ReflectionClass($resource))->getFileName())."/Pages/{$class}.php";
+        $resourcePath = (new ReflectionClass($resource))->getFileName();
+
+        if ($resourcePath === false) {
+            $this->components->error("Cannot find the file of [{$resource}].");
+
+            return self::FAILURE;
+        }
+
+        $path = dirname($resourcePath)."/Pages/{$class}.php";
 
         if ($files->exists($path) && (! $this->option('force'))) {
             $this->components->error("[{$path}] already exists. Use --force to overwrite it.");
@@ -58,11 +68,14 @@ class MakeRelationPageCommand extends Command
         return self::SUCCESS;
     }
 
+    /**
+     * @return class-string<resource> | null
+     */
     protected function resolveResource(string $resource): ?string
     {
         $resource = ltrim($resource, '\\');
 
-        if (class_exists($resource)) {
+        if (is_subclass_of($resource, Resource::class)) {
             return $resource;
         }
 
@@ -70,7 +83,7 @@ class MakeRelationPageCommand extends Command
 
         foreach (Filament::getPanels() as $panel) {
             foreach ($panel->getResources() as $panelResource) {
-                if (class_basename($panelResource) === $name) {
+                if ((class_basename($panelResource) === $name) && is_subclass_of($panelResource, Resource::class)) {
                     return $panelResource;
                 }
             }

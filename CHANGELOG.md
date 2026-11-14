@@ -2,6 +2,25 @@
 
 All notable changes to `filament-relation-navigator` are documented here.
 
+## 1.0.1 - 2026-11-14
+
+Bug fixes and tests. No API changes.
+
+### Fixed
+
+- With a relation page class you wrote, a relation whose URL equals one of the resource's own pages (for example `relationRoutes()` spread after `'timeline' => ...::route('/{record}/timeline')`) replaced that page. The resource's page now always wins and that relation has no page. Generated relation pages were not affected.
+- Relation managers' badges are computed once per request, even when the breadcrumb menu and the record sub-navigation both show them.
+- A menu preset pointing to a missing view now says which config option to check, instead of a generic "View not found".
+
+### Changed
+
+- `HasRelationNavigator` assumes the page has a record, as documented. On a page without a record it did nothing before; now it fails like any other record method.
+
+### Internal
+
+- Tests for nested resources, clusters, tenancy and SPA mode, and browser tests for the searchable menu.
+- PHPStan (Larastan) at level 8 in CI.
+
 ## 1.0.0 - 2026-11-14
 
 First public release.

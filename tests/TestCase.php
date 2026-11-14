@@ -20,6 +20,7 @@ use Orchestra\Testbench\TestCase as Orchestra;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
 use Wit3\FilamentRelationNavigator\FilamentRelationNavigatorServiceProvider;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\AdminPanelProvider;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\AppPanelProvider;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
 
 class TestCase extends Orchestra
@@ -47,6 +48,7 @@ class TestCase extends Orchestra
             WidgetsServiceProvider::class,
             FilamentRelationNavigatorServiceProvider::class,
             AdminPanelProvider::class,
+            AppPanelProvider::class,
         ], fn (string $provider): bool => class_exists($provider));
     }
 
@@ -54,6 +56,8 @@ class TestCase extends Orchestra
     {
         $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
         $app['config']->set('database.default', 'testing');
+        $app['config']->set('cache.default', 'array');
+        $app['config']->set('session.driver', 'array');
         $app['config']->set('auth.providers.users.model', User::class);
         $app['config']->set('view.compiled', sys_get_temp_dir().'/frn-views-'.md5(__DIR__));
     }
@@ -69,8 +73,28 @@ class TestCase extends Orchestra
             $table->timestamps();
         });
 
+        Schema::create('teams', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name');
+            $table->string('slug')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('team_user', function (Blueprint $table): void {
+            $table->foreignId('team_id');
+            $table->foreignId('user_id');
+        });
+
+        Schema::create('revisions', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('post_id');
+            $table->string('note');
+            $table->timestamps();
+        });
+
         Schema::create('authors', function (Blueprint $table): void {
             $table->id();
+            $table->foreignId('team_id')->nullable();
             $table->string('name');
             $table->timestamps();
         });

@@ -17,8 +17,16 @@ class MakeMenuPresetCommand extends Command
 
     public function handle(Filesystem $files): int
     {
-        $name = Str::kebab((string) $this->argument('name'));
-        $from = (string) $this->option('from');
+        $name = $this->argument('name');
+        $from = $this->option('from');
+
+        if (! is_string($name) || ! is_string($from)) {
+            $this->components->error('Pass the preset name, and --from=simple or --from=github.');
+
+            return self::FAILURE;
+        }
+
+        $name = Str::kebab($name);
         $source = __DIR__."/../../resources/views/menu/{$from}.blade.php";
 
         if (! $files->exists($source)) {

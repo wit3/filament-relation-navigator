@@ -106,3 +106,12 @@ it('turns the badges off from the config', function (): void {
 
     expect(collect($page->getRelationNavigatorItems())->firstWhere('key', 'relations.posts')->badge)->toBeNull();
 });
+
+it('explains a preset that points to a missing view', function (): void {
+    config()->set('filament-relation-navigator.menu.preset', 'does-not-exist');
+
+    $this->withoutExceptionHandling();
+
+    expect(fn () => $this->get("/admin/authors/{$this->author->getKey()}"))
+        ->toThrow('does not exist. Check `filament-relation-navigator.menu.preset`');
+});

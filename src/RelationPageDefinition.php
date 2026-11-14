@@ -2,16 +2,20 @@
 
 namespace Wit3\FilamentRelationNavigator;
 
+use Closure;
 use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\RelationManagers\RelationManagerConfiguration;
 use Illuminate\Database\Eloquent\Model;
+use LogicException;
 
 /**
  * One entry of a resource's `getRelations()` that gets its own page.
  */
 final class RelationPageDefinition
 {
+    private const MEMO_KEY = 'filament-relation-navigator.memo';
+
     /**
      * @param  class-string<RelationManager> | RelationGroup | RelationManagerConfiguration  $manager
      */
@@ -40,15 +44,30 @@ final class RelationPageDefinition
             return (bool) count($this->getGroup($ownerRecord, $pageClass)->getManagers());
         }
 
-        return $this->getManagerClass()::canViewForRecord($ownerRecord, $pageClass);
+        return $this->managerClass()::canViewForRecord($ownerRecord, $pageClass);
     }
 
     public function getGroup(Model $ownerRecord, string $pageClass): RelationGroup
     {
-        /** @var RelationGroup $group */
-        $group = clone $this->manager;
+        if (! $this->manager instanceof RelationGroup) {
+            throw new LogicException("The relation page [{$this->slug}] is not a relation group.");
+        }
 
-        return $group->ownerRecord($ownerRecord)->pageClass($pageClass);
+        return (clone $this->manager)->ownerRecord($ownerRecord)->pageClass($pageClass);
+    }
+
+    /**
+     * @return class-string<RelationManager>
+     */
+    private function managerClass(): string
+    {
+        $managerClass = $this->getManagerClass();
+
+        if ($managerClass === null) {
+            throw new LogicException("The relation page [{$this->slug}] is a relation group, not a relation manager.");
+        }
+
+        return $managerClass;
     }
 
     public function getTitle(Model $ownerRecord, string $pageClass): string
@@ -57,7 +76,7 @@ final class RelationPageDefinition
             return $this->getGroup($ownerRecord, $pageClass)->getLabel();
         }
 
-        return $this->getManagerClass()::getTitle($ownerRecord, $pageClass);
+        return $this->managerClass()::getTitle($ownerRecord, $pageClass);
     }
 
     public function getIcon(Model $ownerRecord, string $pageClass): mixed
@@ -66,16 +85,22 @@ final class RelationPageDefinition
             return $this->getGroup($ownerRecord, $pageClass)->getIcon();
         }
 
-        return $this->getManagerClass()::getIcon($ownerRecord, $pageClass);
+        return $this->managerClass()::getIcon($ownerRecord, $pageClass);
     }
 
+    /**
+     * Badges often count records: within one request (menu, sub-navigation)
+     * each one is computed once.
+     */
     public function getBadge(Model $ownerRecord, string $pageClass): ?string
     {
-        if ($this->manager instanceof RelationGroup) {
-            return $this->getGroup($ownerRecord, $pageClass)->getBadge();
-        }
+        return $this->remember('badge', $ownerRecord, $pageClass, function () use ($ownerRecord, $pageClass): ?string {
+            if ($this->manager instanceof RelationGroup) {
+                return $this->getGroup($ownerRecord, $pageClass)->getBadge();
+            }
 
-        return $this->getManagerClass()::getBadge($ownerRecord, $pageClass);
+            return $this->managerClass()::getBadge($ownerRecord, $pageClass);
+        });
     }
 
     /**
@@ -83,10 +108,29 @@ final class RelationPageDefinition
      */
     public function getBadgeColor(Model $ownerRecord, string $pageClass): string|array|null
     {
-        if ($this->manager instanceof RelationGroup) {
-            return $this->getGroup($ownerRecord, $pageClass)->getBadgeColor();
+        return $this->remember('badgeColor', $ownerRecord, $pageClass, function () use ($ownerRecord, $pageClass): string|array|null {
+            if ($this->manager instanceof RelationGroup) {
+                return $this->getGroup($ownerRecord, $pageClass)->getBadgeColor();
+            }
+
+            return $this->managerClass()::getBadgeColor($ownerRecord, $pageClass);
+        });
+    }
+
+    /**
+     * A per-request memo, kept on the request so it never outlives it (Octane).
+     */
+    private function remember(string $what, Model $ownerRecord, string $pageClass, Closure $callback): mixed
+    {
+        $attributes = request()->attributes;
+        $memo = $attributes->get(self::MEMO_KEY, []);
+        $key = implode('|', [$what, $this->slug, $ownerRecord::class, $ownerRecord->getKey(), $pageClass]);
+
+        if (! array_key_exists($key, $memo)) {
+            $memo[$key] = $callback();
+            $attributes->set(self::MEMO_KEY, $memo);
         }
 
-        return $this->getManagerClass()::getBadgeColor($ownerRecord, $pageClass);
+        return $memo[$key];
     }
 }

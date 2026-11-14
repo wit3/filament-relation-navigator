@@ -24,7 +24,7 @@ class OptInAuthorResource extends Resource
      */
     public static function getRecordTitle(?Model $record): string|Htmlable|null
     {
-        return $record ? "Author {$record->name}" : null;
+        return $record instanceof Author ? "Author {$record->name}" : null;
     }
 
     public static function infolist(Schema $schema): Schema

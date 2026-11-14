@@ -7,6 +7,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 
 class PostsRelationManager extends RelationManager
 {
@@ -18,7 +19,7 @@ class PostsRelationManager extends RelationManager
 
     public static function getBadge(Model $ownerRecord, string $pageClass): ?string
     {
-        return (string) $ownerRecord->posts()->count();
+        return $ownerRecord instanceof Author ? (string) $ownerRecord->posts()->count() : null;
     }
 
     public function table(Table $table): Table

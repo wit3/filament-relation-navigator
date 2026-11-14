@@ -2,8 +2,11 @@
 
 namespace Wit3\FilamentRelationNavigator\Concerns;
 
+use Filament\Resources\Resource;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Support\HtmlString;
+use InvalidArgumentException;
 use Wit3\FilamentRelationNavigator\RelationNavigator;
 use Wit3\FilamentRelationNavigator\RelationNavigatorItem;
 
@@ -76,7 +79,7 @@ trait HasRelationNavigator
 
     public function hasRelationNavigator(): bool
     {
-        return method_exists($this, 'getRecord') && $this->hasRecord() && $this->getRecord()->exists;
+        return $this->hasRecord() && $this->getRecord()->exists;
     }
 
     /**
@@ -105,6 +108,23 @@ trait HasRelationNavigator
         return (bool) config('filament-relation-navigator.menu.searchable', false);
     }
 
+    /**
+     * The menu view, checked: it comes from the config or from a page
+     * override, so a typo gets a clear message.
+     *
+     * @return view-string
+     */
+    private function resolveRelationNavigatorView(): string
+    {
+        $view = $this->getRelationNavigatorView();
+
+        if (! app(ViewFactory::class)->exists($view)) {
+            throw new InvalidArgumentException("The breadcrumb menu view [{$view}] does not exist. Check `filament-relation-navigator.menu.preset` and `menu.presets`, or getRelationNavigatorPreset() on [".static::class.'].');
+        }
+
+        return $view;
+    }
+
     public function getRelationNavigatorView(): string
     {
         $preset = $this->getRelationNavigatorPreset();
@@ -128,8 +148,14 @@ trait HasRelationNavigator
      */
     public function getRelationNavigatorItems(): array
     {
+        $resource = static::getResource();
+
+        if (! is_subclass_of($resource, Resource::class)) {
+            return [];
+        }
+
         return RelationNavigator::getItems(
-            static::getResource(),
+            $resource,
             $this->getRecord(),
             $this->getRelationNavigatorActivePageKey(),
             $this->hasRelationNavigatorBadges(),
@@ -141,7 +167,7 @@ trait HasRelationNavigator
      */
     protected function renderRelationNavigator(string|Htmlable $label, array $items): Htmlable
     {
-        return new HtmlString(view($this->getRelationNavigatorView(), [
+        return new HtmlString(app(ViewFactory::class)->make($this->resolveRelationNavigatorView(), [
             'label' => $label,
             'items' => $items,
             'heading' => __('filament-relation-navigator::navigator.heading'),

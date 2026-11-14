@@ -391,10 +391,21 @@ public static function getRecordSubNavigation(Page $page): array
 ## Testing
 
 ```bash
-composer test
+composer test        # the test suite
+composer analyse     # PHPStan, level 8
+composer format      # Pint
 ```
 
-The suite runs on Filament 4 and 5, Laravel 12 and 13, PHP 8.2 to 8.5.
+The suite runs on Filament 4 and 5, Laravel 12 and 13, PHP 8.2 to 8.5, and
+covers nested resources, clusters, tenancy and SPA mode.
+
+The browser tests (the searchable menu) need Playwright:
+
+```bash
+npm install && npx playwright install chromium
+vendor/bin/testbench filament:assets
+composer test:browser
+```
 
 ## Changelog
 
@@ -402,8 +413,8 @@ See [CHANGELOG](CHANGELOG.md).
 
 ## Contributing
 
-Issues and pull requests are welcome. Please run `composer test` and
-`composer format` before opening a pull request.
+Issues and pull requests are welcome. Please run `composer test`,
+`composer analyse` and `composer format` before opening a pull request.
 
 ## Security
 

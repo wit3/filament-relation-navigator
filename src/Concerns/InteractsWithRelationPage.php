@@ -16,11 +16,24 @@ trait InteractsWithRelationPage
 {
     public static function hasRelationPage(): bool
     {
-        return static::$hasRelationPage ?? true;
+        // The properties are optional and declared by the class, not by the
+        // trait: a trait property could not be redeclared with another value.
+        return (bool) (self::readRelationPageProperty('hasRelationPage') ?? true);
     }
 
     public static function getRelationPageSlug(): ?string
     {
-        return static::$relationPageSlug ?? null;
+        $slug = self::readRelationPageProperty('relationPageSlug');
+
+        return is_string($slug) ? $slug : null;
+    }
+
+    private static function readRelationPageProperty(string $property): mixed
+    {
+        if (! property_exists(static::class, $property)) {
+            return null;
+        }
+
+        return (new \ReflectionProperty(static::class, $property))->getValue();
     }
 }

@@ -31,8 +31,9 @@ final class GeneratedRelationPages
     }
 
     /**
+     * The name of the generated class; it is written when first autoloaded.
+     *
      * @param  class-string<resource>  $resource
-     * @return class-string<RelationPage>
      */
     public static function classFor(string $resource): string
     {
