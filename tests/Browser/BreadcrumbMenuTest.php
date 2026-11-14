@@ -110,3 +110,15 @@ it('leaves the shortcut alone while typing', function (): void {
         ->keys('.fi-ta-search-field input', 'Alt+Shift+KeyR')
         ->assertMissing('[data-relation-navigator-search]:visible');
 });
+
+it('loads lazy badges when the menu opens', function (): void {
+    config()->set('filament-relation-navigator.menu.badges', 'lazy');
+
+    $this->author->posts()->create(['title' => 'Sketch of the Analytical Engine']);
+
+    visit("/admin/authors/{$this->author->getKey()}")
+        ->assertNotPresent('[data-relation-navigator-badge]')
+        ->click('.fi-relation-navigator-caret')
+        ->assertPresent('[data-relation-navigator-badge]:visible')
+        ->assertSeeIn('[data-relation-navigator-label="Posts"]:visible [data-relation-navigator-badge]', '2');
+});

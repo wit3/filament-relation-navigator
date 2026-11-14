@@ -275,3 +275,34 @@ it('drops the separator line when the search hides the block above', function ()
     $this->get("/admin/authors/{$this->author->getKey()}")
         ->assertSee('x-bind:style="$el.previousElementSibling &amp;&amp; hasMatchesIn($el.previousElementSibling)', escape: false);
 });
+
+it('loads the badges when the menu opens with badges set to lazy', function (): void {
+    config()->set('filament-relation-navigator.menu.badges', 'lazy');
+
+    $this->author->posts()->create(['title' => 'Sketch of the Analytical Engine']);
+
+    $html = $this->get("/admin/authors/{$this->author->getKey()}")->assertOk()->getContent();
+
+    expect($html)
+        ->toContain('fi-relation-navigator-badge-loading')
+        ->toContain('x-init="true && new IntersectionObserver');
+
+    $page = Livewire::test(ViewAuthor::class, ['record' => $this->author->getKey()]);
+
+    expect($page->instance()->getRelationNavigatorItems())
+        ->each(fn ($item) => $item->badge->toBeNull());
+
+    $badges = $page->instance()->getRelationNavigatorBadges();
+
+    expect($badges)->toHaveKey('relations.posts')
+        ->and($badges['relations.posts']['badge'])->toBe('2')
+        ->and($badges['relations.posts']['class'])->toContain('fi-color');
+});
+
+it('renders the badges with the page by default', function (): void {
+    $html = $this->get("/admin/authors/{$this->author->getKey()}")->assertOk()->getContent();
+
+    expect($html)
+        ->not->toContain('fi-relation-navigator-badge-loading')
+        ->toContain('x-init="false && new IntersectionObserver');
+});

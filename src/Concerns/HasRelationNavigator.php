@@ -3,12 +3,15 @@
 namespace Wit3\FilamentRelationNavigator\Concerns;
 
 use Filament\Resources\Resource;
+use Filament\Support\View\ComponentAttributeBag;
+use Filament\Support\View\Components\BadgeComponent;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use InvalidArgumentException;
+use Livewire\Attributes\Renderless;
 use Wit3\FilamentRelationNavigator\RelationNavigator;
 use Wit3\FilamentRelationNavigator\RelationNavigatorItem;
 
@@ -100,6 +103,48 @@ trait HasRelationNavigator
     public function hasRelationNavigatorBadges(): bool
     {
         return (bool) config('filament-relation-navigator.menu.badges', true);
+    }
+
+    /**
+     * Badges loaded when the menu opens instead of with the page (config
+     * `menu.badges` = 'lazy'): the page renders without their queries.
+     */
+    public function hasDeferredRelationNavigatorBadges(): bool
+    {
+        return config('filament-relation-navigator.menu.badges', true) === 'lazy';
+    }
+
+    /**
+     * The badges of the menu, keyed by page key, for the deferred badges.
+     *
+     * @return array<string, array{badge: string, class: string, style: string}>
+     */
+    #[Renderless]
+    public function getRelationNavigatorBadges(): array
+    {
+        $resource = static::getResource();
+
+        if (! $this->hasRelationNavigator() || ! $this->hasRelationNavigatorBadges() || ! is_subclass_of($resource, Resource::class)) {
+            return [];
+        }
+
+        $badges = [];
+
+        foreach (RelationNavigator::getItems($resource, $this->getRecord(), withBadges: true) as $item) {
+            if (blank($item->badge)) {
+                continue;
+            }
+
+            $attributes = (new ComponentAttributeBag)->color(BadgeComponent::class, $item->badgeColor ?? 'primary');
+
+            $badges[$item->key] = [
+                'badge' => (string) $item->badge,
+                'class' => (string) $attributes->get('class', ''),
+                'style' => (string) $attributes->get('style', ''),
+            ];
+        }
+
+        return $badges;
     }
 
     /**
@@ -295,7 +340,7 @@ trait HasRelationNavigator
             $resource,
             $this->getRecord(),
             $this->getRelationNavigatorActivePageKey(),
-            $this->hasRelationNavigatorBadges(),
+            $this->hasRelationNavigatorBadges() && ! $this->hasDeferredRelationNavigatorBadges(),
         );
     }
 
@@ -356,6 +401,7 @@ trait HasRelationNavigator
             'isSearchable' => $this->isRelationNavigatorSearchable()
                 && (count($items) >= (int) config('filament-relation-navigator.menu.search_from', 0)),
             'hasSeparator' => (bool) config('filament-relation-navigator.menu.separator', true),
+            'hasDeferredBadges' => $this->hasRelationNavigatorBadges() && $this->hasDeferredRelationNavigatorBadges(),
             'shortcut' => $shortcut = $this->getRelationNavigatorShortcut(),
             'shortcutKeys' => RelationNavigator::getShortcutKeys($shortcut),
         ];

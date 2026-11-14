@@ -4,7 +4,9 @@
 
     Data: $items, $maxHeight, $searchPlaceholder, $emptyLabel, $isSearchable,
     $showCheck (a check after the current page's label), $hasSeparator
-    (record pages and relation pages in two blocks; optional).
+    (record pages and relation pages in two blocks; optional),
+    $hasDeferredBadges (the badges come from the page's
+    getRelationNavigatorBadges() when the list shows; optional).
 
     Keyboard: from the search field, Down moves to the first item; Up and
     Down move between the items, Up from the first one goes back to the
@@ -13,8 +15,11 @@
 @php
     use Filament\Support\Icons\Heroicon;
 
+    use Filament\Support\Enums\IconSize;
+
     $hasSeparator ??= false;
     $showCheck ??= false;
+    $hasDeferredBadges ??= false;
 
     $blocks = $hasSeparator
         ? array_values(array_filter([
@@ -61,7 +66,23 @@
         get hasMatches() {
             return this.visibleItems().length > 0
         },
+        badges: null,
+        loadBadges() {
+            if (this.badges !== null || this.loadingBadges) {
+                return
+            }
+
+            this.loadingBadges = true
+
+            $wire.getRelationNavigatorBadges()
+                .then((badges) => this.badges = badges ?? {})
+                .catch(() => this.badges = {})
+                .finally(() => this.loadingBadges = false)
+        },
+        loadingBadges: false,
     }"
+    {{-- No Blade conditional inside the tag: Livewire would add its markers. --}}
+    x-init="@js($hasDeferredBadges) && new IntersectionObserver((entries) => entries.some((entry) => entry.isIntersecting) && loadBadges()).observe($el)"
 >
     @if ($isSearchable)
         <div class="fi-relation-navigator-search">
@@ -98,7 +119,7 @@
                         tag="a"
                         :href="$item->url"
                         :icon="$item->icon"
-                        :badge="$item->badge"
+                        :badge="($hasDeferredBadges && $item->isRelationPage()) ? null : $item->badge"
                         :badge-color="$item->badgeColor ?? 'primary'"
                         :color="$item->isActive ? 'primary' : 'gray'"
                         :aria-current="$item->isActive ? 'page' : null"
@@ -106,6 +127,29 @@
                         :data-relation-navigator-label="(string) $item->label"
                         x-show="matches($el.dataset.relationNavigatorLabel)"
                     >
+                        @if ($hasDeferredBadges && $item->isRelationPage())
+                            <x-slot name="badge">
+                                <span
+                                    class="fi-relation-navigator-badge-loading"
+                                    x-show="badges === null"
+                                >
+                                    {{ \Filament\Support\generate_loading_indicator_html(size: IconSize::Small) }}
+                                </span>
+
+                                <template x-if="badges?.[@js($item->key)]">
+                                    <span
+                                        x-bind:class="'fi-badge ' + badges[@js($item->key)].class"
+                                        x-bind:style="badges[@js($item->key)].style"
+                                        data-relation-navigator-badge
+                                    >
+                                        <span class="fi-badge-label-ctn">
+                                            <span class="fi-badge-label" x-text="badges[@js($item->key)].badge"></span>
+                                        </span>
+                                    </span>
+                                </template>
+                            </x-slot>
+                        @endif
+
                         <span class="fi-relation-navigator-item-label">
                             {{ $item->label }}
 

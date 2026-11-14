@@ -43,7 +43,8 @@ return [
         'search_from' => 0,
 
         // The relation managers' badges, as in their tabs. They run the same
-        // queries as the tabs: turn them off if those are expensive.
+        // queries as the tabs: 'lazy' loads them when the menu opens, false
+        // turns them off.
         'badges' => true,
 
         'max_height' => '24rem',
