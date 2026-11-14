@@ -161,11 +161,30 @@ CustomerResource::getUrl('relations.orders', ['record' => $customer]);
 Il relation manager riceve come `$pageClass` la pagina di **visualizzazione**
 della resource (quella di modifica, se non c'è), quindi `isReadOnly()`,
 `canViewForRecord()`, `getBadge()` e tutti gli altri controlli funzionano
-esattamente come nella scheda. Una pagina di relazione richiede quello che
-richiede la pagina di visualizzazione (il suo `canAccess()` e la policy
-`view` del record; `update` quando sta per la pagina di modifica) più il
-`canViewForRecord()` del manager; uno slug sconosciuto dà 404. Il menu
-elenca solo le pagine che l'utente può aprire.
+esattamente come nella scheda. La pagina di visualizzazione si trova per
+chiave (`view`, `edit`, o `$contextPage` su una classe pagina scritta da te)
+o per classe.
+
+Una pagina di relazione richiede quello che richiede la pagina di
+visualizzazione (il suo `canAccess()` e la policy `view` del record; `update`
+quando sta per la pagina di modifica) più il `canViewForRecord()` del manager.
+Senza pagina di visualizzazione o di modifica vale la policy `view`. Una
+policy che nega «come non trovato» dà 404, come uno slug sconosciuto. Menu,
+ricerca globale e «Apri come pagina» linkano solo le pagine che l'utente può
+aprire.
+
+Le pagine delle relazioni non eseguono il codice della pagina di
+visualizzazione: i controlli nel suo `authorizeAccess()` o un
+`getRelationManagers()` filtrato per utente lì non valgono. Mettili nelle
+policy, in `canViewForRecord()`, oppure vieta una pagina di relazione per
+record sulla resource:
+
+```php
+public static function canAccessRelationPage(Model $record, string $slug): bool
+{
+    return $slug !== 'audit-logs' || auth()->user()->isAdmin();
+}
+```
 <!-- #endregion relation-pages -->
 
 ## Testata, azioni e widget

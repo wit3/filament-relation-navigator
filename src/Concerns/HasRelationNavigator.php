@@ -112,6 +112,7 @@ trait HasRelationNavigator
             $pageKey = $relationPage::getPageKey((string) $slug);
 
             if (! RelationNavigator::hasRoute($resource, $pageKey)
+                || ! $relationPage::canAccess(['record' => $this->getRecord()])
                 || ! $definition->canViewForRecord($this->getRecord(), $relationPage::getContextPageClass())) {
                 return null;
             }
@@ -208,6 +209,20 @@ trait HasRelationNavigator
      */
     #[Renderless]
     public function getRelationNavigatorBadges(): array
+    {
+        // Callable from the browser: once per request, however many calls.
+        return $this->relationNavigatorBadges ??= $this->resolveRelationNavigatorBadges();
+    }
+
+    /**
+     * @var array<string, array{badge: string, class: string, style: string}> | null
+     */
+    private ?array $relationNavigatorBadges = null;
+
+    /**
+     * @return array<string, array{badge: string, class: string, style: string}>
+     */
+    private function resolveRelationNavigatorBadges(): array
     {
         $resource = static::getResource();
 
@@ -438,6 +453,15 @@ trait HasRelationNavigator
     }
 
     /**
+     * A CSS length from the config (24rem, 400px, 60vh...), or the default:
+     * it goes into a style attribute.
+     */
+    private static function cssLength(mixed $value, string $default): string
+    {
+        return (is_string($value) && preg_match('/^\d+(\.\d+)?(px|rem|em|vh|svh|dvh|%)$/', $value)) ? $value : $default;
+    }
+
+    /**
      * Every option of the menu has three levels: this page (override the
      * method), its resource (a static method with the same name, for all
      * its pages) and the config (for all resources).
@@ -571,7 +595,7 @@ trait HasRelationNavigator
             'heading' => __('filament-relation-navigator::navigator.heading'),
             'searchPlaceholder' => __('filament-relation-navigator::navigator.search'),
             'emptyLabel' => __('filament-relation-navigator::navigator.empty'),
-            'maxHeight' => (string) config('filament-relation-navigator.menu.max_height', '24rem'),
+            'maxHeight' => self::cssLength(config('filament-relation-navigator.menu.max_height'), '24rem'),
             'isSearchable' => $this->isRelationNavigatorSearchable()
                 && (count($items) >= (int) config('filament-relation-navigator.menu.search_from', 0)),
             'hasSeparator' => (bool) config('filament-relation-navigator.menu.separator', true),

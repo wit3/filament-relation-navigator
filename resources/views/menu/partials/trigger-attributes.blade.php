@@ -25,7 +25,9 @@
     $triggerAttributes = [];
 
     if ($withTooltip) {
-        $tooltip = 'content: '.Js::from(e($heading))
+        // The tooltip allows HTML for the keycaps: the heading is always
+        // escaped, even when it is an Htmlable.
+        $tooltip = 'content: '.Js::from(e((string) $heading))
             .' + (/Mac|iPhone|iPad/.test(navigator.userAgent) ? '.Js::from($keycaps($shortcutKeys['mac'])).' : '.Js::from($keycaps($shortcutKeys['other'])).'),'
             .' theme: $store.theme, allowHTML: true';
 

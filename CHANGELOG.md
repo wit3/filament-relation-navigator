@@ -4,16 +4,31 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+### Security
+
+- **Relation pages applied the record's `view` policy only when the view page was registered under the key `view` (or the edit page under `edit`).** With the view page under another key (`'details' => ViewCustomer::route(...)`), or with no view or edit page at all, relation pages checked only `canAccess()` and the relation manager's `canViewForRecord()`. The view page is now also found by its class, and without one the `view` policy applies.
+- A policy that denies "as not found" (`Response::denyAsNotFound()`) gives a 404 on relation pages too, as on the view page, instead of a 403 that told existing records apart.
+- Generated relation page classes: in the system temporary directory they go to a directory of this user only (0700, owner checked), and a file whose content is not the expected code is rewritten, never included.
+- Package methods that the browser does not need are `#[Unexposed]` (Filament 5 refuses calls to them); `getRelationNavigatorBadges()` stays callable and computes once per request.
+- `make:filament-relation-navigator-preset` accepts plain names and the package presets only.
+- "Open as page" and the tab redirect check the relation page's `canAccess()` before linking to it.
+
 ### Changed
 
+- The list remembered for previous and next is one session entry with the five most recent lists, about 1 KB each at most, so cookie sessions keep fitting in 4 KB. A table with `deferLoading()` is never loaded for it.
+- `menu.max_height` must be a CSS length (`24rem`, `400px`, `60vh`...); anything else falls back to `24rem`.
 - **Menu badges are loaded when the menu opens by default** (`menu.badges` = `'lazy'`): the menu is closed until then, so pages render without the badge queries, also on every Livewire request that redraws the breadcrumbs. Apps that published the config keep what they set. Menu views that cannot load badges later (published before 1.3, or presets of your own) get them with the page, as before. For the old behaviour: `'badges' => true`.
 
 ### Added
 
+- `canAccessRelationPage(Model $record, string $slug)` on a resource vetoes a relation page for a record: relation pages, menu, global search and redirect. It is the place for checks a view page makes in its own `authorizeAccess()` or `getRelationManagers()`, which relation pages do not run.
 - A relation manager can leave its badge out of the menu, keeping it in its tab: `hasRelationNavigatorBadge()` or `$hasRelationNavigatorBadge` with `InteractsWithRelationPage`.
 - `RelationNavigator::supportsDeferredBadges()`.
-
 - **"Open as page" can be customised**: config `relation_manager_action` (`style`: `link`, `button` or `icon_button`; `label`, `icon`, `icon_position`, `color`, `size`, `new_tab`), `RelationNavigator::configureRelationPageActionUsing()` for any change to the Filament action, and `configureRelationPageAction()` on a resource or a relation manager. `RelationNavigator::makeRelationPageAction()` builds it.
+
+### Internal
+
+- CI: checkouts without persisted credentials; the documentation deploys from `main` only.
 
 ## 1.5.0 - 2026-11-14
 

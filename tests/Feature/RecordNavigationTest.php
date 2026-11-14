@@ -203,6 +203,11 @@ describe('following the list', function (): void {
 it('keeps the remembered list small enough for a cookie session', function (): void {
     $list = new class extends ListAuthors
     {
+        public function isTableLoaded(): bool
+        {
+            return true;
+        }
+
         public function getTableRecords(): Collection
         {
             // UUID-like keys.
@@ -214,6 +219,25 @@ it('keeps the remembered list small enough for a cookie session', function (): v
 
     $keys = RelationNavigator::getRememberedListKeys(AuthorResource::class);
 
-    expect(strlen(json_encode($keys)))->toBeLessThanOrEqual(RelationNavigator::REMEMBERED_LIST_BYTES + 100)
-        ->and(count($keys))->toBeLessThan(100)->toBeGreaterThan(20);
+    expect(strlen(serialize($keys)))->toBeLessThanOrEqual(RelationNavigator::REMEMBERED_LIST_BYTES)
+        ->and(count($keys))->toBeLessThan(100)->toBeGreaterThan(15);
+});
+
+it('remembers the five most recent lists only', function (): void {
+    foreach (range(1, 7) as $i) {
+        // Seven different lists: one per tenant-like context is simulated
+        // through the session directly.
+        session()->put('filament-relation-navigator.lists', array_merge(
+            session()->get('filament-relation-navigator.lists', []),
+            ["list-{$i}" => ['1']],
+        ));
+    }
+
+    $this->get('/admin/authors')->assertOk();
+
+    $lists = session()->get('filament-relation-navigator.lists');
+
+    expect($lists)->toHaveCount(RelationNavigator::REMEMBERED_LISTS)
+        ->and(array_key_last($lists))->not->toStartWith('list-')
+        ->and(RelationNavigator::getRememberedListKeys(AuthorResource::class))->not->toBeNull();
 });

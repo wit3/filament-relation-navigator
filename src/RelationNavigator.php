@@ -494,9 +494,16 @@ final class RelationNavigator
     public const REMEMBERED_LIST_SIZE = 100;
 
     /**
-     * ...and at most this many bytes of keys.
+     * ...and at most this many bytes of keys, serialized.
      */
-    public const REMEMBERED_LIST_BYTES = 2048;
+    public const REMEMBERED_LIST_BYTES = 1024;
+
+    /**
+     * The most lists remembered at once, the oldest dropped first.
+     */
+    public const REMEMBERED_LISTS = 5;
+
+    private const REMEMBERED_LISTS_SESSION_KEY = 'filament-relation-navigator.lists';
 
     /**
      * Remembers the records a resource's list shows, in its order (sort,
@@ -508,29 +515,41 @@ final class RelationNavigator
     {
         $resource = $list::getResource();
 
-        if (! is_subclass_of($resource, Resource::class) || ! self::listFeedsRecordNavigation($resource)) {
+        // A table that defers loading has not run its query yet: never force it.
+        if (! is_subclass_of($resource, Resource::class) || ! self::listFeedsRecordNavigation($resource) || ! $list->isTableLoaded()) {
             return;
         }
 
         $records = $list->getTableRecords();
         $records = ($records instanceof Collection) ? $records : collect($records->items());
 
-        // At most 100 keys and 2 KB: sessions kept in a cookie have 4 KB.
+        // At most 100 keys and about 1 KB once serialized: sessions kept in a
+        // cookie have 4 KB for everything.
         $keys = [];
-        $bytes = 0;
 
         foreach ($records->take(self::REMEMBERED_LIST_SIZE) as $record) {
-            $key = (string) $record->getKey();
-            $bytes += strlen($key) + 3;
-
-            if ($bytes > self::REMEMBERED_LIST_BYTES) {
-                break;
+            if (! $record instanceof Model) {
+                continue;
             }
 
-            $keys[] = $key;
+            $keys[] = (string) $record->getKey();
+
+            if (strlen(serialize($keys)) > self::REMEMBERED_LIST_BYTES) {
+                array_pop($keys);
+
+                break;
+            }
         }
 
-        session()->put(self::rememberedListSessionKey($resource), $keys);
+        // One session entry for every list, the most recent five.
+        $lists = session()->get(self::REMEMBERED_LISTS_SESSION_KEY, []);
+        $lists = is_array($lists) ? $lists : [];
+        $key = self::rememberedListKey($resource);
+
+        unset($lists[$key]);
+        $lists[$key] = $keys;
+
+        session()->put(self::REMEMBERED_LISTS_SESSION_KEY, array_slice($lists, -self::REMEMBERED_LISTS, preserve_keys: true));
     }
 
     /**
@@ -541,7 +560,8 @@ final class RelationNavigator
      */
     public static function getRememberedListKeys(string $resource): ?array
     {
-        $keys = session()->get(self::rememberedListSessionKey($resource));
+        $lists = session()->get(self::REMEMBERED_LISTS_SESSION_KEY, []);
+        $keys = is_array($lists) ? ($lists[self::rememberedListKey($resource)] ?? null) : null;
 
         return is_array($keys) ? array_values(array_map('strval', $keys)) : null;
     }
@@ -570,9 +590,9 @@ final class RelationNavigator
      *
      * @param  class-string<resource>  $resource
      */
-    private static function rememberedListSessionKey(string $resource): string
+    private static function rememberedListKey(string $resource): string
     {
-        return 'filament-relation-navigator.lists.'.md5(implode('|', [
+        return md5(implode('|', [
             Filament::getCurrentOrDefaultPanel()?->getId(),
             Filament::getTenant()?->getKey(),
             $resource,
@@ -909,6 +929,12 @@ final class RelationNavigator
         }
 
         $ownerRecord = $manager->getOwnerRecord();
+
+        // Never a link the user cannot open.
+        if (! $relationPage::canAccess(['record' => $ownerRecord])) {
+            return null;
+        }
+
         $slug = self::findRelationPageSlug($relationPage, $manager, $ownerRecord);
 
         if ($slug === null) {

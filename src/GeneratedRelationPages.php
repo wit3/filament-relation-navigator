@@ -117,18 +117,37 @@ final class GeneratedRelationPages
             && ((@fileperms($directory) ?: 0) & 0022) === 0;
 
         if (! $isSafe) {
-            throw new RuntimeException("The relation page classes need a directory that only this user can write, and [{$directory}] is not. Make the storage writable, or choose a directory with GeneratedRelationPages::useCachePath() in a service provider.");
+            throw new RuntimeException("The relation page classes need a directory that only this user can write, and [{$directory}] is not (another user may have created it). Make storage/framework/cache writable, remove [{$directory}], or choose a directory with GeneratedRelationPages::useCachePath() in a service provider.");
         }
 
         return $directory;
     }
 
+    /**
+     * The user PHP runs as. Without ext-posix, getmyuid() would give the owner
+     * of the script file instead: ask the owner of a file just created.
+     */
     private static function currentUserId(): int
     {
-        return function_exists('posix_geteuid') ? posix_geteuid() : (int) getmyuid();
+        if (function_exists('posix_geteuid')) {
+            return posix_geteuid();
+        }
+
+        $probe = @tempnam(sys_get_temp_dir(), 'frn');
+
+        if ($probe === false) {
+            return (int) getmyuid();
+        }
+
+        $owner = @fileowner($probe);
+        @unlink($probe);
+
+        return $owner === false ? (int) getmyuid() : $owner;
     }
 
     /**
+     * @internal Called by the autoloader with a validated class name.
+     *
      * The file of a generated class, written when missing or different from
      * the code it must hold: a file changed by someone else is replaced, not
      * included.
@@ -150,7 +169,7 @@ final class GeneratedRelationPages
 
         $temporaryPath = $path.'.'.getmypid().'.'.bin2hex(random_bytes(4)).'.tmp';
 
-        if (@file_put_contents($temporaryPath, $code) === false || ! @rename($temporaryPath, $path)) {
+        if (@file_put_contents($temporaryPath, $code) === false || ! @chmod($temporaryPath, 0644) || ! @rename($temporaryPath, $path)) {
             @unlink($temporaryPath);
 
             throw new RuntimeException("Cannot write the relation page class to [{$path}]. Make the directory writable, or choose another one with GeneratedRelationPages::useCachePath() in a service provider.");

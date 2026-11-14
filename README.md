@@ -169,10 +169,27 @@ CustomerResource::getUrl('relations.orders', ['record' => $customer]);
 The relation manager receives the resource's **view** page as `$pageClass`
 (the edit page when there is no view page), so `isReadOnly()`,
 `canViewForRecord()`, `getBadge()` and every other check behave exactly as in
-the tab. A relation page needs what the view page needs (its `canAccess()`
-and the record's `view` policy; `update` when it stands for the edit page)
-and the manager's `canViewForRecord()`; an unknown slug is a 404. The menu
-only lists the pages the user can open.
+the tab. The view page is found by its key (`view`, `edit`, or
+`$contextPage` on a page class you wrote) or by its class.
+
+A relation page needs what the view page needs (its `canAccess()` and the
+record's `view` policy; `update` when it stands for the edit page) and the
+manager's `canViewForRecord()`. Without a view or an edit page, the `view`
+policy applies. A policy that denies as not found gives a 404, an unknown
+slug too. The menu, global search and "Open as page" only link the pages the
+user can open.
+
+Relation pages do not run the view page's own code: checks in its
+`authorizeAccess()` or a `getRelationManagers()` filtered per user do not
+apply there. Put them in policies, in `canViewForRecord()`, or veto a relation
+page per record on the resource:
+
+```php
+public static function canAccessRelationPage(Model $record, string $slug): bool
+{
+    return $slug !== 'audit-logs' || auth()->user()->isAdmin();
+}
+```
 <!-- #endregion relation-pages -->
 
 ## Header, actions and widgets

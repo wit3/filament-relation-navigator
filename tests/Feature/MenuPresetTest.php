@@ -1,6 +1,7 @@
 <?php
 
 use Filament\Facades\Filament;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\View;
 use Livewire\Livewire;
@@ -409,4 +410,33 @@ it('leaves out the badge of a relation manager that opts out', function (): void
     } finally {
         PostsRelationManager::$menuBadge = true;
     }
+});
+
+it('accepts only a CSS length as the menu height', function (string $value, string $expected): void {
+    config()->set('filament-relation-navigator.menu.max_height', $value);
+
+    expect($this->get("/admin/authors/{$this->author->getKey()}")->getContent())
+        ->toContain("max-height: {$expected};");
+})->with([
+    'rem' => ['30rem', '30rem'],
+    'pixels' => ['400px', '400px'],
+    'not a length' => ['10rem; background: url(x)', '24rem'],
+]);
+
+it('computes the deferred badges once, however many times the browser asks', function (): void {
+    $component = Livewire::test(ViewAuthor::class, ['record' => $this->author->getKey()]);
+    $page = $component->instance();
+
+    $queries = 0;
+    DB::listen(function () use (&$queries): void {
+        $queries++;
+    });
+
+    $first = $page->getRelationNavigatorBadges();
+    $afterFirst = $queries;
+    $second = $page->getRelationNavigatorBadges();
+
+    expect($second)->toBe($first)
+        ->and($afterFirst)->toBeGreaterThan(0)
+        ->and($queries)->toBe($afterFirst);
 });
