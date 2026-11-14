@@ -29,7 +29,7 @@ A security fix, new features behind config switches, and a new default look for 
 
 ### Security
 
-- **Relation pages did not apply the record's `view` policy** (1.0.0 to 1.2.1). Filament checks it when the view page mounts, not in `canAccess()`, and relation pages only called `canAccess()`: a user denied `view` on a record, but allowed `viewAny`, could open its relation pages and see the related records and the header. Relation pages now run the same record check as the page they stand for (`view` for a view page, `update` for an edit page), also on every Livewire request.
+- **Relation pages did not apply the record's `view` policy** (1.0.0 to 1.2.1, [GHSA-v3mh-w7qp-37gc](https://github.com/wit3/filament-relation-navigator/security/advisories/GHSA-v3mh-w7qp-37gc)). Filament checks it when the view page mounts, not in `canAccess()`, and relation pages only called `canAccess()`: a user denied `view` on a record, but allowed `viewAny`, could open its relation pages and see the related records and the header. Relation pages now run the same record check as the page they stand for (`view` for a view page, `update` for an edit page), also on every Livewire request.
 
 ### Added
 
