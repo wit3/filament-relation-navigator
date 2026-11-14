@@ -3,6 +3,7 @@
 namespace Wit3\FilamentRelationNavigator\Concerns;
 
 use Filament\Resources\Resource;
+use Filament\Support\Facades\FilamentView;
 use Filament\Support\View\ComponentAttributeBag;
 use Filament\Support\View\Components\BadgeComponent;
 use Illuminate\Contracts\Support\Htmlable;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use InvalidArgumentException;
 use Livewire\Attributes\Renderless;
+use Wit3\FilamentRelationNavigator\Pages\RelationPage;
 use Wit3\FilamentRelationNavigator\RelationNavigator;
 use Wit3\FilamentRelationNavigator\RelationNavigatorItem;
 
@@ -46,6 +48,66 @@ trait HasRelationNavigator
     abstract public function getRecord(): Model;
 
     abstract public function hasRecord(): bool;
+
+    /**
+     * Livewire runs this after the page's own mount(): with config
+     * `redirect_relation_tabs`, a link to a relation manager's tab
+     * (`?relation=posts`) opens its relation page instead.
+     */
+    public function mountHasRelationNavigator(): void
+    {
+        if (! $this->shouldRedirectRelationTabs()) {
+            return;
+        }
+
+        $url = $this->getRelationTabRedirectUrl(request()->query('relation'));
+
+        if ($url !== null) {
+            $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
+        }
+    }
+
+    /**
+     * Off by default (config `redirect_relation_tabs`).
+     */
+    public function shouldRedirectRelationTabs(): bool
+    {
+        return (bool) config('filament-relation-navigator.redirect_relation_tabs', false);
+    }
+
+    /**
+     * The relation page of a relation manager's tab key, as in `?relation=`.
+     */
+    public function getRelationTabRedirectUrl(mixed $relation): ?string
+    {
+        if ($this instanceof RelationPage || ! is_scalar($relation) || blank($relation) || ! $this->hasRelationNavigator()) {
+            return null;
+        }
+
+        $resource = static::getResource();
+        $relationPage = is_subclass_of($resource, Resource::class) ? RelationNavigator::getRelationPageClass($resource) : null;
+
+        if (! $relationPage) {
+            return null;
+        }
+
+        foreach ($relationPage::getRelationPageDefinitions() as $slug => $definition) {
+            if ((string) $definition->key !== (string) $relation) {
+                continue;
+            }
+
+            $pageKey = $relationPage::getPageKey((string) $slug);
+
+            if (! RelationNavigator::hasRoute($resource, $pageKey)
+                || ! $definition->canViewForRecord($this->getRecord(), $relationPage::getContextPageClass())) {
+                return null;
+            }
+
+            return $resource::getUrl($pageKey, ['record' => $this->getRecord()], shouldGuessMissingParameters: true);
+        }
+
+        return null;
+    }
 
     /**
      * @return array<string | int, string | Htmlable>

@@ -91,4 +91,17 @@ return [
 
     'record_navigation' => false,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Links to relation manager tabs
+    |--------------------------------------------------------------------------
+    |
+    | A link to a tab of the view or edit page (`/customers/1?relation=bills`)
+    | opens the relation page instead (`/customers/1/bills`). Handy once the
+    | relation pages replace the tabs; off by default.
+    |
+    */
+
+    'redirect_relation_tabs' => false,
+
 ];
