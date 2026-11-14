@@ -95,7 +95,42 @@ final class RelationNavigator
      */
     public static function getRelationPageClass(string $resource): ?string
     {
-        return self::getRegisteredRelationPageClass($resource) ?? self::getGeneratedRelationPageClass($resource);
+        return self::remember("relation-page|{$resource}", fn (): ?string => self::getRegisteredRelationPageClass($resource) ?? self::getGeneratedRelationPageClass($resource));
+    }
+
+    private const CACHE_KEY = 'filament-relation-navigator.cache';
+
+    /**
+     * @internal A value worked out once per request (per panel, resource
+     * configuration and locale): pages, relations and resources do not
+     * change during a request. Kept on the request, so it never outlives it
+     * (Octane).
+     *
+     * @template T
+     *
+     * @param  Closure(): T  $callback
+     * @return T
+     */
+    public static function remember(string $key, Closure $callback): mixed
+    {
+        $attributes = request()->attributes;
+        $cache = $attributes->get(self::CACHE_KEY, []);
+        $key = implode('|', [$key, Filament::getCurrentPanel()?->getId(), Filament::getCurrentResourceConfigurationKey(), app()->getLocale()]);
+
+        if (! array_key_exists($key, $cache)) {
+            $cache[$key] = $callback();
+            $attributes->set(self::CACHE_KEY, $cache + $attributes->get(self::CACHE_KEY, []));
+        }
+
+        return $cache[$key];
+    }
+
+    /**
+     * @internal For tests that change pages or relations within a request.
+     */
+    public static function flushCache(): void
+    {
+        request()->attributes->remove(self::CACHE_KEY);
     }
 
     /**

@@ -245,6 +245,16 @@ abstract class RelationPage extends Page
      */
     public static function getRelationPageDefinitions(): array
     {
+        return RelationNavigator::remember('definitions|'.static::class, fn (): array => static::resolveRelationPageDefinitions());
+    }
+
+    /**
+     * @internal Worked out once per request by getRelationPageDefinitions().
+     *
+     * @return array<string, RelationPageDefinition>
+     */
+    protected static function resolveRelationPageDefinitions(): array
+    {
         $definitions = [];
         $reservedSlugs = static::getReservedSlugs();
 
@@ -397,6 +407,16 @@ abstract class RelationPage extends Page
      * @return class-string<Page>
      */
     public static function getContextPageClass(): string
+    {
+        return RelationNavigator::remember('context-page|'.static::class, fn (): string => static::resolveContextPageClass());
+    }
+
+    /**
+     * @internal Worked out once per request by getContextPageClass().
+     *
+     * @return class-string<Page>
+     */
+    protected static function resolveContextPageClass(): string
     {
         $pages = static::getResource()::getPages();
 

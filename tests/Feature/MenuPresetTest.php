@@ -452,6 +452,8 @@ it('computes the deferred badges once, however many times the browser asks', fun
 it('treats the badge of a relation group like its tab', function (): void {
     config()->set('filament-relation-navigator.menu.badges', true);
     AuthorResource::$options = ['groupBadge' => '3'];
+    // getRelations() changes within this request: forget what was worked out.
+    RelationNavigator::flushCache();
 
     try {
         $activity = collect(RelationNavigator::getItems(AuthorResource::class, $this->author))->firstWhere('key', 'relations.activity');
@@ -462,6 +464,7 @@ it('treats the badge of a relation group like its tab', function (): void {
             ->and($activity->isBadgeDeferred)->toBeFalse();
 
         AuthorResource::$options['groupBadgeLazy'] = true;
+        RelationNavigator::flushCache();
 
         $activity = collect(RelationNavigator::getItems(AuthorResource::class, $this->author))->firstWhere('key', 'relations.activity');
 
