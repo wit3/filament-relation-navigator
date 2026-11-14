@@ -45,7 +45,7 @@ between them from a **menu in the breadcrumb**.
 | Package  | Version              |
 | -------- | -------------------- |
 | PHP      | 8.2+                 |
-| Laravel  | 11, 12, 13           |
+| Laravel  | 12, 13               |
 | Filament | 4.x, 5.x             |
 
 ## Installation
@@ -405,7 +405,7 @@ public static function getRecordSubNavigation(Page $page): array
 composer test
 ```
 
-The suite runs on Filament 4 and 5, Laravel 11 to 13.
+The suite runs on Filament 4 and 5, Laravel 12 and 13, PHP 8.2 to 8.5.
 
 ## Changelog
 

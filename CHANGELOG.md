@@ -14,4 +14,4 @@ First public release.
 - Menu presets `simple` and `github`, optional search, badges, presets of your own (`make:filament-relation-navigator-preset`) and publishable views.
 - Native record sub-navigation from the same items.
 - English and Italian translations.
-- Filament 4 and 5, Laravel 11 to 13.
+- Filament 4 and 5, Laravel 12 and 13, PHP 8.2 to 8.5.
