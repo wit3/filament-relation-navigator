@@ -12,6 +12,8 @@
 > **Documentación:** guías, configuración, guía de actualización y búsqueda en
 > **[wit3.github.io/filament-relation-navigator/es](https://wit3.github.io/filament-relation-navigator/es/)**.
 >
+> **Última versión:** [![Latest version on Packagist](https://img.shields.io/packagist/v/wit3/filament-relation-navigator.svg?style=flat-square&label=version)](https://github.com/wit3/filament-relation-navigator/releases/latest) · [Novedades](https://wit3.github.io/filament-relation-navigator/es/reference/changelog)
+>
 > **En otros idiomas:** la documentación en
 > [English](https://wit3.github.io/filament-relation-navigator/) (el original) · [Italiano](https://wit3.github.io/filament-relation-navigator/it/) · [Português](https://wit3.github.io/filament-relation-navigator/pt/) · [Français](https://wit3.github.io/filament-relation-navigator/fr/) · [Deutsch](https://wit3.github.io/filament-relation-navigator/de/) · [中文](https://wit3.github.io/filament-relation-navigator/zh/) · [日本語](https://wit3.github.io/filament-relation-navigator/ja/) · [Русский](https://wit3.github.io/filament-relation-navigator/ru/) · [العربية](https://wit3.github.io/filament-relation-navigator/ar/).
 > Cada idioma tiene también su README en este repositorio (`README.md`, `README.it.md`...).
@@ -36,6 +38,8 @@ pasa de una a otra desde un **menú en el breadcrumb**.
   forma global, por recurso o por página.
 - **Un trait, ninguna clase de página**: no hay archivos que generar ni nada que
   añadir a `getPages()` o al panel provider.
+- **32 idiomas**, incluidos los de derecha a izquierda, con los códigos de
+  Filament. La documentación está en 10.
 
 <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/demo.gif" alt="El menú abierto con Alt Mayús R, filtrado por Invoices, y luego el cliente siguiente en la misma página" width="880">
 <!-- #endregion intro -->

@@ -12,6 +12,8 @@
 > **Документация:** руководства, справочник по настройке, руководство по обновлению и поиск на
 > **[wit3.github.io/filament-relation-navigator/ru](https://wit3.github.io/filament-relation-navigator/ru/)**.
 >
+> **Последняя версия:** [![Latest version on Packagist](https://img.shields.io/packagist/v/wit3/filament-relation-navigator.svg?style=flat-square&label=version)](https://github.com/wit3/filament-relation-navigator/releases/latest) · [Что нового](https://wit3.github.io/filament-relation-navigator/ru/reference/changelog)
+>
 > **На других языках:** документация на
 > [English](https://wit3.github.io/filament-relation-navigator/) (оригинал) · [Italiano](https://wit3.github.io/filament-relation-navigator/it/) · [Español](https://wit3.github.io/filament-relation-navigator/es/) · [Português](https://wit3.github.io/filament-relation-navigator/pt/) · [Français](https://wit3.github.io/filament-relation-navigator/fr/) · [Deutsch](https://wit3.github.io/filament-relation-navigator/de/) · [中文](https://wit3.github.io/filament-relation-navigator/zh/) · [日本語](https://wit3.github.io/filament-relation-navigator/ja/) · [العربية](https://wit3.github.io/filament-relation-navigator/ar/).
 > У каждого языка есть и свой README в этом репозитории (`README.md`, `README.it.md`...).
@@ -37,6 +39,8 @@
   или выключить глобально, для ресурса или для страницы.
 - **Один трейт, никаких классов страниц**: не нужно ничего генерировать и
   ничего добавлять в `getPages()` или в panel provider.
+- **32 языка**, включая языки с письмом справа налево, с кодами Filament.
+  Документация доступна на 10 языках.
 
 <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/demo.gif" alt="Меню открыто по Alt Shift R и отфильтровано по Invoices, затем следующий клиент на той же странице" width="880">
 <!-- #endregion intro -->

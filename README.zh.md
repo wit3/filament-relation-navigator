@@ -12,6 +12,8 @@
 > **文档：** 指南、配置参考、升级指南和搜索，请访问
 > **[wit3.github.io/filament-relation-navigator/zh](https://wit3.github.io/filament-relation-navigator/zh/)**。
 >
+> **最新版本：** [![Latest version on Packagist](https://img.shields.io/packagist/v/wit3/filament-relation-navigator.svg?style=flat-square&label=version)](https://github.com/wit3/filament-relation-navigator/releases/latest) · [更新内容](https://wit3.github.io/filament-relation-navigator/zh/reference/changelog)
+>
 > **其他语言：** 文档还有以下语言版本：
 > [English](https://wit3.github.io/filament-relation-navigator/)（原版） · [Italiano](https://wit3.github.io/filament-relation-navigator/it/) · [Español](https://wit3.github.io/filament-relation-navigator/es/) · [Português](https://wit3.github.io/filament-relation-navigator/pt/) · [Français](https://wit3.github.io/filament-relation-navigator/fr/) · [Deutsch](https://wit3.github.io/filament-relation-navigator/de/) · [日本語](https://wit3.github.io/filament-relation-navigator/ja/) · [Русский](https://wit3.github.io/filament-relation-navigator/ru/) · [العربية](https://wit3.github.io/filament-relation-navigator/ar/)。每种语言在本仓库中也有自己的 README（`README.md`、`README.it.md`……）。
 
@@ -24,6 +26,7 @@
 - 面包屑的最后一项会打开一个**菜单**，列出记录的各个页面以及用户能看到的所有关联，带有图标和徽章。两种外观，可选的搜索和键盘导航，可以使用你自己的视图，还有适配小屏幕的版本。
 - 在同一页面上切换**上一条和下一条记录**，每个 relation manager 表格上都有一个**作为页面打开**操作，指向旧标签页的链接会跳转到新页面：每一项都可以全局、按 resource 或按页面开关。
 - **一个 trait，无需页面类**：不用生成文件，也不用往 `getPages()` 或 panel provider 里添加任何东西。
+- **32 种语言**（包括从右到左书写的语言），语言代码与 Filament 相同。文档提供 10 种语言版本。
 
 <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/demo.gif" alt="用 Alt Shift R 打开菜单，筛选出 Invoices，然后在同一页面上切换到下一个客户" width="880">
 <!-- #endregion intro -->

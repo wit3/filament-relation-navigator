@@ -12,6 +12,8 @@
 > **التوثيق:** الأدلة، ومرجع الإعدادات، ودليل الترقية، والبحث على
 > **[wit3.github.io/filament-relation-navigator/ar](https://wit3.github.io/filament-relation-navigator/ar/)**.
 >
+> **أحدث إصدار:** [![Latest version on Packagist](https://img.shields.io/packagist/v/wit3/filament-relation-navigator.svg?style=flat-square&label=version)](https://github.com/wit3/filament-relation-navigator/releases/latest) · [ما الجديد](https://wit3.github.io/filament-relation-navigator/ar/reference/changelog)
+>
 > **بلغات أخرى:** التوثيق بـ
 > [English](https://wit3.github.io/filament-relation-navigator/) (الأصل) · [Italiano](https://wit3.github.io/filament-relation-navigator/it/) · [Español](https://wit3.github.io/filament-relation-navigator/es/) · [Português](https://wit3.github.io/filament-relation-navigator/pt/) · [Français](https://wit3.github.io/filament-relation-navigator/fr/) · [Deutsch](https://wit3.github.io/filament-relation-navigator/de/) · [中文](https://wit3.github.io/filament-relation-navigator/zh/) · [日本語](https://wit3.github.io/filament-relation-navigator/ja/) · [Русский](https://wit3.github.io/filament-relation-navigator/ru/).
 > لكل لغة أيضًا ملف README خاص بها في هذا المستودع (`README.md`، `README.it.md`...).
@@ -35,6 +37,7 @@
   لكل صفحة.
 - **يكفي trait واحد، بلا أصناف صفحات**: لا ملفات لتوليدها، ولا شيء تضيفه إلى
   `getPages()` أو إلى الـ panel provider.
+- **32 لغة**، بما فيها اللغات التي تُكتب من اليمين إلى اليسار، بنفس رموز Filament. والتوثيق متاح بـ 10 لغات.
 
 <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/demo.gif" alt="القائمة مفتوحة بـ Alt Shift R، مصفاة على Invoices، ثم العميل التالي في الصفحة نفسها" width="880">
 <!-- #endregion intro -->

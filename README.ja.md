@@ -12,6 +12,8 @@
 > **ドキュメント：** ガイド、設定リファレンス、アップグレードガイド、検索は
 > **[wit3.github.io/filament-relation-navigator/ja](https://wit3.github.io/filament-relation-navigator/ja/)** にあります。
 >
+> **最新バージョン：** [![Latest version on Packagist](https://img.shields.io/packagist/v/wit3/filament-relation-navigator.svg?style=flat-square&label=version)](https://github.com/wit3/filament-relation-navigator/releases/latest) · [新機能](https://wit3.github.io/filament-relation-navigator/ja/reference/changelog)
+>
 > **他の言語：** ドキュメントは
 > [English](https://wit3.github.io/filament-relation-navigator/)（原文）· [Italiano](https://wit3.github.io/filament-relation-navigator/it/) · [Español](https://wit3.github.io/filament-relation-navigator/es/) · [Português](https://wit3.github.io/filament-relation-navigator/pt/) · [Français](https://wit3.github.io/filament-relation-navigator/fr/) · [Deutsch](https://wit3.github.io/filament-relation-navigator/de/) · [中文](https://wit3.github.io/filament-relation-navigator/zh/) · [Русский](https://wit3.github.io/filament-relation-navigator/ru/) · [العربية](https://wit3.github.io/filament-relation-navigator/ar/) でも読めます。
 > 各言語の README もこのリポジトリにあります（`README.md`、`README.it.md`...）。
@@ -25,6 +27,7 @@ Filament のリソースにあるリレーションマネージャーそれぞ�
 - パンくずリストの最後の項目から**メニュー**が開き、レコードのページと、ユーザーが閲覧できるすべてのリレーションがアイコンとバッジ付きで並びます。2 種類の見た目、任意の検索とキーボード操作、独自のビュー、小さな画面向けの表示があります。
 - 同じページのまま移動できる**前後のレコード**、すべてのリレーションマネージャーのテーブルにある「**ページとして開く**」アクション、古いタブへのリンクを新しいページへ転送する機能があります。どれもグローバル、リソース単位、ページ単位で切り替えられます。
 - **トレイト 1 つだけで、ページクラスは不要**です。生成するファイルも、`getPages()` やパネルプロバイダーへの追記もありません。
+- **32 言語**に対応（右から左に書く言語を含む）。言語コードは Filament と同じです。ドキュメントは 10 言語で提供しています。
 
 <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/demo.gif" alt="Alt Shift R でメニューを開いて Invoices で絞り込み、続いて同じページで次の顧客へ移動" width="880">
 <!-- #endregion intro -->
