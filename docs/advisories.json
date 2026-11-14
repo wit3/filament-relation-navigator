@@ -1,0 +1,18 @@
+[
+    {
+        "id": "GHSA-mjj3-c8gm-4j73",
+        "patched": "1.6.0",
+        "severity": "medium",
+        "summary": "Relation pages skipped the record's view policy when the view page was not registered as 'view' or 'edit'",
+        "url": "https://github.com/wit3/filament-relation-navigator/security/advisories/GHSA-mjj3-c8gm-4j73",
+        "vulnerable": ">= 1.3.0, < 1.6.0"
+    },
+    {
+        "id": "GHSA-v3mh-w7qp-37gc",
+        "patched": "1.3.0",
+        "severity": "high",
+        "summary": "Relation pages did not apply the record's view policy",
+        "url": "https://github.com/wit3/filament-relation-navigator/security/advisories/GHSA-v3mh-w7qp-37gc",
+        "vulnerable": ">= 1.0.0, < 1.3.0"
+    }
+]

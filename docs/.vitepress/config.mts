@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { defineConfig, type DefaultTheme } from 'vitepress'
 import llmstxt from 'vitepress-plugin-llms'
+import { advisoriesFor } from '../scripts/advisories.mjs'
+import { minorVersions } from '../scripts/versions.mjs'
 
 const repository = 'https://github.com/wit3/filament-relation-navigator'
 const plugin = 'https://filamentphp.com/plugins/wit3-relation-navigator'
@@ -12,14 +14,30 @@ const changelog = readFileSync(new URL('../../CHANGELOG.md', import.meta.url), '
 const release = changelog.match(/^## (\d+\.\d+\.\d+) - (\d{4}-\d{2}-\d{2})\n+(?!#)([^\n]+)?/m)
 const latest = { version: release?.[1] ?? '', date: release?.[2] ?? '', summary: release?.[3] ?? '' }
 
+// Older minor versions, each with a site of its own under /vX.Y/ (built by
+// scripts/build-versions.mjs from the git tags).
+const olderVersions = minorVersions().filter(({ minor }) => minor !== latest.version.split('.').slice(0, 2).join('.'))
+
+// The banner (security issues of this version): shared with older versions.
+const bannerData = { version: latest.version, latest: latest.version, latestUrl: site, isLatest: true, advisories: advisoriesFor(latest.version) }
+const bannerScript = readFileSync(new URL('../scripts/banner.js', import.meta.url), 'utf8')
+
 function versionMenu(prefix: string, t: Record<string, string>): DefaultTheme.NavItemWithChildren {
     return {
         text: `v${latest.version}`,
         items: [
-            { text: t.changelog, link: `${prefix}/reference/changelog` },
-            { text: t.upgrade, link: `${prefix}/reference/upgrade` },
-            { text: t.releases, link: `${repository}/releases` },
-            { text: 'Packagist', link: packagist },
+            {
+                items: [
+                    { text: t.changelog, link: `${prefix}/reference/changelog` },
+                    { text: t.upgrade, link: `${prefix}/reference/upgrade` },
+                    { text: t.releases, link: `${repository}/releases` },
+                    { text: 'Packagist', link: packagist },
+                ],
+            },
+            ...(olderVersions.length ? [{
+                text: t.olderVersions,
+                items: olderVersions.map(({ minor, version }) => ({ text: `v${minor} (${version})`, link: `${site}v${minor}/`, target: '_self' })),
+            }] : []),
         ],
     }
 }
@@ -99,7 +117,7 @@ const en = {
     howItWorks: 'How it works', ai: 'AI agents', upgrade: 'Upgrade guide', changelog: 'Changelog', contributing: 'Contributing',
     api: 'API reference', help: 'Help', recipes: 'Recipes', troubleshooting: 'Troubleshooting',
     releases: 'GitHub releases', community: 'Community', discussions: 'Questions and ideas', issues: 'Bug reports',
-    security: 'Report a vulnerability', filament: 'Filament plugin page',
+    security: 'Report a vulnerability', filament: 'Filament plugin page', olderVersions: 'Older versions',
 }
 
 const it = {
@@ -111,7 +129,7 @@ const it = {
     howItWorks: 'Come funziona', ai: 'Agenti AI', upgrade: 'Guida all\'aggiornamento', changelog: 'Changelog', contributing: 'Contribuire',
     api: 'Riferimento API', help: 'Aiuto', recipes: 'Ricette', troubleshooting: 'Problemi comuni',
     releases: 'Release su GitHub', community: 'Community', discussions: 'Domande e idee', issues: 'Segnalare un bug',
-    security: 'Segnalare una vulnerabilità', filament: 'Pagina del plugin su Filament',
+    security: 'Segnalare una vulnerabilità', filament: 'Pagina del plugin su Filament', olderVersions: 'Versioni precedenti',
 }
 
 export default defineConfig({
@@ -125,14 +143,18 @@ export default defineConfig({
     head: [
         ['meta', { property: 'og:image', content: 'https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/social-preview.jpg' }],
         ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+        ['script', {}, `window.__FRN_DOCS__=${JSON.stringify(bannerData)}`],
+        ['script', {}, bannerScript],
     ],
+    // The sources of older versions, checked out to build their sites.
+    srcExclude: ['.versions/**', 'scripts/**'],
     // llms.txt and llms-full.txt for AI agents, plus a .md version of each
     // page. English only: the Italian pages would double them.
     vite: {
         plugins: [llmstxt({
             title: 'Relation Navigator for Filament',
             description: 'A real page for every Filament relation manager (/customers/1/orders) and a searchable menu in the breadcrumb. Filament v4 and v5. Package: wit3/filament-relation-navigator.',
-            ignoreFiles: ['it/**'],
+            ignoreFiles: ['it/**', '.versions/**'],
         })],
     },
     markdown: {

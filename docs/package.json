@@ -4,7 +4,8 @@
     "scripts": {
         "dev": "vitepress dev",
         "build": "vitepress build",
-        "preview": "vitepress preview"
+        "preview": "vitepress preview",
+        "build:all": "node scripts/advisories.mjs && vitepress build && node scripts/build-versions.mjs"
     },
     "devDependencies": {
         "vitepress": "1.6.4",

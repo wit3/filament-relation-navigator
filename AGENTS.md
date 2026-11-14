@@ -40,3 +40,4 @@ CI runs the suite on Filament 4 and 5, Laravel 12 and 13, PHP 8.2-8.5 and the lo
 - **Authorization:** Filament checks the record's `view`/`update` policies when view/edit pages mount, not in `canAccess()`. Anything that lists or opens record pages must check `RelationNavigator::canAccessRecordPage()`.
 - **Tests first** for behaviour changes; add a browser test for anything that depends on JavaScript.
 - GitHub Actions are pinned to commit SHAs with the version in a comment; Dependabot updates them.
+- **Security advisories:** draft first, publish only after the fixed version is on Packagist. The docs build reads published advisories (`docs/scripts/advisories.mjs`, with `docs/advisories.json` as the committed fallback: update it too) and shows a banner on affected versions; older minor versions are rebuilt from their tags by `docs/scripts/build-versions.mjs`.
