@@ -1,17 +1,52 @@
-# Filament Relation Navigator
+<img class="filament-hidden" src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/cover.jpg" alt="Relation Navigator for Filament">
 
-Give every relation manager of a Filament resource its own page, and switch
-between them from the breadcrumb.
+# Relation Navigator for Filament
 
-- `/users/510?relation=homes` becomes **`/users/510/homes`**: a real route,
-  linkable and bookmarkable, with its own browser history.
+[![Latest version on Packagist](https://img.shields.io/packagist/v/wit3/filament-relation-navigator.svg?style=flat-square)](https://packagist.org/packages/wit3/filament-relation-navigator)
+[![Tests](https://img.shields.io/github/actions/workflow/status/wit3/filament-relation-navigator/tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/wit3/filament-relation-navigator/actions/workflows/tests.yml)
+[![Total downloads](https://img.shields.io/packagist/dt/wit3/filament-relation-navigator.svg?style=flat-square)](https://packagist.org/packages/wit3/filament-relation-navigator)
+[![License](https://img.shields.io/packagist/l/wit3/filament-relation-navigator.svg?style=flat-square)](LICENSE.md)
+
+Give every relation manager of a Filament resource **its own page**, and jump
+between them from a **menu in the breadcrumb**.
+
+- `/customers/1?relation=orders` becomes **`/customers/1/orders`**: a real
+  route you can link, bookmark and open in a new tab.
 - The page renders the **relation manager you already have**: same table,
   filters, actions, badges and authorization. Nothing is duplicated.
-- The last breadcrumb ("View", "Edit", "Homes") opens a **menu** with the
-  record pages you choose and every relation page the user can see.
+- Add a **header** above the relation (the record's card, widgets, actions),
+  taken from the resource.
+- The last breadcrumb opens a **menu** with the record's pages and every
+  relation the user can see, with icons and badges. Two looks, optional
+  search, or a view of your own.
+- **One trait, no page classes**: no files to generate, nothing to add to
+  `getPages()` or to the panel provider.
 
-Works with Filament **v4** and **v5** (Livewire 3 and 4, Laravel 11–13).
-Tested on Filament 4.16 and 5.11.
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-light.png" alt="The orders of a customer on their own page, with the breadcrumb menu open">
+</picture>
+
+## Contents
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Relation pages](#relation-pages)
+- [Header, actions and widgets](#header-actions-and-widgets)
+- [The breadcrumb menu](#the-breadcrumb-menu)
+- [Menu presets](#menu-presets)
+- [Customising the relation pages](#customising-the-relation-pages)
+- [Native record sub-navigation](#native-record-sub-navigation)
+- [How it works](#how-it-works)
+
+## Requirements
+
+| Package  | Version              |
+| -------- | -------------------- |
+| PHP      | 8.2+                 |
+| Laravel  | 11, 12, 13           |
+| Filament | 4.x, 5.x             |
 
 ## Installation
 
@@ -20,63 +55,167 @@ composer require wit3/filament-relation-navigator
 php artisan filament:assets
 ```
 
-Run `filament:assets` again after updating the package: Filament copies the
+Run `filament:assets` again after each update: Filament copies the plugin's
 stylesheet into `public/`.
 
-## Usage
+## Quick start
 
-### 1. Opt in
-
-On the resource, for every relation manager:
+**1. Give the relations a page.** Add the trait to the resource:
 
 ```php
 use Wit3\FilamentRelationNavigator\Concerns\HasRelationPages;
 
-class UserResource extends Resource
+class CustomerResource extends Resource
 {
     use HasRelationPages;
+
+    public static function getRelations(): array
+    {
+        return [
+            'orders' => OrdersRelationManager::class,
+            'invoices' => InvoicesRelationManager::class,
+            NotesRelationManager::class,
+        ];
+    }
 }
 ```
 
-or only on the relation managers you want:
+Every relation now has its page: `/customers/1/orders`, `/customers/1/invoices`,
+`/customers/1/notes`.
+
+**2. Add the menu to the view page:**
+
+```php
+use Wit3\FilamentRelationNavigator\Concerns\HasRelationNavigator;
+
+class ViewCustomer extends ViewRecord
+{
+    use HasRelationNavigator;
+}
+```
+
+That's all. The relation pages have the menu already, and the tabs on the
+view page keep working as before.
+
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-simple-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-simple-light.png" alt="The breadcrumb menu on the view page" width="520">
+</picture>
+
+## Relation pages
+
+### Opting in
+
+Opt in on the resource, for every relation manager, or only on the relation
+managers you want:
 
 ```php
 use Wit3\FilamentRelationNavigator\Concerns\InteractsWithRelationPage;
 
-class HomesRelationManager extends RelationManager
+class OrdersRelationManager extends RelationManager
 {
     use InteractsWithRelationPage;
 }
 ```
 
-That's it: every opted-in relation has a page at `/{record}/{slug}`, named
-`relations.{slug}`, in every panel that has the resource.
+| Setup                                       | Relations with a page               |
+| ------------------------------------------- | ----------------------------------- |
+| `HasRelationPages` on the resource          | all, minus the ones that opt out    |
+| `InteractsWithRelationPage` on a manager    | only the managers that opt in       |
+| A page class you wrote (see below)          | all, minus the ones that opt out    |
+
+To leave some relations out:
 
 ```php
-UserResource::getUrl('relations.homes', ['record' => $user]);
+// On the resource
+public static function hasRelationPage(string $slug): bool
+{
+    return $slug !== 'notes';
+}
+
+// On a relation manager, with InteractsWithRelationPage
+protected static bool $hasRelationPage = false;
 ```
 
-There is no page class to write and nothing to add to `getPages()` or to the
-panel provider. The package registers the routes inside the resource's own
-route group (slug, cluster, parent resource, tenant) and writes the page
-class on demand in `storage/framework/cache`, the way Laravel's real-time
-facades do. It works with `route:cache`.
+A relation manager shared by two resources opts in for both: use the
+resource's `hasRelationPage()` to leave one of them out.
 
-### 2. Choose the record pages in the breadcrumb menu
+### URLs and slugs
 
-Add `HasRelationNavigator` to every record page you want in the menu: the view
-page, the edit page, or any custom page of the record. A page is in the menu
-if, and only if, it uses the trait; on those pages the last breadcrumb opens
-the menu. The relation pages are always listed, after the record pages.
+| `getRelations()` entry                          | URL                         |
+| ----------------------------------------------- | --------------------------- |
+| `'orders' => OrdersRelationManager::class`      | `/customers/1/orders`       |
+| `SupportTicketsRelationManager::class` (no key) | `/customers/1/support-tickets` |
+| `RelationGroup::make('Activity', [...])`        | `/customers/1/activity`     |
+
+The key in `getRelations()` wins; without a key, the slug is the kebab-cased
+relationship name (or the group label). A relation manager can pick its own
+with `protected static ?string $relationPageSlug = 'tickets';`. Slugs equal to
+one of the resource's page keys (`edit`, `view`...) are skipped.
+
+Each page is a named route, `relations.{slug}`:
 
 ```php
-use Wit3\FilamentRelationNavigator\Concerns\HasRelationNavigator;
+CustomerResource::getUrl('relations.orders', ['record' => $customer]);
+```
 
-class ViewUser extends ViewRecord
+### Authorization and behaviour
+
+The relation manager receives the resource's **view** page as `$pageClass`
+(the edit page when there is no view page), so `isReadOnly()`,
+`canViewForRecord()`, `getBadge()` and every other check behave exactly as in
+the tab. A relation page needs both the view page's `canAccess()` and the
+manager's `canViewForRecord()`; an unknown slug is a 404.
+
+## Header, actions and widgets
+
+Above the relation, a relation page can show part of the record's view,
+header actions and widgets. Define them on the resource for every relation
+page, or on a relation manager for its own page:
+
+```php
+public static function relationPageHeader(Schema $schema): Schema
 {
-    use HasRelationNavigator;
+    // The whole infolist (static::infolist($schema)) or a piece of it.
+    return $schema->components([
+        CustomerCard::make(),
+    ]);
+}
+
+public static function getRelationPageHeaderActions(): array
+{
+    return [
+        Action::make('email')
+            ->url(fn (Customer $record): string => "mailto:{$record->email}"),
+    ];
+}
+
+public static function getRelationPageHeaderWidgets(): array
+{
+    return [CustomerStats::class]; // receives the record as $record
+}
+
+public static function getRelationPageFooterWidgets(): array
+{
+    return [];
 }
 ```
+
+- The header of a relation manager replaces the resource's one; actions and
+  widgets of both are shown, the resource's first.
+- Header actions act on the record the relation belongs to.
+- With a header, the record's name is not repeated under the title.
+- Pieces that only exist inside the view page class (its own methods and
+  modals) are not reachable from here: move them to the resource, to an
+  action class or to a trait.
+
+## The breadcrumb menu
+
+A record page is in the menu if, and only if, it uses `HasRelationNavigator`:
+the view page, the edit page or any custom page of the record. On those pages
+the last breadcrumb opens the menu. The relation pages are always listed,
+after the record pages, with the relation managers' icons and badges, and
+only when the user can see them.
 
 If the page already builds its own breadcrumbs, pass them through
 `withRelationNavigator()`:
@@ -85,18 +224,18 @@ If the page already builds its own breadcrumbs, pass them through
 public function getBreadcrumbs(): array
 {
     return $this->withRelationNavigator([
-        UserResource::getUrl('index') => 'Users',
+        CustomerResource::getUrl('index') => 'Customers',
         $this->getBreadcrumb(),
     ]);
 }
 ```
 
-A custom page that uses `InteractsWithRecord` itself (instead of extending
-`ViewRecord` / `EditRecord`) gets two `getBreadcrumbs()` methods. Unless it
+A custom page that uses `InteractsWithRecord` itself, instead of extending
+`ViewRecord` or `EditRecord`, has two `getBreadcrumbs()` methods. Unless it
 defines its own, tell PHP which one wins:
 
 ```php
-class UserStats extends Page
+class CustomerActivity extends Page
 {
     use HasRelationNavigator, InteractsWithRecord {
         HasRelationNavigator::getBreadcrumbs insteadof InteractsWithRecord;
@@ -106,144 +245,11 @@ class UserStats extends Page
 ```
 
 The menu uses the page's `$navigationLabel` and `$navigationIcon`, and shows
-it only when `canAccess()` allows it for the record. The relation pages have
-the menu already.
+it only when `canAccess()` allows it for the record.
 
-### Customising the relation pages (optional)
+## Menu presets
 
-To change the title, the breadcrumbs or the header actions of the relation
-pages, write the page class yourself and register it. The package then uses
-yours instead of generating one:
-
-```bash
-php artisan make:filament-relation-navigator UserResource
-```
-
-```php
-public static function getPages(): array
-{
-    return [
-        'index' => ListUsers::route('/'),
-        'view' => ViewUser::route('/{record}'),
-        ...UserRelationPage::relationRoutes(),
-    ];
-}
-```
-
-With a page class you wrote, every relation gets a page unless it opts out.
-
-## Header, actions and widgets
-
-Above the relation, a relation page can show part of the record's view, header
-actions and widgets. Define them on the resource for every relation page, or
-on a relation manager for its own page:
-
-```php
-// Part of the view: the whole infolist (static::infolist($schema)) or a piece of it.
-public static function relationPageHeader(Schema $schema): Schema
-{
-    return $schema->components([
-        UserCard::make(),
-    ]);
-}
-
-public static function getRelationPageHeaderActions(): array
-{
-    return [
-        Action::make('clearCache')->action(fn (User $record) => $record->clearCache()),
-    ];
-}
-
-public static function getRelationPageHeaderWidgets(): array
-{
-    return [UserStats::class]; // receives the record as $record
-}
-
-public static function getRelationPageFooterWidgets(): array
-{
-    return [];
-}
-```
-
-The header of a relation manager replaces the resource's one; actions and
-widgets of both are shown, the resource's first. Header actions act on the
-record the relation belongs to. Pieces that only exist inside the view page
-class (its own methods and modals) are not reachable from here: move them to
-the resource first.
-
-## Slugs
-
-| `getRelations()` entry                               | Slug                  |
-| ---------------------------------------------------- | --------------------- |
-| `'homes' => HomesRelationManager::class`             | `homes`               |
-| `InvoiceDocumentsRelationManager::class` (no key)    | `invoice-documents`   |
-| `RelationGroup::make('Activity', [...])` (no key)    | `activity`            |
-
-A relation manager can choose its own slug with
-`getRelationPageSlug()` (see below).
-
-## Choosing which relations get a page
-
-| Setup                                      | Relations with a page                        |
-| ------------------------------------------ | -------------------------------------------- |
-| `HasRelationPages` on the resource         | all, minus the ones that opt out             |
-| `InteractsWithRelationPage` on a manager   | only the managers that opt in                |
-| A page class you wrote in `getPages()`     | all, minus the ones that opt out             |
-
-A relation manager shared by two resources opts in for both: use the
-resource's `hasRelationPage()` below to leave one out. A slug equal to one
-of the resource's own page keys (`edit`, `view`...) is skipped.
-
-On a page class you wrote:
-
-```php
-class UserRelationPage extends RelationPage
-{
-    protected static string $resource = UserResource::class;
-
-    protected static ?array $relations = ['homes', 'invoices'];   // only these
-
-    protected static array $excludedRelations = ['cache-clears']; // never these
-}
-```
-
-On the resource:
-
-```php
-public static function hasRelationPage(string $slug): bool
-{
-    return $slug !== 'cache-clears';
-}
-```
-
-On a relation manager:
-
-```php
-use Wit3\FilamentRelationNavigator\Concerns\InteractsWithRelationPage;
-
-class CacheClearsRelationManager extends RelationManager
-{
-    use InteractsWithRelationPage;
-
-    protected static bool $hasRelationPage = false;
-
-    protected static ?string $relationPageSlug = 'cache';
-}
-```
-
-## How relation managers see the page
-
-The relation manager receives the resource's **view** page as `$pageClass`
-(or the edit page when there is no view page), so `isReadOnly()`,
-`canViewForRecord()`, `getBadge()` and every other check behave exactly as in
-the tab. Change it with `protected static ?string $contextPage = 'edit';`.
-
-Access to a relation page requires both the context page's `canAccess()` and
-the manager's `canViewForRecord()`. An unknown slug is a 404.
-
-## How the menu looks
-
-Publish the config to choose the menu's look:
+Publish the config:
 
 ```bash
 php artisan vendor:publish --tag=filament-relation-navigator-config
@@ -251,7 +257,7 @@ php artisan vendor:publish --tag=filament-relation-navigator-config
 
 ```php
 'menu' => [
-    'preset' => 'simple', // or 'github', a preset of yours, or a view name
+    'preset' => 'simple',   // 'github', a preset of yours, or a view name
     'presets' => [
         'simple' => 'filament-relation-navigator::menu.simple',
         'github' => 'filament-relation-navigator::menu.github',
@@ -263,13 +269,17 @@ php artisan vendor:publish --tag=filament-relation-navigator-config
 ],
 ```
 
-- **simple**: the last breadcrumb itself opens the list.
-- **github**: the last breadcrumb stays text and a caret next to it opens a
-  panel with a heading and a check on the current page, like GitHub's
-  repository switcher.
+**simple**: the last breadcrumb itself opens the list (screenshot above).
 
-With `searchable`, the search field gets the focus when the menu opens and
-Enter opens the first match.
+**github**: the last breadcrumb stays text and a caret next to it opens a
+panel with a heading and a check on the current page, like GitHub's
+repository switcher. Here with `searchable` on: the field gets the focus when
+the menu opens and Enter opens the first match.
+
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-github-search-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-github-search-light.png" alt="The github preset with the search field" width="700">
+</picture>
 
 A page can override any of them:
 
@@ -298,8 +308,9 @@ Start from one of the package presets:
 php artisan make:filament-relation-navigator-preset compact --from=github
 ```
 
-It copies the preset to `resources/views/filament/relation-navigator/compact.blade.php`;
-register it and change it as you like:
+It copies the preset to
+`resources/views/filament/relation-navigator/compact.blade.php`. Register it
+and change it as you like:
 
 ```php
 'preset' => 'compact',
@@ -310,21 +321,65 @@ register it and change it as you like:
 ```
 
 Any view name works as `preset` too. To change the package presets
-themselves, publish them:
+themselves, publish their views:
 
 ```bash
 php artisan vendor:publish --tag=filament-relation-navigator-views
 ```
 
-A preset view receives `$label` (the last breadcrumb), `$items` (each with
-`key`, `label`, `url`, `icon`, `badge`, `badgeColor`, `isActive`), `$heading`,
-`$searchPlaceholder`, `$emptyLabel`, `$maxHeight` and `$isSearchable`. To
-reuse the search, the list and the "no results" line, include
+A preset view receives:
+
+| Variable             | Content                                                                 |
+| -------------------- | ----------------------------------------------------------------------- |
+| `$label`             | The last breadcrumb                                                     |
+| `$items`             | The menu items: `key`, `label`, `url`, `icon`, `badge`, `badgeColor`, `isActive` |
+| `$heading`           | "Switch page", translated                                               |
+| `$isSearchable`      | Whether to show the search field                                        |
+| `$searchPlaceholder` | "Find a page…", translated                                              |
+| `$emptyLabel`        | "No pages found.", translated                                           |
+| `$maxHeight`         | `menu.max_height`                                                       |
+
+To reuse the search field, the list and the "no results" line, include
 `filament-relation-navigator::menu.partials.list` with `showCheck`.
+
+## Customising the relation pages
+
+The generated relation pages cover most needs. To change their title, their
+breadcrumbs or anything else a Filament page can do, write the page class
+yourself; the package then uses yours for that resource:
+
+```bash
+php artisan make:filament-relation-navigator CustomerResource
+```
+
+```php
+class CustomerRelationPage extends RelationPage
+{
+    protected static string $resource = CustomerResource::class;
+
+    protected static ?array $relations = ['orders', 'invoices'];  // only these
+    protected static array $excludedRelations = ['notes'];         // never these
+}
+```
+
+```php
+public static function getPages(): array
+{
+    return [
+        'index' => ListCustomers::route('/'),
+        'view' => ViewCustomer::route('/{record}'),
+        ...CustomerRelationPage::relationRoutes(),
+    ];
+}
+```
+
+The class is a regular Filament page: override `getTitle()`,
+`getBreadcrumbs()`, `getHeaderActions()`, use your own traits, and so on.
 
 ## Native record sub-navigation
 
-The same items can feed Filament's record sub-navigation:
+The same items can feed Filament's record sub-navigation, for example on
+small screens where Filament hides the breadcrumbs:
 
 ```php
 public static function getRecordSubNavigation(Page $page): array
@@ -333,8 +388,45 @@ public static function getRecordSubNavigation(Page $page): array
 }
 ```
 
+## How it works
+
+- The routes are registered through Filament's own
+  `Resource::registerRoutes()`, inside each resource's route group: slug,
+  cluster, parent resource and tenant are handled by Filament.
+- The page class of a resource is written on demand to
+  `storage/framework/cache`, the way Laravel's real-time facades work, and
+  registered with Livewire. It works with `route:cache`.
+- The relation page embeds the relation manager as Filament does in the tabs,
+  so its state, actions and modals stay in the relation manager.
+
 ## Testing
 
 ```bash
 composer test
 ```
+
+The suite runs on Filament 4 and 5, Laravel 11 to 13.
+
+## Changelog
+
+See [CHANGELOG](CHANGELOG.md).
+
+## Contributing
+
+Issues and pull requests are welcome. Please run `composer test` and
+`composer format` before opening a pull request.
+
+## Security
+
+Please report security issues privately through
+[GitHub security advisories](https://github.com/wit3/filament-relation-navigator/security/advisories/new)
+rather than in public issues.
+
+## Credits
+
+- [Salvatore Scalzi](https://github.com/wit3)
+- [All contributors](https://github.com/wit3/filament-relation-navigator/contributors)
+
+## License
+
+The MIT License (MIT). See [LICENSE](LICENSE.md).

@@ -2,17 +2,23 @@
     "name": "wit3/filament-relation-navigator",
     "description": "Give every Filament relation manager its own page (/{record}/{relation}) and switch between them from the breadcrumb, reusing the relation managers you already have.",
     "keywords": [
+        "laravel",
         "filament",
         "filament-plugin",
+        "filamentphp",
         "relation-manager",
+        "relation-pages",
         "breadcrumbs",
-        "laravel"
+        "navigation",
+        "livewire"
     ],
     "type": "library",
-    "license": "proprietary",
+    "license": "MIT",
     "authors": [
         {
-            "name": "Salvatore Scalzi"
+            "name": "Salvatore Scalzi",
+            "homepage": "https://github.com/wit3",
+            "role": "Developer"
         }
     ],
     "require": {
@@ -55,5 +61,10 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "homepage": "https://github.com/wit3/filament-relation-navigator",
+    "support": {
+        "issues": "https://github.com/wit3/filament-relation-navigator/issues",
+        "source": "https://github.com/wit3/filament-relation-navigator"
+    }
 }

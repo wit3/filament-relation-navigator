@@ -1,0 +1,40 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { php: '8.2', laravel: '11.*', testbench: '9.*', filament: '4.*', pest: '3.*' }
+          - { php: '8.3', laravel: '12.*', testbench: '10.*', filament: '4.*', pest: '3.*' }
+          - { php: '8.3', laravel: '12.*', testbench: '10.*', filament: '5.*', pest: '3.*' }
+          - { php: '8.4', laravel: '13.*', testbench: '11.*', filament: '5.*', pest: '4.*' }
+          - { php: '8.5', laravel: '13.*', testbench: '11.*', filament: '5.*', pest: '4.*' }
+
+    name: PHP ${{ matrix.php }} · Laravel ${{ matrix.laravel }} · Filament ${{ matrix.filament }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pdo, sqlite, pdo_sqlite, intl, fileinfo
+          coverage: none
+
+      - name: Install dependencies
+        run: |
+          composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" "filament/filament:${{ matrix.filament }}" --no-interaction --no-update
+          composer require --dev "pestphp/pest:${{ matrix.pest }}" "pestphp/pest-plugin-laravel:${{ matrix.pest }}" "pestphp/pest-plugin-livewire:${{ matrix.pest }}" --no-interaction --no-update
+          composer update --prefer-dist --no-interaction --with-all-dependencies
+
+      - name: Run tests
+        run: vendor/bin/pest
