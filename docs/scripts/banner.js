@@ -62,6 +62,7 @@
         if (advisory) {
             var read = document.createElement('a')
             read.href = advisory.url
+            read.target = '_self'
             read.textContent = t.advisory
             banner.appendChild(read)
         }
@@ -69,6 +70,9 @@
         if (!data.isLatest) {
             var latest = document.createElement('a')
             latest.href = data.latestUrl + (italian ? 'it/' : '')
+            // A full page load: VitePress's router would try to open the
+            // latest site inside this version's site, and do nothing.
+            latest.target = '_self'
             latest.textContent = t.latest
             banner.appendChild(latest)
         }
