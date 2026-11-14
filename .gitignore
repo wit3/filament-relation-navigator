@@ -7,3 +7,6 @@
 /.phpstan.cache
 /node_modules
 /tests/Browser/Screenshots
+/docs/node_modules
+/docs/.vitepress/dist
+/docs/.vitepress/cache

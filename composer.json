@@ -66,8 +66,9 @@
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
-    "homepage": "https://github.com/wit3/filament-relation-navigator",
+    "homepage": "https://wit3.github.io/filament-relation-navigator/",
     "support": {
+        "docs": "https://wit3.github.io/filament-relation-navigator/",
         "issues": "https://github.com/wit3/filament-relation-navigator/issues",
         "source": "https://github.com/wit3/filament-relation-navigator"
     }

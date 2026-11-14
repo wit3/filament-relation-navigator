@@ -9,6 +9,9 @@
     <a href="LICENSE.md"><img src="https://img.shields.io/packagist/l/wit3/filament-relation-navigator.svg?style=flat-square" alt="License"></a>
 </p>
 
+**[Read the documentation →](https://wit3.github.io/filament-relation-navigator/)** Guides, configuration reference, upgrade guide and search.
+
+<!-- #region intro -->
 Give every relation manager of a Filament resource **its own page**, and jump
 between them from a **menu in the breadcrumb**.
 
@@ -22,24 +25,28 @@ between them from a **menu in the breadcrumb**.
   relation the user can see, with icons and badges. Two looks, optional
   search and keyboard navigation, a view of your own, and a version for
   small screens.
-- **Previous and next record** on the same page, an **"Open as page"** link
-  above every relation manager tab, and links to old tabs that land on the
-  new pages: each one a config switch.
+- **Previous and next record** on the same page, an **"Open as page"** action
+  on every relation manager table, and links to old tabs that land on the new
+  pages: each one switchable globally, per resource or per page.
 - **One trait, no page classes**: no files to generate, nothing to add to
   `getPages()` or to the panel provider.
 
 <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/demo.gif" alt="The menu opened with Alt Shift R, filtered to Invoices, then the next customer on the same page" width="880">
+<!-- #endregion intro -->
 
 ## Requirements
 
+<!-- #region requirements -->
 | Package  | Version              |
 | -------- | -------------------- |
 | PHP      | 8.2+                 |
 | Laravel  | 12, 13               |
 | Filament | 4.x, 5.x             |
+<!-- #endregion requirements -->
 
 ## Installation
 
+<!-- #region installation -->
 ```bash
 composer require wit3/filament-relation-navigator
 php artisan filament:assets
@@ -47,9 +54,11 @@ php artisan filament:assets
 
 Run `filament:assets` again after each update: Filament copies the plugin's
 stylesheet into `public/`.
+<!-- #endregion installation -->
 
 ## Quick start
 
+<!-- #region quick-start -->
 **1. Give the relations a page.** Add the trait to the resource:
 
 ```php
@@ -91,9 +100,11 @@ view page keep working as before.
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-dark.png">
     <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-light.png" alt="The orders of a customer on their own page, with the breadcrumb menu open">
 </picture>
+<!-- #endregion quick-start -->
 
 ## Relation pages
 
+<!-- #region relation-pages -->
 ### Opting in
 
 Opt in on the resource, for every relation manager, or only on the relation
@@ -158,9 +169,11 @@ the tab. A relation page needs what the view page needs (its `canAccess()`
 and the record's `view` policy; `update` when it stands for the edit page)
 and the manager's `canViewForRecord()`; an unknown slug is a 404. The menu
 only lists the pages the user can open.
+<!-- #endregion relation-pages -->
 
 ## Header, actions and widgets
 
+<!-- #region header-actions-and-widgets -->
 Above the relation, a relation page can show part of the record's view,
 header actions and widgets. Define them on the resource for every relation
 page, or on a relation manager for its own page:
@@ -200,9 +213,11 @@ public static function getRelationPageFooterWidgets(): array
 - Pieces that only exist inside the view page class (its own methods and
   modals) are not reachable from here: move them to the resource, to an
   action class or to a trait.
+<!-- #endregion header-actions-and-widgets -->
 
 ## The breadcrumb menu
 
+<!-- #region the-breadcrumb-menu -->
 `HasRelationNavigator` needs a page with a record: `ViewRecord`, `EditRecord`
 and pages using `InteractsWithRecord` already have the two methods it
 declares, `getRecord()` and `hasRecord()`. On a page without a record PHP
@@ -243,9 +258,11 @@ class CustomerActivity extends Page
 
 The menu uses the page's `$navigationLabel` and `$navigationIcon`, and shows
 it only when `canAccess()` allows it for the record.
+<!-- #endregion the-breadcrumb-menu -->
 
 ## Open as page
 
+<!-- #region open-as-page -->
 On the view and edit pages, every relation manager that has its own page gets
 an **Open as page** action in the header of its table, next to its title and
 before its own actions. A manager inside a relation group opens the group's
@@ -277,9 +294,11 @@ public static function hasRelationPageLink(): bool
 
 `RelationNavigator::getRelationManagerPageUrl($relationManager)` returns the
 same URL, for a button of your own.
+<!-- #endregion open-as-page -->
 
 ## Previous and next record
 
+<!-- #region previous-and-next-record -->
 Two buttons before the header actions open the previous or the next record,
 by key, **on the same page**: from a customer's invoices to the next
 customer's invoices. A record that cannot open that page opens on its first
@@ -307,9 +326,11 @@ public function getRelationNavigatorRecordNavigationQuery(): ?Builder
 ```
 
 Nested resources are not supported yet: they show no buttons.
+<!-- #endregion previous-and-next-record -->
 
 ## Links to relation manager tabs
 
+<!-- #region links-to-relation-manager-tabs -->
 Once the relation pages replace the tabs, old links such as
 `/customers/1?relation=orders` can open `/customers/1/orders` instead:
 
@@ -319,9 +340,11 @@ Once the relation pages replace the tabs, old links such as
 
 Tabs without a relation page, or that the record cannot see, stay where they
 are.
+<!-- #endregion links-to-relation-manager-tabs -->
 
 ## Menu presets
 
+<!-- #region menu-presets -->
 Publish the config:
 
 ```bash
@@ -515,9 +538,11 @@ To give your button the tooltip and the shortcut, include
 tag. Each item also has `isRelationPage()`. To reuse the search field, the list
 (with the separator and the keyboard navigation) and the "no results" line,
 include `filament-relation-navigator::menu.partials.list` with `showCheck`.
+<!-- #endregion menu-presets -->
 
 ## Customising the relation pages
 
+<!-- #region customising-the-relation-pages -->
 The generated relation pages cover most needs. To change their title, their
 breadcrumbs or anything else a Filament page can do, write the page class
 yourself; the package then uses yours for that resource:
@@ -549,9 +574,11 @@ public static function getPages(): array
 
 The class is a regular Filament page: override `getTitle()`,
 `getBreadcrumbs()`, `getHeaderActions()`, use your own traits, and so on.
+<!-- #endregion customising-the-relation-pages -->
 
 ## Native record sub-navigation
 
+<!-- #region native-record-sub-navigation -->
 The same items can feed Filament's record sub-navigation:
 
 ```php
@@ -560,9 +587,11 @@ public static function getRecordSubNavigation(Page $page): array
     return RelationNavigator::getRecordSubNavigation($page);
 }
 ```
+<!-- #endregion native-record-sub-navigation -->
 
 ## How it works
 
+<!-- #region how-it-works -->
 - The routes are registered through Filament's own
   `Resource::registerRoutes()`, inside each resource's route group: slug,
   cluster, parent resource and tenant are handled by Filament.
@@ -571,16 +600,20 @@ public static function getRecordSubNavigation(Page $page): array
   registered with Livewire. It works with `route:cache`.
 - The relation page embeds the relation manager as Filament does in the tabs,
   so its state, actions and modals stay in the relation manager.
+<!-- #endregion how-it-works -->
 
 ## Laravel Boost
 
+<!-- #region laravel-boost -->
 The package ships guidelines for [Laravel Boost](https://laravel.com/docs/boost):
 pick `wit3/filament-relation-navigator` when you run `php artisan boost:install`
 (or `boost:update`), and your AI agent learns the traits, the options and
 their levels.
+<!-- #endregion laravel-boost -->
 
 ## Testing
 
+<!-- #region testing -->
 ```bash
 composer test        # the test suite
 composer analyse     # PHPStan, level 8
@@ -597,27 +630,38 @@ npm install && npx playwright install chromium
 vendor/bin/testbench filament:assets
 composer test:browser
 ```
+<!-- #endregion testing -->
 
 ## Changelog
 
-See [CHANGELOG](CHANGELOG.md).
+<!-- #region changelog -->
+See [CHANGELOG](https://github.com/wit3/filament-relation-navigator/blob/main/CHANGELOG.md).
+<!-- #endregion changelog -->
 
 ## Contributing
 
+<!-- #region contributing -->
 Issues and pull requests are welcome. Please run `composer test`,
 `composer analyse` and `composer format` before opening a pull request.
+<!-- #endregion contributing -->
 
 ## Security
 
+<!-- #region security -->
 Please report security issues privately through
 [GitHub security advisories](https://github.com/wit3/filament-relation-navigator/security/advisories/new)
 rather than in public issues.
+<!-- #endregion security -->
 
 ## Credits
 
+<!-- #region credits -->
 - [Salvatore Scalzi](https://github.com/wit3)
 - [All contributors](https://github.com/wit3/filament-relation-navigator/contributors)
+<!-- #endregion credits -->
 
 ## License
 
-The MIT License (MIT). See [LICENSE](LICENSE.md).
+<!-- #region license -->
+The MIT License (MIT). See [LICENSE](https://github.com/wit3/filament-relation-navigator/blob/main/LICENSE.md).
+<!-- #endregion license -->

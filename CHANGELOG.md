@@ -4,6 +4,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+### Documentation
+
+- A documentation site with search: [wit3.github.io/filament-relation-navigator](https://wit3.github.io/filament-relation-navigator/). It is built from the README, the changelog and the config file, so it always matches them. `composer.json` points `homepage` and `support.docs` to it.
+
 ## 1.4.0 - 2026-11-14
 
 Every feature can now be turned on or off globally, per resource and per page or relation manager.

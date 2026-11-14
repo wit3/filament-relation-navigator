@@ -1,0 +1,24 @@
+/* Amber, as on the cover and Filament's own default. */
+:root {
+    --vp-c-brand-1: #b45309;
+    --vp-c-brand-2: #92400e;
+    --vp-c-brand-3: #f59e0b;
+    --vp-c-brand-soft: rgb(245 158 11 / 0.14);
+    --vp-button-brand-text: #1c1917;
+    --vp-button-brand-hover-text: #1c1917;
+    --vp-button-brand-active-text: #1c1917;
+    --vp-button-brand-hover-bg: #fbbf24;
+    --vp-button-brand-active-bg: #d97706;
+    --vp-home-hero-name-color: var(--vp-c-text-1);
+}
+
+.dark {
+    --vp-c-brand-1: #fbbf24;
+    --vp-c-brand-2: #fcd34d;
+    --vp-c-brand-3: #f59e0b;
+    --vp-c-brand-soft: rgb(245 158 11 / 0.16);
+}
+
+.VPHero .text {
+    color: var(--vp-c-brand-1);
+}
