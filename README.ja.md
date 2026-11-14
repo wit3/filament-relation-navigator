@@ -12,7 +12,7 @@
 > **ドキュメント：** ガイド、設定リファレンス、アップグレードガイド、検索は
 > **[wit3.github.io/filament-relation-navigator/ja](https://wit3.github.io/filament-relation-navigator/ja/)** にあります。
 >
-> **最新バージョン：** [![Latest version on Packagist](https://img.shields.io/packagist/v/wit3/filament-relation-navigator.svg?style=flat-square&label=version)](https://github.com/wit3/filament-relation-navigator/releases/latest) · [新機能](https://wit3.github.io/filament-relation-navigator/ja/reference/changelog)
+> **最新バージョン：** [新機能](https://wit3.github.io/filament-relation-navigator/ja/reference/changelog) [![Latest version on Packagist](https://img.shields.io/packagist/v/wit3/filament-relation-navigator.svg?style=flat-square&label=version)](https://github.com/wit3/filament-relation-navigator/releases/latest)
 >
 > **他の言語：** ドキュメントは
 > [English](https://wit3.github.io/filament-relation-navigator/)（原文）· [Italiano](https://wit3.github.io/filament-relation-navigator/it/) · [Español](https://wit3.github.io/filament-relation-navigator/es/) · [Português](https://wit3.github.io/filament-relation-navigator/pt/) · [Français](https://wit3.github.io/filament-relation-navigator/fr/) · [Deutsch](https://wit3.github.io/filament-relation-navigator/de/) · [中文](https://wit3.github.io/filament-relation-navigator/zh/) · [Русский](https://wit3.github.io/filament-relation-navigator/ru/) · [العربية](https://wit3.github.io/filament-relation-navigator/ar/) でも読めます。
