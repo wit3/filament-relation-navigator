@@ -56,11 +56,11 @@ trait HasRelationNavigator
      */
     public function mountHasRelationNavigator(): void
     {
-        if (! $this->shouldRedirectRelationTabs()) {
+        if (! $this->shouldRedirectRelationNavigatorTabs()) {
             return;
         }
 
-        $url = $this->getRelationTabRedirectUrl(request()->query('relation'));
+        $url = $this->getRelationNavigatorTabRedirectUrl(request()->query('relation'));
 
         if ($url !== null) {
             $this->redirect($url, navigate: FilamentView::hasSpaMode($url));
@@ -70,7 +70,7 @@ trait HasRelationNavigator
     /**
      * Off by default (config `redirect_relation_tabs`).
      */
-    public function shouldRedirectRelationTabs(): bool
+    public function shouldRedirectRelationNavigatorTabs(): bool
     {
         return (bool) config('filament-relation-navigator.redirect_relation_tabs', false);
     }
@@ -78,7 +78,7 @@ trait HasRelationNavigator
     /**
      * The relation page of a relation manager's tab key, as in `?relation=`.
      */
-    public function getRelationTabRedirectUrl(mixed $relation): ?string
+    public function getRelationNavigatorTabRedirectUrl(mixed $relation): ?string
     {
         if ($this instanceof RelationPage || ! is_scalar($relation) || blank($relation) || ! $this->hasRelationNavigator()) {
             return null;
@@ -248,7 +248,7 @@ trait HasRelationNavigator
 
     /**
      * Buttons to the previous and next record, on the same page (config
-     * `record_navigation`, off by default: it adds two queries per page).
+     * `record_navigation`, off by default: it adds a few queries per render).
      */
     public function hasRelationNavigatorRecordNavigation(): bool
     {
@@ -274,8 +274,8 @@ trait HasRelationNavigator
     }
 
     /**
-     * The previous and next record, each on the same page when it can open
-     * it, otherwise on its first page in the menu.
+     * The previous and next record the user can view, each on the same page
+     * when it can open it, otherwise on its first page in the menu.
      *
      * @return array{previous: RelationNavigatorItem | null, next: RelationNavigatorItem | null}
      */
@@ -296,32 +296,42 @@ trait HasRelationNavigator
         $record = $this->getRecord();
         $keyName = $record->getQualifiedKeyName();
 
-        $records = [
-            'previous' => (clone $query)->reorder()->where($keyName, '<', $record->getKey())->orderByDesc($keyName)->first(),
-            'next' => (clone $query)->reorder()->where($keyName, '>', $record->getKey())->orderBy($keyName)->first(),
+        $candidates = [
+            'previous' => (clone $query)->reorder()->where($keyName, '<', $record->getKey())->orderByDesc($keyName),
+            'next' => (clone $query)->reorder()->where($keyName, '>', $record->getKey())->orderBy($keyName),
         ];
 
         $resource = static::getResource();
 
-        foreach ($records as $direction => $neighbour) {
-            if (! $neighbour instanceof Model || ! is_subclass_of($resource, Resource::class)) {
-                continue;
+        if (! is_subclass_of($resource, Resource::class)) {
+            return $neighbours;
+        }
+
+        foreach ($candidates as $direction => $candidateQuery) {
+            // The nearest record the user can view: a few at most, so that a
+            // run of hidden records does not turn into many queries.
+            foreach ($candidateQuery->limit(5)->get() as $neighbour) {
+                if (! $resource::canView($neighbour)) {
+                    continue;
+                }
+
+                $items = RelationNavigator::getItems($resource, $neighbour, $this->getRelationNavigatorActivePageKey(), withBadges: false);
+                $item = collect($items)->firstWhere('isActive', true) ?? ($items[0] ?? null);
+
+                if (! $item) {
+                    continue;
+                }
+
+                $title = $resource::getRecordTitle($neighbour);
+
+                $neighbours[$direction] = new RelationNavigatorItem(
+                    key: $item->key,
+                    label: $title instanceof Htmlable ? $title->toHtml() : (string) $title,
+                    url: $item->url,
+                );
+
+                break;
             }
-
-            $items = RelationNavigator::getItems($resource, $neighbour, $this->getRelationNavigatorActivePageKey(), withBadges: false);
-            $item = collect($items)->firstWhere('isActive', true) ?? ($items[0] ?? null);
-
-            if (! $item) {
-                continue;
-            }
-
-            $title = $resource::getRecordTitle($neighbour);
-
-            $neighbours[$direction] = new RelationNavigatorItem(
-                key: $item->key,
-                label: $title instanceof Htmlable ? $title->toHtml() : (string) $title,
-                url: $item->url,
-            );
         }
 
         return $neighbours;

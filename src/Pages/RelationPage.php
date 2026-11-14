@@ -133,11 +133,27 @@ abstract class RelationPage extends Page
     {
         $contextPageClass = static::getContextPageClass();
 
-        if ($contextPageClass !== static::class) {
-            return $contextPageClass::canAccess($parameters);
+        $canAccess = ($contextPageClass !== static::class)
+            ? $contextPageClass::canAccess($parameters)
+            : parent::canAccess($parameters);
+
+        if (! $canAccess) {
+            return false;
         }
 
-        return parent::canAccess($parameters);
+        $record = $parameters['record'] ?? null;
+
+        return ! ($record instanceof Model) || static::canAccessRecord($record);
+    }
+
+    /**
+     * The record check of the page this one stands for, which Filament runs
+     * when that page mounts, not in canAccess(): the `view` policy for a view
+     * page, `update` for an edit page.
+     */
+    public static function canAccessRecord(Model $record): bool
+    {
+        return RelationNavigator::canAccessRecordPage(static::getContextPageClass(), $record);
     }
 
     /**

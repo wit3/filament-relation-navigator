@@ -154,8 +154,10 @@ CustomerResource::getUrl('relations.orders', ['record' => $customer]);
 The relation manager receives the resource's **view** page as `$pageClass`
 (the edit page when there is no view page), so `isReadOnly()`,
 `canViewForRecord()`, `getBadge()` and every other check behave exactly as in
-the tab. A relation page needs both the view page's `canAccess()` and the
-manager's `canViewForRecord()`; an unknown slug is a 404.
+the tab. A relation page needs what the view page needs (its `canAccess()`
+and the record's `view` policy; `update` when it stands for the edit page)
+and the manager's `canViewForRecord()`; an unknown slug is a 404. The menu
+only lists the pages the user can open.
 
 ## Header, actions and widgets
 
@@ -260,15 +262,16 @@ same URL, for a button of your own.
 Two buttons before the header actions open the previous or the next record,
 by key, **on the same page**: from a customer's invoices to the next
 customer's invoices. A record that cannot open that page opens on its first
-page in the menu. They are off by default, since they add two queries per
-page:
+page in the menu. They are off by default, since they add a few queries per
+render:
 
 ```php
 'record_navigation' => true,
 ```
 
 They walk through the resource's own query (`getRecordRouteBindingEloquentQuery()`),
-so tenancy and your scopes apply. Per page:
+so tenancy and your scopes apply, and skip the records the user cannot view.
+Per page:
 
 ```php
 public function hasRelationNavigatorRecordNavigation(): bool

@@ -6,7 +6,9 @@ use Filament\Facades\Filament;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
+use Filament\Resources\Pages\EditRecord;
 use Filament\Resources\Pages\Page;
+use Filament\Resources\Pages\ViewRecord;
 use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\RelationManagers\RelationManagerConfiguration;
@@ -40,6 +42,24 @@ final class RelationNavigator
 
         return in_array(HasRelationNavigator::class, $traits, true)
             && in_array(InteractsWithRecord::class, $traits, true);
+    }
+
+    /**
+     * The record check that Filament's view and edit pages run when they
+     * mount (`view` and `update` policies), which their canAccess() leaves
+     * out. Other pages check the record themselves: true.
+     *
+     * @param  class-string<Page>  $pageClass
+     */
+    public static function canAccessRecordPage(string $pageClass, Model $record): bool
+    {
+        $resource = $pageClass::getResource();
+
+        return match (true) {
+            is_subclass_of($pageClass, ViewRecord::class) => $resource::canView($record),
+            is_subclass_of($pageClass, EditRecord::class) => $resource::canEdit($record),
+            default => true,
+        };
     }
 
     /**
@@ -245,7 +265,7 @@ final class RelationNavigator
 
             $seenPageClasses[$pageClass] = true;
 
-            if (! $pageClass::canAccess(['record' => $record])) {
+            if (! $pageClass::canAccess(['record' => $record]) || ! self::canAccessRecordPage($pageClass, $record)) {
                 continue;
             }
 
@@ -263,6 +283,13 @@ final class RelationNavigator
         $relationPage = self::getRelationPageClass($resource);
 
         if (! $relationPage) {
+            return $items;
+        }
+
+        // The relation pages need the record's own page first (as
+        // RelationPage::canAccess() does): a record the user cannot view has
+        // none, even if its relation managers would show.
+        if (! $relationPage::canAccess(['record' => $record])) {
             return $items;
         }
 

@@ -1,8 +1,10 @@
 <?php
 
+use Illuminate\Support\Facades\Gate;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Team;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Policies\AuthorPolicy;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
 
 beforeEach(function (): void {
@@ -109,4 +111,24 @@ it('can be turned on for one page only', function (): void {
     $page->record = $this->second;
 
     expect($page->getRelationNavigatorRecordNeighbours()['next']?->label)->toBe('Grace Hopper');
+});
+
+it('skips the records the user cannot view, without showing their names', function (): void {
+    Gate::policy(Author::class, AuthorPolicy::class);
+
+    $this->third->update(['name' => 'Secret']);
+    $fourth = Author::create(['name' => 'Katherine Johnson']);
+
+    $html = $this->get("/admin/authors/{$this->second->getKey()}/posts")->assertOk()->getContent();
+
+    expect(neighbourUrl($html, 'next'))->toEndWith("/admin/authors/{$fourth->getKey()}/posts")
+        ->and($html)->not->toContain('Secret');
+
+    $fourth->delete();
+
+    $html = $this->get("/admin/authors/{$this->second->getKey()}/posts")->assertOk()->getContent();
+
+    expect(neighbourUrl($html, 'next'))->toBeNull();
+
+    $this->get("/admin/authors/{$this->third->getKey()}/posts")->assertForbidden();
 });
