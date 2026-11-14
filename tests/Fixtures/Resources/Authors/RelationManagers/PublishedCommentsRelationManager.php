@@ -14,6 +14,12 @@ class PublishedCommentsRelationManager extends RelationManager
     protected static ?string $title = 'Published comments';
 
     /**
+     * Rendered with the page, so that full-page tests see its content.
+     * (`$isLazy` is the name Filament 4.13 knows.)
+     */
+    protected static bool $isLazy = false;
+
+    /**
      * An author named "No comments" cannot see them: a record that cannot
      * open a page another record can.
      */

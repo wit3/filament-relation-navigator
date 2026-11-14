@@ -37,15 +37,32 @@ it('links a relation manager without a key to its slug', function (): void {
         ->assertSee(AuthorResource::getUrl('relations.published-comments', ['record' => $this->author]), escape: false);
 });
 
-it('does not link a relation manager to the relation page it is on', function (): void {
-    $relationPage = RelationNavigator::getRelationPageClass(AuthorResource::class);
+it('shows the link on the view page', function (): void {
+    $id = $this->author->getKey();
 
-    Livewire::test(PostsRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => $relationPage])
-        ->assertDontSee('fi-relation-navigator-rm-link', escape: false);
-
-    $this->get("/admin/authors/{$this->author->getKey()}/posts")
+    $this->get("/admin/authors/{$id}?relation=0")
         ->assertOk()
+        ->assertSee('fi-relation-navigator-rm-link', escape: false)
+        ->assertSee("/admin/authors/{$id}/published-comments", escape: false);
+});
+
+it('does not link a relation manager to the relation page it is on', function (string $slug): void {
+    // There the relation manager gets the view page as its page class, as on
+    // the view page: only the URL tells them apart.
+    $this->get("/admin/authors/{$this->author->getKey()}/{$slug}")
+        ->assertOk()
+        ->assertSee('Published comments')
         ->assertDontSee('fi-relation-navigator-rm-link', escape: false);
+})->with([
+    'its own page' => 'published-comments',
+    'the page of its group' => 'activity',
+]);
+
+it('does not link a relation manager on a relation page class', function (): void {
+    Livewire::test(PostsRelationManager::class, [
+        'ownerRecord' => $this->author,
+        'pageClass' => RelationNavigator::getRelationPageClass(AuthorResource::class),
+    ])->assertDontSee('fi-relation-navigator-rm-link', escape: false);
 });
 
 it('does not link a relation manager without a page', function (): void {

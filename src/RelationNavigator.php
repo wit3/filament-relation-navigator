@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -390,7 +391,10 @@ final class RelationNavigator
 
         $url = self::getRelationManagerPageUrl($manager);
 
-        if ($url === null) {
+        // A relation page embeds the relation manager with the view page as
+        // its page class: look at the page it is on, also on Livewire
+        // requests (lazy loading, table actions).
+        if ($url === null || self::isOnRelationPage()) {
             return null;
         }
 
@@ -398,6 +402,20 @@ final class RelationNavigator
             'url' => $url,
             'label' => __('filament-relation-navigator::navigator.open_as_page'),
         ])->render());
+    }
+
+    /**
+     * Whether the current Livewire components are on a relation page.
+     */
+    private static function isOnRelationPage(): bool
+    {
+        try {
+            $route = Route::getRoutes()->match(Request::create((string) Livewire::originalUrl()));
+        } catch (\Throwable) {
+            return false;
+        }
+
+        return array_key_exists(RelationPage::ROUTE_PARAMETER, $route->defaults);
     }
 
     /**
