@@ -68,8 +68,8 @@ Each option is read from the page method, then from a static method with the sam
 |---|---|---|
 | `getRelationNavigatorPreset(): string` | `menu.preset` | `github` |
 | `isRelationNavigatorSearchable(): bool` | `menu.searchable` | `true` |
-| `hasRelationNavigatorBadges(): bool` | `menu.badges` | `true` |
-| `hasDeferredRelationNavigatorBadges(): bool` | `menu.badges` = `'lazy'` | `false` |
+| `hasRelationNavigatorBadges(): bool` | `menu.badges` (`'lazy'`, `true`, `false`) | `'lazy'` |
+| `hasDeferredRelationNavigatorBadges(): bool` | `menu.badges` = `'lazy'` | `true` |
 | `getRelationNavigatorShortcut(): ?string` | `menu.shortcut` | `alt+shift+r` |
 | `hasRelationNavigatorMobileMenu(): bool` | `menu.mobile` | `true` |
 | `hasRelationNavigatorRecordNavigation(): bool` | `record_navigation` | `false` |

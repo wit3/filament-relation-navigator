@@ -14,6 +14,8 @@ namespace Wit3\FilamentRelationNavigator\Concerns;
  *
  *     protected static bool $hasRelationPageGlobalSearchAction = false;
  *
+ *     protected static bool $hasRelationNavigatorBadge = false;
+ *
  * Plain static methods with the same names work as well, without the trait.
  */
 trait InteractsWithRelationPage
@@ -40,6 +42,14 @@ trait InteractsWithRelationPage
     public static function hasRelationPageGlobalSearchAction(): bool
     {
         return (bool) (self::readRelationPageProperty('hasRelationPageGlobalSearchAction') ?? true);
+    }
+
+    /**
+     * Its badge in the breadcrumb menu (the tab keeps its own).
+     */
+    public static function hasRelationNavigatorBadge(): bool
+    {
+        return (bool) (self::readRelationPageProperty('hasRelationNavigatorBadge') ?? true);
     }
 
     private static function readRelationPageProperty(string $property): mixed

@@ -454,7 +454,7 @@ php artisan vendor:publish --tag=filament-relation-navigator-config
     ],
     'searchable' => true,   // un campo di ricerca sopra la lista, con qualsiasi preset
     'search_from' => 0,     // ...da questo numero di voci
-    'badges' => true,       // i badge dei relation manager; 'lazy' li carica all'apertura del menu
+    'badges' => 'lazy',     // i badge dei relation manager: 'lazy' all'apertura del menu, true con la pagina, false spenti
     'max_height' => '24rem',
     'separator' => true,    // pagine del record e pagine delle relazioni in due blocchi
     'mobile' => true,       // il menu sopra il titolo sugli schermi piccoli
@@ -476,19 +476,38 @@ della 1.2 e precedenti, imposta `'preset' => 'simple'` e
     <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-simple-light.png" alt="Il preset simple sulla pagina di visualizzazione" width="520">
 </picture>
 
-### Badge differiti
+### Badge
 
-I badge eseguono le stesse query dei badge delle schede. Con
-`'badges' => 'lazy'` la pagina viene disegnata senza, e il menu li carica con
-una sola richiesta quando si apre.
+Il menu mostra i badge dei relation manager, come nelle schede. Di default
+**arrivano quando apri il menu**: fino ad allora è chiuso, quindi la pagina
+viene disegnata senza le loro query, anche a ogni richiesta Livewire che
+ridisegna la breadcrumb. Per l'attimo che servono si vede uno spinner.
+
+```php
+'badges' => 'lazy', // predefinito; true: con la pagina; false: niente badge
+```
+
+Spegnili dove serve:
+
+```php
+// Una pagina, o una resource (statico): niente badge in questo menu
+public function hasRelationNavigatorBadges(): bool
+{
+    return false;
+}
+
+// Un relation manager (con InteractsWithRelationPage): il suo badge resta
+// nella scheda, non nel menu
+protected static bool $hasRelationNavigatorBadge = false;
+```
 
 Un relation manager con il badge della scheda lazy in Filament
 (`protected static ?bool $isBadgeLazyLoaded = true;`, o `$isBadgeDeferred` su
-Filament 4.13) viene trattato allo stesso modo nel menu, qualunque sia la
-config: il suo badge arriva all'apertura del menu, gli altri con la pagina.
+Filament 4.13) è lazy anche nel menu, anche con `'badges' => true`.
 
-Se hai pubblicato le viste del package, aggiorna
-`menu/partials/list.blade.php` prima di contare su uno dei due.
+Le viste del menu che non sanno caricare i badge dopo (viste del package
+pubblicate prima della 1.3, o preset tuoi che mostrano `$item->badge` da soli)
+li ricevono con la pagina, come prima: non sparisce niente.
 
 **Tastiera**: dal campo di ricerca, Giù entra nella lista; Su e Giù si
 spostano tra le pagine, Invio ne apre una, Esc chiude il menu.

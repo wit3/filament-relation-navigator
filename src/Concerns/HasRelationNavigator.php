@@ -181,7 +181,7 @@ trait HasRelationNavigator
     #[Unexposed]
     public function hasRelationNavigatorBadges(): bool
     {
-        return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.badges', true));
+        return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.badges', 'lazy'));
     }
 
     /**
@@ -191,7 +191,14 @@ trait HasRelationNavigator
     #[Unexposed]
     public function hasDeferredRelationNavigatorBadges(): bool
     {
-        return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): bool => config('filament-relation-navigator.menu.badges', true) === 'lazy');
+        $isDeferred = (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): bool => config('filament-relation-navigator.menu.badges', 'lazy') === 'lazy');
+
+        // Menu views that cannot load them (published before 1.3, presets of
+        // your own) get the badges with the page instead of none.
+        return $isDeferred && RelationNavigator::supportsDeferredBadges(
+            $this->getRelationNavigatorView(),
+            'filament-relation-navigator::menu.mobile',
+        );
     }
 
     /**

@@ -7,6 +7,13 @@ composer update wit3/filament-relation-navigator
 php artisan filament:assets
 ```
 
+## Alla 1.6
+
+Niente da cambiare.
+
+- **I badge del menu arrivano quando apri il menu**, non con la pagina. Per il comportamento di prima: `'badges' => true`. Le viste del menu pubblicate prima della 1.3, e i preset tuoi, continuano a riceverli con la pagina.
+- L'azione «Apri come pagina» ha nuove opzioni (`relation_manager_action`) e nuovi agganci: vedi [Apri come pagina](/it/guide/open-as-page).
+
 ## Alla 1.5
 
 Niente da cambiare. Due comportamenti sono diversi:

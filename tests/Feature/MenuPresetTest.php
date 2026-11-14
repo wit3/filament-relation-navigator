@@ -10,6 +10,7 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\AuthorResource;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PostsRelationManager;
 
 beforeEach(function (): void {
     $this->actingAs(User::create(['name' => 'Admin', 'email' => 'admin@example.com', 'password' => 'secret']));
@@ -299,7 +300,9 @@ it('loads the badges when the menu opens with badges set to lazy', function (): 
         ->and($badges['relations.posts']['class'])->toContain('fi-color');
 });
 
-it('renders the badges with the page by default', function (): void {
+it('renders the badges with the page when badges is true', function (): void {
+    config()->set('filament-relation-navigator.menu.badges', true);
+
     $html = $this->get("/admin/authors/{$this->author->getKey()}")->assertOk()->getContent();
 
     expect($html)
@@ -333,6 +336,8 @@ it('reads the options from the page, then the resource, then the config', functi
 });
 
 it('loads a lazy tab badge when the menu opens, and the others with the page', function (): void {
+    config()->set('filament-relation-navigator.menu.badges', true);
+
     $author = Author::create(['name' => 'Lazy badge']);
     $author->posts()->create(['title' => 'Notes']);
 
@@ -364,3 +369,44 @@ it('accepts only plain preset names and package presets', function (string $name
     'a path in the name' => ['../../evil', 'github'],
     'a path in --from' => ['compact', '../menu/github'],
 ]);
+
+it('loads the badges when the menu opens by default', function (): void {
+    $page = Livewire::test(ViewAuthor::class, ['record' => $this->author->getKey()])->instance();
+
+    expect($page->hasDeferredRelationNavigatorBadges())->toBeTrue()
+        ->and(collect($page->getRelationNavigatorItems())->firstWhere('key', 'relations.posts')->badge)->toBeNull()
+        ->and($page->getRelationNavigatorBadges()['relations.posts']['badge'])->toBe('1');
+});
+
+it('renders the badges with the page when the menu views cannot load them', function (): void {
+    // A list partial published before deferred badges existed.
+    View::prependNamespace('filament-relation-navigator', __DIR__.'/../Fixtures/views/old-published');
+
+    try {
+        $page = Livewire::test(ViewAuthor::class, ['record' => $this->author->getKey()])->instance();
+
+        expect($page->hasDeferredRelationNavigatorBadges())->toBeFalse()
+            ->and(collect($page->getRelationNavigatorItems())->firstWhere('key', 'relations.posts')->badge)->toBe('1');
+    } finally {
+        View::replaceNamespace('filament-relation-navigator', [realpath(__DIR__.'/../../resources/views')]);
+    }
+});
+
+it('leaves out the badge of a relation manager that opts out', function (): void {
+    config()->set('filament-relation-navigator.menu.badges', true);
+
+    $items = collect(RelationNavigator::getItems(AuthorResource::class, $this->author))->keyBy('key');
+
+    expect($items['relations.posts']->badge)->toBe('1');
+
+    PostsRelationManager::$menuBadge = false;
+
+    try {
+        $items = collect(RelationNavigator::getItems(AuthorResource::class, $this->author))->keyBy('key');
+
+        expect($items['relations.posts']->badge)->toBeNull()
+            ->and($items['relations.posts']->isBadgeDeferred)->toBeFalse();
+    } finally {
+        PostsRelationManager::$menuBadge = true;
+    }
+});

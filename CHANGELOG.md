@@ -4,7 +4,14 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+### Changed
+
+- **Menu badges are loaded when the menu opens by default** (`menu.badges` = `'lazy'`): the menu is closed until then, so pages render without the badge queries, also on every Livewire request that redraws the breadcrumbs. Apps that published the config keep what they set. Menu views that cannot load badges later (published before 1.3, or presets of your own) get them with the page, as before. For the old behaviour: `'badges' => true`.
+
 ### Added
+
+- A relation manager can leave its badge out of the menu, keeping it in its tab: `hasRelationNavigatorBadge()` or `$hasRelationNavigatorBadge` with `InteractsWithRelationPage`.
+- `RelationNavigator::supportsDeferredBadges()`.
 
 - **"Open as page" can be customised**: config `relation_manager_action` (`style`: `link`, `button` or `icon_button`; `label`, `icon`, `icon_position`, `color`, `size`, `new_tab`), `RelationNavigator::configureRelationPageActionUsing()` for any change to the Filament action, and `configureRelationPageAction()` on a resource or a relation manager. `RelationNavigator::makeRelationPageAction()` builds it.
 

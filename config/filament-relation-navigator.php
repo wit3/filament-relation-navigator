@@ -42,10 +42,11 @@ return [
         // With `searchable`, the search field appears from this many items.
         'search_from' => 0,
 
-        // The relation managers' badges, as in their tabs. They run the same
-        // queries as the tabs: 'lazy' loads them when the menu opens, false
-        // turns them off.
-        'badges' => true,
+        // The relation managers' badges, as in their tabs. 'lazy' (default)
+        // loads them when the menu opens, so the page renders without their
+        // queries; true renders them with the page; false turns them off. A
+        // relation manager can leave its badge out: hasRelationNavigatorBadge().
+        'badges' => 'lazy',
 
         'max_height' => '24rem',
 

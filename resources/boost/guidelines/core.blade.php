@@ -50,8 +50,8 @@ Every option is read from the record page (override the method), then from a sta
 |---|---|---|
 | `getRelationNavigatorPreset(): string` (`github`, `simple`, yours, a view name) | `menu.preset` | `github` |
 | `isRelationNavigatorSearchable(): bool` | `menu.searchable` | `true` |
-| `hasRelationNavigatorBadges(): bool` | `menu.badges` | `true` |
-| `hasDeferredRelationNavigatorBadges(): bool` (badges loaded when the menu opens) | `menu.badges` = `'lazy'` | `false` |
+| `hasRelationNavigatorBadges(): bool` | `menu.badges` (`'lazy'`, `true`, `false`) | `'lazy'` |
+| `hasDeferredRelationNavigatorBadges(): bool` (badges loaded when the menu opens) | `menu.badges` = `'lazy'` | `true` |
 | `getRelationNavigatorShortcut(): ?string` (`alt+shift+r`, `mod+…`; null = off) | `menu.shortcut` | `alt+shift+r` |
 | `hasRelationNavigatorMobileMenu(): bool` | `menu.mobile` | `true` |
 | `hasRelationNavigatorRecordNavigation(): bool` (previous/next record, same page) | `record_navigation` | `false` |

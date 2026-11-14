@@ -7,6 +7,13 @@ composer update wit3/filament-relation-navigator
 php artisan filament:assets
 ```
 
+## To 1.6
+
+Nothing to change.
+
+- **Menu badges are loaded when the menu opens**, not with the page. For the old behaviour: `'badges' => true`. Menu views published before 1.3, and presets of your own, keep getting them with the page.
+- The "Open as page" action has new options (`relation_manager_action`) and hooks: see [Open as page](/guide/open-as-page).
+
 ## To 1.5
 
 Nothing to change. Two behaviours are different:

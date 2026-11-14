@@ -317,9 +317,13 @@ final class RelationNavigator
                 continue;
             }
 
+            // A relation manager can leave its badge out of the menu.
+            $managerClass = $definition->getManagerClass();
+            $withBadge = $withBadges && ! ($managerClass && method_exists($managerClass, 'hasRelationNavigatorBadge') && ! $managerClass::hasRelationNavigatorBadge());
+
             // A lazy tab badge is loaded when the menu opens, unless asked now.
-            $isBadgeDeferred = $withBadges && (! $resolveDeferredBadges) && $definition->isBadgeLazy($record, $contextPageClass);
-            $hasBadge = $withBadges && ! $isBadgeDeferred;
+            $isBadgeDeferred = $withBadge && (! $resolveDeferredBadges) && $definition->isBadgeLazy($record, $contextPageClass);
+            $hasBadge = $withBadge && ! $isBadgeDeferred;
 
             $items[] = new RelationNavigatorItem(
                 key: $pageKey,
@@ -415,6 +419,73 @@ final class RelationNavigator
         $buttons = method_exists($page, 'renderRelationNavigatorRecordNavigation') ? $page->renderRelationNavigatorRecordNavigation() : null;
 
         return $buttons instanceof Htmlable ? $buttons : null;
+    }
+
+    /**
+     * @var array<string, bool>
+     */
+    private static array $viewsWithDeferredBadges = [];
+
+    /**
+     * Whether menu views can load deferred badges: they call the page's
+     * getRelationNavigatorBadges(), themselves or through the package's list
+     * partial. Views published before 1.3, or presets of your own that render
+     * the badges themselves, cannot: their badges then come with the page.
+     */
+    public static function supportsDeferredBadges(string ...$views): bool
+    {
+        $partialPath = self::viewPath(self::LIST_PARTIAL);
+
+        foreach ($views as $view) {
+            // By file: a published view is another file.
+            $key = self::viewPath($view).'|'.$partialPath;
+
+            if (! (self::$viewsWithDeferredBadges[$key] ??= self::viewLoadsDeferredBadges($view))) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private const LIST_PARTIAL = 'filament-relation-navigator::menu.partials.list';
+
+    private static function viewPath(string $view): string
+    {
+        try {
+            return app(ViewFactory::class)->getFinder()->find($view);
+        } catch (\InvalidArgumentException) {
+            return '';
+        }
+    }
+
+    private static function viewLoadsDeferredBadges(string $view): bool
+    {
+        $content = self::viewSource($view);
+
+        if ($content === null) {
+            return false;
+        }
+
+        if (str_contains($content, 'getRelationNavigatorBadges')) {
+            return true;
+        }
+
+        return str_contains($content, 'menu.partials.list')
+            && str_contains(self::viewSource(self::LIST_PARTIAL) ?? '', 'getRelationNavigatorBadges');
+    }
+
+    private static function viewSource(string $view): ?string
+    {
+        $path = self::viewPath($view);
+
+        if ($path === '') {
+            return null;
+        }
+
+        $content = @file_get_contents($path);
+
+        return is_string($content) ? $content : null;
     }
 
     /**

@@ -457,7 +457,7 @@ php artisan vendor:publish --tag=filament-relation-navigator-config
     ],
     'searchable' => true,   // a search field on top of the list, whatever the preset
     'search_from' => 0,     // ...from this many items
-    'badges' => true,       // the relation managers' badges; 'lazy' loads them when the menu opens
+    'badges' => 'lazy',     // the relation managers' badges: 'lazy' when the menu opens, true with the page, false off
     'max_height' => '24rem',
     'separator' => true,    // record pages and relation pages in two blocks
     'mobile' => true,       // the menu above the heading on small screens
@@ -478,19 +478,38 @@ and earlier, set `'preset' => 'simple'` and `'searchable' => false`.
     <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-simple-light.png" alt="The simple preset on the view page" width="520">
 </picture>
 
-### Deferred badges
+### Badges
 
-Badges run the same queries as the tab badges. With `'badges' => 'lazy'` the
-page renders without them, and the menu loads them in one request when it
-opens.
+The menu shows the relation managers' badges, as in their tabs. By default
+they are **loaded when the menu opens**: the menu is closed until then, so the
+page renders without their queries, also on every Livewire request that
+redraws the breadcrumbs. A spinner shows for the moment they take.
+
+```php
+'badges' => 'lazy', // default; true: with the page; false: no badges
+```
+
+Turn them off where you need to:
+
+```php
+// A page, or a resource (static): no badges in this menu
+public function hasRelationNavigatorBadges(): bool
+{
+    return false;
+}
+
+// A relation manager (with InteractsWithRelationPage): its badge stays in
+// the tab, not in the menu
+protected static bool $hasRelationNavigatorBadge = false;
+```
 
 A relation manager whose tab badge is lazy in Filament
-(`protected static ?bool $isBadgeLazyLoaded = true;`, or `$isBadgeDeferred`
-on Filament 4.13) gets the same treatment in the menu, whatever the config:
-its badge is loaded when the menu opens, the others with the page.
+(`protected static ?bool $isBadgeLazyLoaded = true;`, or `$isBadgeDeferred` on
+Filament 4.13) is lazy in the menu too, even with `'badges' => true`.
 
-If you published the package views, update `menu/partials/list.blade.php`
-before relying on either.
+Menu views that cannot load badges later (package views published before
+1.3, or presets of your own that render `$item->badge` themselves) get them
+with the page, as before: nothing disappears.
 
 **Keyboard**: from the search field, Down moves into the list; Up and Down
 move between the pages, Enter opens one, Escape closes the menu.

@@ -24,6 +24,16 @@ class PostsRelationManager extends RelationManager
     public static bool $globalSearchAction = true;
 
     /**
+     * Switched by the tests of the menu badges.
+     */
+    public static bool $menuBadge = true;
+
+    public static function hasRelationNavigatorBadge(): bool
+    {
+        return static::$menuBadge;
+    }
+
+    /**
      * Switched by the tests of the "Open as page" action.
      *
      * @var (\Closure(Action): Action) | null
