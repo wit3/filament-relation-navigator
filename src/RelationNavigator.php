@@ -422,6 +422,11 @@ final class RelationNavigator
     public const REMEMBERED_LIST_SIZE = 100;
 
     /**
+     * ...and at most this many bytes of keys.
+     */
+    public const REMEMBERED_LIST_BYTES = 2048;
+
+    /**
      * Remembers the records a resource's list shows, in its order (sort,
      * filters, search, tab, grouping), for previous and next on the record
      * pages. Called by the package when the list renders; the records are
@@ -438,11 +443,22 @@ final class RelationNavigator
         $records = $list->getTableRecords();
         $records = ($records instanceof Collection) ? $records : collect($records->items());
 
-        session()->put(self::rememberedListSessionKey($resource), $records
-            ->take(self::REMEMBERED_LIST_SIZE)
-            ->map(fn (Model $record): string => (string) $record->getKey())
-            ->values()
-            ->all());
+        // At most 100 keys and 2 KB: sessions kept in a cookie have 4 KB.
+        $keys = [];
+        $bytes = 0;
+
+        foreach ($records->take(self::REMEMBERED_LIST_SIZE) as $record) {
+            $key = (string) $record->getKey();
+            $bytes += strlen($key) + 3;
+
+            if ($bytes > self::REMEMBERED_LIST_BYTES) {
+                break;
+            }
+
+            $keys[] = $key;
+        }
+
+        session()->put(self::rememberedListSessionKey($resource), $keys);
     }
 
     /**

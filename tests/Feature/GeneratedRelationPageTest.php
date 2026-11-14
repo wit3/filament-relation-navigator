@@ -165,14 +165,37 @@ it('writes the generated classes to the temporary directory when the storage is 
     GeneratedRelationPages::useCachePath(null);
     app()->useStoragePath($readOnly);
 
+    $directory = rtrim(sys_get_temp_dir(), '/').'/filament-relation-navigator-'.posix_geteuid();
+
     try {
-        expect(GeneratedRelationPages::pathFor('Some\\Class'))
-            ->toStartWith(rtrim(sys_get_temp_dir(), '/').'/filament-relation-navigator/');
+        expect(GeneratedRelationPages::pathFor('Some\\Class'))->toStartWith($directory.'/')
+            // Only this user can write there.
+            ->and(fileperms($directory) & 0777)->toBe(0700);
+
+        // A directory others can write to is refused, not used.
+        chmod($directory, 0777);
+
+        expect(fn () => GeneratedRelationPages::pathFor('Some\\Class'))
+            ->toThrow(RuntimeException::class, 'only this user can write');
     } finally {
+        @chmod($directory, 0700);
         app()->useStoragePath($storage);
         GeneratedRelationPages::useCachePath(TestCase::generatedPagesPath());
         chmod($readOnly.'/framework/cache', 0755);
     }
+});
+
+it('replaces a generated class file that was changed, instead of including it', function (): void {
+    $class = GeneratedRelationPages::classFor(AutoAuthorResource::class);
+    $path = GeneratedRelationPages::pathFor($class);
+
+    GeneratedRelationPages::ensureFile($class, AutoAuthorResource::class);
+    $original = file_get_contents($path);
+
+    file_put_contents($path, '<?php throw new Exception("tampered");');
+
+    expect(GeneratedRelationPages::ensureFile($class, AutoAuthorResource::class))->toBe($path)
+        ->and(file_get_contents($path))->toBe($original);
 });
 
 it('explains a cache directory it cannot write to', function (): void {

@@ -16,6 +16,7 @@ use Filament\Schemas\Components\EmbeddedSchema;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Schema;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Widgets\Widget;
 use Filament\Widgets\WidgetConfiguration;
 use Illuminate\Contracts\Support\Htmlable;
@@ -392,21 +393,25 @@ abstract class RelationPage extends Page
         return str_contains($name, $marker) ? Str::afterLast($name, $marker) : null;
     }
 
+    #[Unexposed]
     public function getRelationPageDefinition(): ?RelationPageDefinition
     {
         return static::getRelationPageDefinitions()[$this->relationPage] ?? null;
     }
 
+    #[Unexposed]
     public function getRelationPageKey(): string
     {
         return static::getPageKey($this->relationPage);
     }
 
+    #[Unexposed]
     public function getRelationTitle(): string
     {
         return $this->getRelationPageDefinition()?->getTitle($this->getRecord(), static::getContextPageClass()) ?? '';
     }
 
+    #[Unexposed]
     public function getTitle(): string|Htmlable
     {
         if (filled(static::$title)) {
@@ -439,6 +444,7 @@ abstract class RelationPage extends Page
      * The record the relation belongs to, under the relation title, unless
      * a header already shows it.
      */
+    #[Unexposed]
     public function getSubheading(): string|Htmlable|null
     {
         if (filled($this->subheading ?? null)) {
@@ -464,6 +470,7 @@ abstract class RelationPage extends Page
      * `getRecordTitle()` when you override it without an attribute. Null
      * when the resource only knows the model label.
      */
+    #[Unexposed]
     public function getOwnerRecordTitle(): string|Htmlable|null
     {
         $resource = static::getResource();
@@ -480,6 +487,7 @@ abstract class RelationPage extends Page
         return $title;
     }
 
+    #[Unexposed]
     public function getBreadcrumb(): string
     {
         if (static::$breadcrumb !== null) {
@@ -494,6 +502,7 @@ abstract class RelationPage extends Page
     /**
      * @return array<string | int, string | Htmlable>
      */
+    #[Unexposed]
     public function getBreadcrumbs(): array
     {
         $breadcrumbs = $this->getRecordBreadcrumbs();
@@ -532,6 +541,7 @@ abstract class RelationPage extends Page
         return null;
     }
 
+    #[Unexposed]
     public function getRelationNavigatorActivePageKey(): ?string
     {
         return $this->getRelationPageKey();
@@ -540,6 +550,7 @@ abstract class RelationPage extends Page
     /**
      * @return array<string>
      */
+    #[Unexposed]
     public function getPageClasses(): array
     {
         return [
@@ -549,6 +560,7 @@ abstract class RelationPage extends Page
         ];
     }
 
+    #[Unexposed]
     public function content(Schema $schema): Schema
     {
         return $schema->components(array_filter([
@@ -567,6 +579,7 @@ abstract class RelationPage extends Page
      *         return $schema->components([UserCard::make()]); // or static::infolist($schema)
      *     }
      */
+    #[Unexposed]
     public function relationPageHeader(Schema $schema): Schema
     {
         $schema->record($this->getRecord());
@@ -576,6 +589,7 @@ abstract class RelationPage extends Page
         return $owner ? $owner::relationPageHeader($schema) : $schema;
     }
 
+    #[Unexposed]
     public function hasRelationPageHeader(): bool
     {
         return $this->getRelationPageHookOwner('relationPageHeader') !== null;
@@ -613,6 +627,7 @@ abstract class RelationPage extends Page
     /**
      * Header actions act on the record the relation belongs to.
      */
+    #[Unexposed]
     public function getDefaultActionRecord(Action $action): ?Model
     {
         if ($action->getTable()) {
@@ -654,6 +669,7 @@ abstract class RelationPage extends Page
         ];
     }
 
+    #[Unexposed]
     public function getRelationManagerComponent(): Component
     {
         $definition = $this->getRelationPageDefinition();

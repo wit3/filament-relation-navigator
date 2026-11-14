@@ -3,6 +3,7 @@
 namespace Wit3\FilamentRelationNavigator\Concerns;
 
 use Filament\Resources\Resource;
+use Filament\Support\Components\Attributes\Unexposed;
 use Filament\Support\Facades\FilamentView;
 use Filament\Support\View\ComponentAttributeBag;
 use Filament\Support\View\Components\BadgeComponent;
@@ -80,6 +81,7 @@ trait HasRelationNavigator
     /**
      * Off by default (config `redirect_relation_tabs`).
      */
+    #[Unexposed]
     public function shouldRedirectRelationNavigatorTabs(): bool
     {
         return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.redirect_relation_tabs', false));
@@ -88,6 +90,7 @@ trait HasRelationNavigator
     /**
      * The relation page of a relation manager's tab key, as in `?relation=`.
      */
+    #[Unexposed]
     public function getRelationNavigatorTabRedirectUrl(mixed $relation): ?string
     {
         if ($this instanceof RelationPage || ! is_scalar($relation) || blank($relation) || ! $this->hasRelationNavigator()) {
@@ -122,6 +125,7 @@ trait HasRelationNavigator
     /**
      * @return array<string | int, string | Htmlable>
      */
+    #[Unexposed]
     public function getBreadcrumbs(): array
     {
         // A custom page that uses InteractsWithRecord itself aliases its
@@ -137,6 +141,7 @@ trait HasRelationNavigator
      * @param  array<string | int, string | Htmlable>  $breadcrumbs
      * @return array<string | int, string | Htmlable>
      */
+    #[Unexposed]
     public function withRelationNavigator(array $breadcrumbs): array
     {
         if (! $this->hasRelationNavigator()) {
@@ -163,6 +168,7 @@ trait HasRelationNavigator
         return $breadcrumbs;
     }
 
+    #[Unexposed]
     public function hasRelationNavigator(): bool
     {
         return $this->hasRecord() && $this->getRecord()->exists;
@@ -172,6 +178,7 @@ trait HasRelationNavigator
      * Relation managers' badges in the menu (config `menu.badges`). They run
      * the same queries as the tab badges: turn them off if they are expensive.
      */
+    #[Unexposed]
     public function hasRelationNavigatorBadges(): bool
     {
         return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.badges', true));
@@ -181,6 +188,7 @@ trait HasRelationNavigator
      * Badges loaded when the menu opens instead of with the page (config
      * `menu.badges` = 'lazy'): the page renders without their queries.
      */
+    #[Unexposed]
     public function hasDeferredRelationNavigatorBadges(): bool
     {
         return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): bool => config('filament-relation-navigator.menu.badges', true) === 'lazy');
@@ -223,6 +231,7 @@ trait HasRelationNavigator
      * One of the presets in the config (`github`, the default, `simple` or
      * yours), or a view name.
      */
+    #[Unexposed]
     public function getRelationNavigatorPreset(): string
     {
         return (string) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.preset', 'github'));
@@ -234,6 +243,7 @@ trait HasRelationNavigator
      * and Ctrl elsewhere. Null turns it off; a shortcut of the panel's
      * global search is ignored.
      */
+    #[Unexposed]
     public function getRelationNavigatorShortcut(): ?string
     {
         $shortcut = $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.shortcut', 'alt+shift+r'));
@@ -251,6 +261,7 @@ trait HasRelationNavigator
     /**
      * A search field on top of the list, whatever the preset (on by default).
      */
+    #[Unexposed]
     public function isRelationNavigatorSearchable(): bool
     {
         return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.searchable', true));
@@ -260,6 +271,7 @@ trait HasRelationNavigator
      * Buttons to the previous and next record, on the same page (config
      * `record_navigation`, off by default: it adds a few queries per render).
      */
+    #[Unexposed]
     public function hasRelationNavigatorRecordNavigation(): bool
     {
         return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.record_navigation', false));
@@ -272,6 +284,7 @@ trait HasRelationNavigator
      *
      * @return Builder<Model> | null
      */
+    #[Unexposed]
     public function getRelationNavigatorRecordNavigationQuery(): ?Builder
     {
         $resource = static::getResource();
@@ -289,6 +302,7 @@ trait HasRelationNavigator
      *
      * @return array{previous: RelationNavigatorItem | null, next: RelationNavigatorItem | null}
      */
+    #[Unexposed]
     public function getRelationNavigatorRecordNeighbours(): array
     {
         $neighbours = ['previous' => null, 'next' => null];
@@ -390,11 +404,13 @@ trait HasRelationNavigator
      * its records only when record navigation is on in the config or on the
      * resource, not on a single page.
      */
+    #[Unexposed]
     public function shouldRelationNavigatorRecordNavigationFollowList(): bool
     {
         return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.record_navigation_follows_list', true));
     }
 
+    #[Unexposed]
     public function renderRelationNavigatorRecordNavigation(): ?Htmlable
     {
         $neighbours = $this->getRelationNavigatorRecordNeighbours();
@@ -453,6 +469,7 @@ trait HasRelationNavigator
         return $view;
     }
 
+    #[Unexposed]
     public function getRelationNavigatorView(): string
     {
         $preset = $this->getRelationNavigatorPreset();
@@ -466,6 +483,7 @@ trait HasRelationNavigator
         return view()->exists($preset) ? $preset : "filament-relation-navigator::menu.{$preset}";
     }
 
+    #[Unexposed]
     public function getRelationNavigatorActivePageKey(): ?string
     {
         return RelationNavigator::getActivePageKey($this);
@@ -474,6 +492,7 @@ trait HasRelationNavigator
     /**
      * @return array<RelationNavigatorItem>
      */
+    #[Unexposed]
     public function getRelationNavigatorItems(): array
     {
         $resource = static::getResource();
@@ -506,11 +525,13 @@ trait HasRelationNavigator
      * above the heading instead (config `menu.mobile`). Rendered by the
      * package through a render hook.
      */
+    #[Unexposed]
     public function hasRelationNavigatorMobileMenu(): bool
     {
         return (bool) $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.mobile', true));
     }
 
+    #[Unexposed]
     public function renderRelationNavigatorMobileMenu(): ?Htmlable
     {
         if (! $this->hasRelationNavigatorMobileMenu() || ! $this->hasRelationNavigator()) {

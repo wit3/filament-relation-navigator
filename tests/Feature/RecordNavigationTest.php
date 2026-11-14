@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Wit3\FilamentRelationNavigator\RelationNavigator;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
@@ -7,6 +8,7 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Team;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Policies\AuthorPolicy;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\AuthorResource;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ListAuthors;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\AutoAuthors\AutoAuthorResource;
 
@@ -196,4 +198,22 @@ describe('following the list', function (): void {
             ->toBe([(string) $this->third->getKey(), (string) $this->second->getKey(), (string) $this->first->getKey()])
             ->and(RelationNavigator::getRememberedListKeys(AutoAuthorResource::class))->toBeNull();
     });
+});
+
+it('keeps the remembered list small enough for a cookie session', function (): void {
+    $list = new class extends ListAuthors
+    {
+        public function getTableRecords(): Collection
+        {
+            // UUID-like keys.
+            return collect(range(1, 100))->map(fn (int $i): Author => (new Author)->setKeyType('string')->forceFill(['id' => str_repeat('k', 32).$i]));
+        }
+    };
+
+    RelationNavigator::rememberListRecords($list);
+
+    $keys = RelationNavigator::getRememberedListKeys(AuthorResource::class);
+
+    expect(strlen(json_encode($keys)))->toBeLessThanOrEqual(RelationNavigator::REMEMBERED_LIST_BYTES + 100)
+        ->and(count($keys))->toBeLessThan(100)->toBeGreaterThan(20);
 });

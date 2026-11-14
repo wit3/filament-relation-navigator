@@ -95,17 +95,52 @@ final class GeneratedRelationPages
             return $storage;
         }
 
-        return rtrim(sys_get_temp_dir(), '/').'/filament-relation-navigator';
+        return self::temporaryDirectory();
     }
 
     /**
+     * A directory of this user only, inside the shared temporary directory:
+     * nobody else may create or change the files the autoloader includes.
+     */
+    private static function temporaryDirectory(): string
+    {
+        $user = self::currentUserId();
+        $directory = rtrim(sys_get_temp_dir(), '/').'/filament-relation-navigator-'.$user;
+
+        if (! is_dir($directory)) {
+            @mkdir($directory, 0700, true);
+        }
+
+        $isSafe = is_dir($directory)
+            && ! is_link($directory)
+            && @fileowner($directory) === $user
+            && ((@fileperms($directory) ?: 0) & 0022) === 0;
+
+        if (! $isSafe) {
+            throw new RuntimeException("The relation page classes need a directory that only this user can write, and [{$directory}] is not. Make the storage writable, or choose a directory with GeneratedRelationPages::useCachePath() in a service provider.");
+        }
+
+        return $directory;
+    }
+
+    private static function currentUserId(): int
+    {
+        return function_exists('posix_geteuid') ? posix_geteuid() : (int) getmyuid();
+    }
+
+    /**
+     * The file of a generated class, written when missing or different from
+     * the code it must hold: a file changed by someone else is replaced, not
+     * included.
+     *
      * @param  class-string<resource>  $resource
      */
     public static function ensureFile(string $class, string $resource): string
     {
         $path = self::pathFor($class);
+        $code = self::code($class, $resource);
 
-        if (is_file($path)) {
+        if (is_file($path) && ! is_link($path) && @file_get_contents($path) === $code) {
             return $path;
         }
 
@@ -115,7 +150,9 @@ final class GeneratedRelationPages
 
         $temporaryPath = $path.'.'.getmypid().'.'.bin2hex(random_bytes(4)).'.tmp';
 
-        if (@file_put_contents($temporaryPath, self::code($class, $resource)) === false || ! @rename($temporaryPath, $path)) {
+        if (@file_put_contents($temporaryPath, $code) === false || ! @rename($temporaryPath, $path)) {
+            @unlink($temporaryPath);
+
             throw new RuntimeException("Cannot write the relation page class to [{$path}]. Make the directory writable, or choose another one with GeneratedRelationPages::useCachePath() in a service provider.");
         }
 

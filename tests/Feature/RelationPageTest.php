@@ -199,3 +199,17 @@ it('takes the title, subheading and breadcrumb of one relation page from its rel
         ->assertOk()
         ->assertSeeInOrder(['<h1', 'Published comments'], escape: false);
 });
+
+it('lets the browser call only the methods the menu needs', function (): void {
+    $author = Author::create(['name' => 'Ada Lovelace']);
+
+    Livewire::test(ViewAuthor::class, ['record' => $author->getKey()])
+        ->call('getRelationNavigatorBadges')
+        ->assertOk();
+
+    foreach (['getRelationNavigatorItems', 'getRelationNavigatorRecordNeighbours', 'renderRelationNavigatorMobileMenu', 'getRelationNavigatorTabRedirectUrl'] as $method) {
+        Livewire::test(ViewAuthor::class, ['record' => $author->getKey()])
+            ->call($method)
+            ->assertForbidden();
+    }
+});
