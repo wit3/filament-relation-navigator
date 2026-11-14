@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Ideas and questions
+  - name: Questions
     url: https://github.com/wit3/filament-relation-navigator/discussions
-    about: Ask a question or propose a feature.
+    about: Ask how to do something with the plugin.
+  - name: Security vulnerability
+    url: https://github.com/wit3/filament-relation-navigator/security/advisories/new
+    about: Report it privately, never in a public issue.

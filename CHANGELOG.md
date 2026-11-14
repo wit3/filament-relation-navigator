@@ -2,6 +2,8 @@
 
 All notable changes to `filament-relation-navigator` are documented here.
 
+## Unreleased
+
 ## 1.2.1 - 2026-11-14
 
 Bug fixes and tests. No API changes.
