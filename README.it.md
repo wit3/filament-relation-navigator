@@ -373,7 +373,8 @@ successivo **sulla stessa pagina**: dalle fatture di un cliente a quelle del
 cliente successivo.
 
 <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/record-navigation.gif" alt="Record precedente e successivo: dalle fatture di un cliente a quelle del successivo, con un tooltip che nomina il record" width="880">
- Un record che non può aprire quella pagina si apre sulla
+
+Un record che non può aprire quella pagina si apre sulla
 sua prima pagina del menu. Sono spenti di default, perché aggiungono qualche
 query a ogni render:
 

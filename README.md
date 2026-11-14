@@ -376,7 +376,8 @@ Two buttons before the header actions open the previous or the next record
 invoices.
 
 <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/record-navigation.gif" alt="Previous and next record: from the invoices of one customer to the invoices of the next, with a tooltip naming the record" width="880">
- A record that cannot open that page opens on its first
+
+A record that cannot open that page opens on its first
 page in the menu. They are off by default, since they add a few queries per
 render:
 
