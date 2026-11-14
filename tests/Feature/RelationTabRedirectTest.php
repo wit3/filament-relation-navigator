@@ -57,3 +57,17 @@ it('redirects inside the tenant', function (): void {
 
     $this->get("{$base}?relation=posts")->assertRedirect("{$base}/posts");
 });
+
+it('keeps the tab when the page itself is reloaded', function (): void {
+    $id = $this->author->getKey();
+
+    // Filament writes ?relation= into the URL when a tab is clicked.
+    $this->withHeader('referer', "http://localhost/admin/authors/{$id}?relation=0")
+        ->get("/admin/authors/{$id}?relation=posts")
+        ->assertOk();
+
+    // Coming from elsewhere, the link still opens the relation page.
+    $this->withHeader('referer', 'http://localhost/admin/authors')
+        ->get("/admin/authors/{$id}?relation=posts")
+        ->assertRedirect("/admin/authors/{$id}/posts");
+});

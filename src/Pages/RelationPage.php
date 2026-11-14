@@ -285,7 +285,12 @@ abstract class RelationPage extends Page
         }
 
         if ($manager instanceof RelationGroup || $managerClass === null) {
-            return Str::slug($manager instanceof RelationGroup ? $manager->getLabel() : (string) $key);
+            // A group without a string key: its label, else its position (a
+            // label in a non-Latin script has no slug). Give groups a key:
+            // a translated label changes with the language.
+            $slug = Str::slug($manager instanceof RelationGroup ? $manager->getLabel() : (string) $key);
+
+            return filled($slug) ? $slug : "group-{$key}";
         }
 
         return Str::kebab($managerClass::getRelationshipName());

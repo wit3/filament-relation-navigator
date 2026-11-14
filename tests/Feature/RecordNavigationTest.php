@@ -219,8 +219,9 @@ it('keeps the remembered list small enough for a cookie session', function (): v
 
     $keys = RelationNavigator::getRememberedListKeys(AuthorResource::class);
 
-    expect(strlen(serialize($keys)))->toBeLessThanOrEqual(RelationNavigator::REMEMBERED_LIST_BYTES)
-        ->and(count($keys))->toBeLessThan(100)->toBeGreaterThan(15);
+    // About 30 UUID-like keys in 1 KB.
+    expect(strlen(implode(',', $keys)))->toBeLessThanOrEqual(RelationNavigator::REMEMBERED_LIST_BYTES)
+        ->and(count($keys))->toBeLessThan(100)->toBeGreaterThan(25);
 });
 
 it('remembers the five most recent lists only', function (): void {
@@ -240,4 +241,26 @@ it('remembers the five most recent lists only', function (): void {
     expect($lists)->toHaveCount(RelationNavigator::REMEMBERED_LISTS)
         ->and(array_key_last($lists))->not->toStartWith('list-')
         ->and(RelationNavigator::getRememberedListKeys(AuthorResource::class))->not->toBeNull();
+});
+
+it('keeps a single list with the cookie session driver', function (): void {
+    config()->set('session.driver', 'cookie');
+
+    session()->put('filament-relation-navigator.lists', ['other' => '1,2,3']);
+
+    $this->get('/admin/authors')->assertOk();
+
+    expect(session()->get('filament-relation-navigator.lists'))->toHaveCount(1)
+        ->and(RelationNavigator::getRememberedListKeys(AuthorResource::class))->toHaveCount(3);
+});
+
+it('offers a neighbour the user can edit but not view', function (): void {
+    Gate::policy(Author::class, AuthorPolicy::class);
+
+    // "Edit only" can be edited, not viewed (see AuthorPolicy).
+    $this->third->update(['name' => 'Edit only']);
+
+    $html = $this->get("/admin/authors/{$this->second->getKey()}/edit")->assertOk()->getContent();
+
+    expect(neighbourUrl($html, 'next'))->toEndWith("/admin/authors/{$this->third->getKey()}/edit");
 });

@@ -8,7 +8,8 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 
 /**
  * Registered by the tests that need it: an author named "Secret" cannot be
- * viewed or edited, one named "Read only" cannot be edited.
+ * viewed or edited, one named "Read only" cannot be edited, one named "Edit
+ * only" cannot be viewed.
  */
 class AuthorPolicy
 {
@@ -24,7 +25,7 @@ class AuthorPolicy
             return Response::denyAsNotFound();
         }
 
-        return $author->name !== 'Secret';
+        return ! in_array($author->name, ['Secret', 'Edit only'], true);
     }
 
     public function create(Model $user): bool

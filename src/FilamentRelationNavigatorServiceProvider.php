@@ -35,7 +35,8 @@ class FilamentRelationNavigatorServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        spl_autoload_register(GeneratedRelationPages::load(...));
+        // The same callable every time: registered once per process.
+        spl_autoload_register([GeneratedRelationPages::class, 'load']);
 
         // Every panel registers the generated relation pages next to its
         // resources' own routes: nothing to add to the panel provider.

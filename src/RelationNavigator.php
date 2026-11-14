@@ -17,7 +17,6 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Resources\RelationManagers\RelationManagerConfiguration;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconPosition;
-use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -230,7 +229,13 @@ final class RelationNavigator
         $registered = [];
 
         foreach (Filament::getPanels() as $panel) {
-            foreach ($panel->getResources() as $resource) {
+            // Resources registered only through a configuration count too.
+            $resources = [
+                ...$panel->getResources(),
+                ...array_map(fn ($configuration): string => $configuration->getResource(), $panel->getResourceConfigurations()),
+            ];
+
+            foreach ($resources as $resource) {
                 if (isset($registered[$resource])) {
                     continue;
                 }
@@ -307,13 +312,10 @@ final class RelationNavigator
         $contextPageClass = $relationPage::getContextPageClass();
 
         foreach ($relationPage::getRelationPageDefinitions() as $slug => $definition) {
-            if (! $definition->canViewForRecord($record, $contextPageClass)) {
-                continue;
-            }
-
             $pageKey = $relationPage::getPageKey($slug);
 
-            if (! self::hasRoute($resource, $pageKey)) {
+            // The cheap check first: no route, no authorization to run.
+            if (! self::hasRoute($resource, $pageKey) || ! $definition->canViewForRecord($record, $contextPageClass)) {
                 continue;
             }
 
@@ -461,6 +463,14 @@ final class RelationNavigator
 
     private static function viewLoadsDeferredBadges(string $view): bool
     {
+        // The package's own presets, unpublished: no need to read them.
+        $packageViews = realpath(__DIR__.'/../resources/views');
+        $paths = [self::viewPath($view), self::viewPath(self::LIST_PARTIAL)];
+
+        if ($packageViews !== false && collect($paths)->every(fn (string $path): bool => str_starts_with((string) realpath($path), $packageViews))) {
+            return true;
+        }
+
         $content = self::viewSource($view);
 
         if ($content === null) {
@@ -494,7 +504,7 @@ final class RelationNavigator
     public const REMEMBERED_LIST_SIZE = 100;
 
     /**
-     * ...and at most this many bytes of keys, serialized.
+     * ...and at most this many bytes of keys, comma-separated.
      */
     public const REMEMBERED_LIST_BYTES = 1024;
 
@@ -523,33 +533,45 @@ final class RelationNavigator
         $records = $list->getTableRecords();
         $records = ($records instanceof Collection) ? $records : collect($records->items());
 
-        // At most 100 keys and about 1 KB once serialized: sessions kept in a
-        // cookie have 4 KB for everything.
-        $keys = [];
+        // At most 100 keys in about 1 KB, as one comma-separated string:
+        // sessions kept in a cookie have 4 KB for everything.
+        $joined = '';
+        $count = 0;
 
-        foreach ($records->take(self::REMEMBERED_LIST_SIZE) as $record) {
+        foreach ($records as $record) {
             if (! $record instanceof Model) {
                 continue;
             }
 
-            $keys[] = (string) $record->getKey();
+            $key = (string) $record->getKey();
 
-            if (strlen(serialize($keys)) > self::REMEMBERED_LIST_BYTES) {
-                array_pop($keys);
+            // A key with a comma cannot be stored this way: walk by key.
+            if (str_contains($key, ',')) {
+                return;
+            }
 
+            $candidate = ($joined === '') ? $key : "{$joined},{$key}";
+
+            if (($count >= self::REMEMBERED_LIST_SIZE) || (strlen($candidate) > self::REMEMBERED_LIST_BYTES)) {
                 break;
             }
+
+            $joined = $candidate;
+            $count++;
         }
 
-        // One session entry for every list, the most recent five.
+        // One session entry for every list, the most recent five (one with
+        // the cookie session driver).
         $lists = session()->get(self::REMEMBERED_LISTS_SESSION_KEY, []);
         $lists = is_array($lists) ? $lists : [];
-        $key = self::rememberedListKey($resource);
+        $listKey = self::rememberedListKey($resource);
 
-        unset($lists[$key]);
-        $lists[$key] = $keys;
+        unset($lists[$listKey]);
+        $lists[$listKey] = $joined;
 
-        session()->put(self::REMEMBERED_LISTS_SESSION_KEY, array_slice($lists, -self::REMEMBERED_LISTS, preserve_keys: true));
+        $keep = (config('session.driver') === 'cookie') ? 1 : self::REMEMBERED_LISTS;
+
+        session()->put(self::REMEMBERED_LISTS_SESSION_KEY, array_slice($lists, -$keep, preserve_keys: true));
     }
 
     /**
@@ -563,7 +585,12 @@ final class RelationNavigator
         $lists = session()->get(self::REMEMBERED_LISTS_SESSION_KEY, []);
         $keys = is_array($lists) ? ($lists[self::rememberedListKey($resource)] ?? null) : null;
 
-        return is_array($keys) ? array_values(array_map('strval', $keys)) : null;
+        return match (true) {
+            is_string($keys) => ($keys === '') ? [] : explode(',', $keys),
+            // Stored as an array by 1.6.0.
+            is_array($keys) => array_values(array_map('strval', $keys)),
+            default => null,
+        };
     }
 
     /**
@@ -616,10 +643,11 @@ final class RelationNavigator
      */
     public static function getGlobalSearchResultActions(string $resource, Model $record): array
     {
-        // Global search calls this for every result: leave early.
+        // Global search calls this for every result: leave early. Nested
+        // resources are left out: their URLs need the parent of each result.
         $limit = self::getGlobalSearchActionsLimit($resource);
 
-        if ($limit === 0) {
+        if ($limit === 0 || $resource::getParentResourceRegistration()) {
             return [];
         }
 
@@ -691,7 +719,12 @@ final class RelationNavigator
 
         // A lazy relation manager mounts without its table: it gets the
         // action on the request that loads it.
-        $table = new \ReflectionProperty($manager, 'table');
+        // Filament's own property: never fail a render if it is renamed.
+        try {
+            $table = new \ReflectionProperty($manager, 'table');
+        } catch (\ReflectionException) {
+            return;
+        }
 
         if (! $table->isInitialized($manager)) {
             return;
@@ -771,7 +804,8 @@ final class RelationNavigator
             ->label($label)
             ->color($options['color'] ?? 'gray');
 
-        $icon = array_key_exists('icon', $options) ? $options['icon'] : Heroicon::ArrowUpRight;
+        // The same icon as the shipped config.
+        $icon = array_key_exists('icon', $options) ? $options['icon'] : 'heroicon-m-arrow-up-right';
 
         if (filled($icon)) {
             $action
@@ -798,19 +832,20 @@ final class RelationNavigator
             $action = ($result instanceof Action) ? $result : $action;
         }
 
+        // The resource (static), then the relation manager: called on the
+        // instance, so a static or an instance method both work.
         $pageClass = $manager->getPageClass();
-        $classes = [
-            is_subclass_of($pageClass, Page::class) ? $pageClass::getResource() : null,
-            $manager::class,
-        ];
+        $resource = is_subclass_of($pageClass, Page::class) ? $pageClass::getResource() : null;
+        $configureOnResource = is_string($resource) ? [$resource, 'configureRelationPageAction'] : null;
 
-        foreach (array_filter($classes) as $class) {
-            $configure = [$class, 'configureRelationPageAction'];
+        if ($configureOnResource !== null && method_exists($resource, 'configureRelationPageAction') && is_callable($configureOnResource)) {
+            $result = $configureOnResource($action, $manager);
+            $action = ($result instanceof Action) ? $result : $action;
+        }
 
-            if (method_exists($class, 'configureRelationPageAction') && is_callable($configure)) {
-                $result = $configure($action, $manager);
-                $action = ($result instanceof Action) ? $result : $action;
-            }
+        if (method_exists($manager, 'configureRelationPageAction')) {
+            $result = $manager->configureRelationPageAction($action, $manager);
+            $action = ($result instanceof Action) ? $result : $action;
         }
 
         return $action;
@@ -1013,6 +1048,26 @@ final class RelationNavigator
     }
 
     /**
+     * A shortcut as the menu uses it: lowercase, without spaces, and null
+     * when it cannot be matched (an unsupported key) or when the panel's
+     * global search uses it.
+     */
+    public static function normalizeShortcut(?string $shortcut): ?string
+    {
+        if (blank($shortcut)) {
+            return null;
+        }
+
+        $shortcut = strtolower(str_replace(' ', '', $shortcut));
+
+        if (self::getShortcutCondition($shortcut) === null || self::clashesWithFilament($shortcut)) {
+            return null;
+        }
+
+        return $shortcut;
+    }
+
+    /**
      * The keys of a Mousetrap shortcut as shown to people, on a Mac and
      * elsewhere: 'alt+shift+r' gives ⌥ ⇧ R and Alt Shift R.
      *
@@ -1029,6 +1084,7 @@ final class RelationNavigator
         $names = [
             'mod' => ['⌘', 'Ctrl'],
             'command' => ['⌘', 'Win'],
+            'cmd' => ['⌘', 'Win'],
             'meta' => ['⌘', 'Win'],
             'ctrl' => ['⌃', 'Ctrl'],
             'control' => ['⌃', 'Ctrl'],

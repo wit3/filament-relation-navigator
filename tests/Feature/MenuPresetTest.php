@@ -471,3 +471,27 @@ it('treats the badge of a relation group like its tab', function (): void {
         AuthorResource::$options = [];
     }
 });
+
+it('advertises only shortcuts it can match', function (string $shortcut, ?string $aria): void {
+    config()->set('filament-relation-navigator.menu.shortcut', $shortcut);
+
+    $html = $this->get("/admin/authors/{$this->author->getKey()}")->getContent();
+
+    if ($aria === null) {
+        expect($html)->not->toContain('aria-keyshortcuts')
+            ->not->toContain('x-on:keydown.window');
+    } else {
+        expect($html)->toContain("aria-keyshortcuts=\"{$aria}\"");
+    }
+})->with([
+    'cmd is meta' => ['cmd+k', 'Meta+K'],
+    'spaces and capitals' => ['Alt + Shift + K', 'Alt+Shift+K'],
+    'an unsupported key' => ['alt+f2', null],
+]);
+
+it('normalizes a shortcut a page returns, and keeps it away from the global search', function (): void {
+    expect(RelationNavigator::normalizeShortcut('Alt + Shift + K'))->toBe('alt+shift+k')
+        ->and(RelationNavigator::normalizeShortcut('alt+f2'))->toBeNull()
+        ->and(RelationNavigator::normalizeShortcut(null))->toBeNull()
+        ->and(RelationNavigator::getShortcutKeys('cmd+k'))->toBe(['mac' => ['⌘', 'K'], 'other' => ['Win', 'K']]);
+});

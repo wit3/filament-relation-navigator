@@ -71,6 +71,14 @@ trait HasRelationNavigator
             return;
         }
 
+        // A reload of the page itself keeps the tab: Filament writes
+        // `?relation=` into the URL when a tab is clicked.
+        $referer = request()->headers->get('referer');
+
+        if (is_string($referer) && (rtrim((string) parse_url($referer, PHP_URL_PATH), '/') === rtrim(request()->getPathInfo(), '/'))) {
+            return;
+        }
+
         $url = $this->getRelationNavigatorTabRedirectUrl(request()->query('relation'));
 
         if ($url !== null) {
@@ -270,14 +278,9 @@ trait HasRelationNavigator
     {
         $shortcut = $this->resolveRelationNavigatorOption(__FUNCTION__, fn (): mixed => config('filament-relation-navigator.menu.shortcut', 'alt+shift+r'));
 
-        if (! is_string($shortcut) || blank($shortcut)) {
-            return null;
-        }
-
-        $shortcut = strtolower(str_replace(' ', '', $shortcut));
-
-        // Never take a shortcut that Filament's global search uses.
-        return RelationNavigator::clashesWithFilament($shortcut) ? null : $shortcut;
+        // Never a shortcut that cannot be matched, or that Filament's global
+        // search uses.
+        return RelationNavigator::normalizeShortcut(is_string($shortcut) ? $shortcut : null);
     }
 
     /**
@@ -350,7 +353,8 @@ trait HasRelationNavigator
             // The nearest record the user can view: a few at most, so that a
             // run of hidden records does not turn into many queries.
             foreach ($candidates as $neighbour) {
-                if (! $resource::canView($neighbour)) {
+                // A record the user can open at all: view or edit.
+                if (! $resource::canView($neighbour) && ! $resource::canEdit($neighbour)) {
                     continue;
                 }
 
@@ -401,7 +405,7 @@ trait HasRelationNavigator
                     return [];
                 }
 
-                $records = (clone $query)->whereKey($keys)->get()->keyBy(fn (Model $model): string => (string) $model->getKey());
+                $records = (clone $query)->withoutEagerLoads()->whereKey($keys)->get()->keyBy(fn (Model $model): string => (string) $model->getKey());
 
                 return collect($keys)->map(fn (string $key): ?Model => $records->get($key))->filter()->all();
             };
@@ -415,8 +419,8 @@ trait HasRelationNavigator
         $keyName = $record->getQualifiedKeyName();
 
         return [
-            'previous' => (clone $query)->reorder()->where($keyName, '<', $record->getKey())->orderByDesc($keyName)->limit(5)->get(),
-            'next' => (clone $query)->reorder()->where($keyName, '>', $record->getKey())->orderBy($keyName)->limit(5)->get(),
+            'previous' => (clone $query)->withoutEagerLoads()->reorder()->where($keyName, '<', $record->getKey())->orderByDesc($keyName)->limit(5)->get(),
+            'next' => (clone $query)->withoutEagerLoads()->reorder()->where($keyName, '>', $record->getKey())->orderBy($keyName)->limit(5)->get(),
         ];
     }
 
@@ -610,7 +614,8 @@ trait HasRelationNavigator
                 && (count($items) >= (int) config('filament-relation-navigator.menu.search_from', 0)),
             'hasSeparator' => (bool) config('filament-relation-navigator.menu.separator', true),
             'hasDeferredBadges' => $this->hasRelationNavigatorBadges() && $this->hasDeferredRelationNavigatorBadges(),
-            'shortcut' => $shortcut = $this->getRelationNavigatorShortcut(),
+            // Checked again: a page may override the method.
+            'shortcut' => $shortcut = RelationNavigator::normalizeShortcut($this->getRelationNavigatorShortcut()),
             'shortcutKeys' => RelationNavigator::getShortcutKeys($shortcut),
         ];
     }

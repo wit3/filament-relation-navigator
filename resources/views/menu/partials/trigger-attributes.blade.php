@@ -38,7 +38,7 @@
         // `mod` is ⌘ on a Mac and Ctrl elsewhere: declare both.
         $ariaShortcut = collect(str_contains($shortcut, 'mod') ? [str_replace('mod', 'meta', $shortcut), str_replace('mod', 'ctrl', $shortcut)] : [$shortcut])
             ->map(fn (string $combination): string => collect(explode('+', $combination))
-                ->map(fn (string $key): string => ['command' => 'Meta', 'meta' => 'Meta', 'ctrl' => 'Control', 'control' => 'Control', 'alt' => 'Alt', 'option' => 'Alt', 'shift' => 'Shift'][$key] ?? strtoupper($key))
+                ->map(fn (string $key): string => ['command' => 'Meta', 'cmd' => 'Meta', 'meta' => 'Meta', 'ctrl' => 'Control', 'control' => 'Control', 'alt' => 'Alt', 'option' => 'Alt', 'shift' => 'Shift'][$key] ?? strtoupper($key))
                 ->implode('+'))
             ->implode(' ');
 

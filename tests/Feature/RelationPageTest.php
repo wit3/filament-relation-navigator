@@ -1,5 +1,6 @@
 <?php
 
+use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Support\Livewire\MethodAccess;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -218,4 +219,9 @@ it('lets the browser call only the methods the menu needs', function (): void {
             ->call($method)
             ->assertForbidden();
     }
+});
+
+it('gives a relation group without a key and with a label that has no slug a slug of its own', function (): void {
+    expect(AuthorRelationPage::getRelationPageSlug(3, RelationGroup::make('活动', [])))->toBe('group-3')
+        ->and(AuthorRelationPage::getRelationPageSlug(3, RelationGroup::make('Activity log', [])))->toBe('activity-log');
 });

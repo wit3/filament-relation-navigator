@@ -1,5 +1,6 @@
 <?php
 
+use Filament\Actions\Action;
 use Livewire\Livewire;
 use Wit3\FilamentRelationNavigator\Concerns\InteractsWithRelationPage;
 use Wit3\FilamentRelationNavigator\RelationNavigator;
@@ -224,4 +225,19 @@ it('does not link to a relation page the resource vetoes for the record', functi
     } finally {
         AuthorResource::$options = [];
     }
+});
+
+it('calls an instance configureRelationPageAction() on the relation manager too', function (): void {
+    $manager = new class extends PublishedCommentsRelationManager
+    {
+        public function configureRelationPageAction(Action $action): Action
+        {
+            return $action->label('From the instance');
+        }
+    };
+
+    $manager->ownerRecord = $this->author;
+    $manager->pageClass = ViewAuthor::class;
+
+    expect(RelationNavigator::makeRelationPageAction($manager)->getLabel())->toBe('From the instance');
 });
