@@ -3,11 +3,14 @@
 use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Support\Livewire\MethodAccess;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 use Wit3\FilamentRelationNavigator\RelationNavigator;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Policies\AuthorPolicy;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\AuthorResource;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorRelationPage;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorStats;
@@ -224,4 +227,26 @@ it('lets the browser call only the methods the menu needs', function (): void {
 it('gives a relation group without a key and with a label that has no slug a slug of its own', function (): void {
     expect(AuthorRelationPage::getRelationPageSlug(3, RelationGroup::make('活动', [])))->toBe('group-3')
         ->and(AuthorRelationPage::getRelationPageSlug(3, RelationGroup::make('Activity log', [])))->toBe('activity-log');
+});
+
+it('does not let the browser change the relation of a relation page', function (): void {
+    $author = Author::create(['name' => 'Ada Lovelace']);
+
+    expect(fn () => Livewire::test(AuthorRelationPage::class, ['record' => $author->getKey(), 'relationPage' => 'posts'])
+        ->set('relationPage', 'notes'))
+        ->toThrow(CannotUpdateLockedPropertyException::class);
+});
+
+it('checks the record again on every Livewire request', function (): void {
+    Gate::policy(Author::class, AuthorPolicy::class);
+
+    $author = Author::create(['name' => 'Ada Lovelace']);
+
+    $component = Livewire::test(AuthorRelationPage::class, ['record' => $author->getKey(), 'relationPage' => 'posts'])
+        ->assertOk();
+
+    // The policy now denies it: the next request is refused.
+    $author->update(['name' => 'Secret']);
+
+    $component->call('$refresh')->assertForbidden();
 });

@@ -131,3 +131,21 @@ it('loads a lazy tab badge when the menu opens', function (): void {
         ->click('.fi-relation-navigator-caret')
         ->assertSeeIn('[data-relation-navigator-label="Published comments"]:visible [data-relation-navigator-badge]', '7');
 });
+
+it('adds Open as page to a lazy relation manager on the view page, never on its relation page', function (): void {
+    $id = $this->author->getKey();
+
+    // Posts is lazy: the action comes with the request that loads it.
+    visit("/admin/authors/{$id}")
+        ->assertSee('Notes on the Analytical Engine')
+        ->assertSee('Open as page');
+
+    // On its own page it stays away, also after a Livewire update (search).
+    visit("/admin/authors/{$id}/posts")
+        ->assertSee('Notes on the Analytical Engine')
+        ->assertDontSee('Open as page')
+        ->type('.fi-ta-search-field input', 'Notes')
+        ->wait(1)
+        ->assertSee('Notes on the Analytical Engine')
+        ->assertDontSee('Open as page');
+});

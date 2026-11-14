@@ -19,12 +19,26 @@ use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
 use Wit3\FilamentRelationNavigator\FilamentRelationNavigatorServiceProvider;
+use Wit3\FilamentRelationNavigator\GeneratedRelationPages;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\AdminPanelProvider;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\AppPanelProvider;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
 
 class TestCase extends Orchestra
 {
+    /**
+     * Fixtures that tests switch: back to their defaults after every test.
+     */
+    protected function tearDown(): void
+    {
+        Fixtures\Resources\Authors\AuthorResource::$options = [];
+        Fixtures\Resources\Authors\RelationManagers\PostsRelationManager::$globalSearchAction = true;
+        Fixtures\Resources\Authors\RelationManagers\PostsRelationManager::$menuBadge = true;
+        Fixtures\Resources\Authors\RelationManagers\PostsRelationManager::$configureRelationPageActionUsing = null;
+
+        parent::tearDown();
+    }
+
     public static function generatedPagesPath(): string
     {
         return sys_get_temp_dir().'/frn-generated-'.md5(__DIR__);
@@ -54,6 +68,9 @@ class TestCase extends Orchestra
 
     protected function defineEnvironment($app): void
     {
+        // Generated classes in one place, whatever the order of the tests.
+        GeneratedRelationPages::useCachePath(self::generatedPagesPath());
+
         $app['config']->set('app.key', 'base64:'.base64_encode(str_repeat('a', 32)));
         $app['config']->set('database.default', 'testing');
         $app['config']->set('cache.default', 'array');

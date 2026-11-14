@@ -21,6 +21,9 @@ beforeEach(function (): void {
 });
 
 it('uses the github preset with the search field by default', function (): void {
+    // Only the breadcrumb menu: the small-screen menu would match too.
+    config()->set('filament-relation-navigator.menu.mobile', false);
+
     $this->get("/admin/authors/{$this->author->getKey()}")
         ->assertOk()
         ->assertSee('fi-relation-navigator-preset-github', escape: false)
@@ -28,6 +31,9 @@ it('uses the github preset with the search field by default', function (): void 
 });
 
 it('keeps the menu of 1.2 with the simple preset and no search', function (): void {
+    // Only the breadcrumb menu: the small-screen menu would match too.
+    config()->set('filament-relation-navigator.menu.mobile', false);
+
     config()->set('filament-relation-navigator.menu.preset', 'simple');
     config()->set('filament-relation-navigator.menu.searchable', false);
 
@@ -39,7 +45,8 @@ it('keeps the menu of 1.2 with the simple preset and no search', function (): vo
 });
 
 it('falls back to the github preset with search when the config has no menu keys', function (): void {
-    config()->set('filament-relation-navigator.menu', []);
+    // Only the breadcrumb menu: the small-screen menu would match too.
+    config()->set('filament-relation-navigator.menu', ['mobile' => false]);
 
     $this->get("/admin/authors/{$this->author->getKey()}")
         ->assertOk()
@@ -442,9 +449,13 @@ it('computes the deferred badges once, however many times the browser asks', fun
 
     $first = $page->getRelationNavigatorBadges();
     $afterFirst = $queries;
+
+    // Badges off now: the second call still answers from the first one.
+    config()->set('filament-relation-navigator.menu.badges', false);
     $second = $page->getRelationNavigatorBadges();
 
-    expect($second)->toBe($first)
+    expect($first)->not->toBeEmpty()
+        ->and($second)->toBe($first)
         ->and($afterFirst)->toBeGreaterThan(0)
         ->and($queries)->toBe($afterFirst);
 });
