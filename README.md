@@ -20,7 +20,8 @@ between them from a **menu in the breadcrumb**.
   taken from the resource.
 - The last breadcrumb opens a **menu** with the record's pages and every
   relation the user can see, with icons and badges. Two looks, optional
-  search, or a view of your own.
+  search and keyboard navigation, a view of your own, and a version for
+  small screens.
 - **One trait, no page classes**: no files to generate, nothing to add to
   `getPages()` or to the panel provider.
 
@@ -255,6 +256,8 @@ php artisan vendor:publish --tag=filament-relation-navigator-config
     'search_from' => 0,     // ...from this many items
     'badges' => true,       // the relation managers' badges, as in their tabs
     'max_height' => '24rem',
+    'separator' => true,    // record pages and relation pages in two blocks
+    'mobile' => true,       // the menu above the heading on small screens
 ],
 ```
 
@@ -264,6 +267,9 @@ php artisan vendor:publish --tag=filament-relation-navigator-config
 panel with a heading and a check on the current page, like GitHub's
 repository switcher. Here with `searchable` on: the field gets the focus when
 the menu opens and Enter opens the first match.
+
+**Keyboard**: from the search field, Down moves into the list; Up and Down
+move between the pages, Enter opens one, Escape closes the menu.
 
 <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-github-search-dark.png">
@@ -287,6 +293,33 @@ public function hasRelationNavigatorBadges(): bool
 {
     return false; // the badges run the same queries as the tab badges
 }
+```
+
+### Small screens
+
+Filament hides the breadcrumbs below 40rem. There the menu shows above the
+page heading instead, on every page that uses `HasRelationNavigator`, with
+the same preset options. Turn it off with `'mobile' => false`, or per page:
+
+```php
+public function hasRelationNavigatorMobileMenu(): bool
+{
+    return false;
+}
+```
+
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/mobile-dark.png">
+    <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/mobile-light.png" alt="The menu on a phone, above the page heading" width="320">
+</picture>
+
+### Translations
+
+English, Italian, Spanish, German, French, Brazilian Portuguese and Dutch.
+Publish the translations to change them or add a language:
+
+```bash
+php artisan vendor:publish --tag=filament-relation-navigator-translations
 ```
 
 ### A preset of your own
@@ -324,12 +357,14 @@ A preset view receives:
 | `$items`             | The menu items: `key`, `label`, `url`, `icon`, `badge`, `badgeColor`, `isActive` |
 | `$heading`           | "Switch page", translated                                               |
 | `$isSearchable`      | Whether to show the search field                                        |
+| `$hasSeparator`      | Whether to split record pages and relation pages in two blocks          |
 | `$searchPlaceholder` | "Find a page…", translated                                              |
 | `$emptyLabel`        | "No pages found.", translated                                           |
 | `$maxHeight`         | `menu.max_height`                                                       |
 
-To reuse the search field, the list and the "no results" line, include
-`filament-relation-navigator::menu.partials.list` with `showCheck`.
+Each item also has `isRelationPage()`. To reuse the search field, the list
+(with the separator and the keyboard navigation) and the "no results" line,
+include `filament-relation-navigator::menu.partials.list` with `showCheck`.
 
 ## Customising the relation pages
 
@@ -367,8 +402,7 @@ The class is a regular Filament page: override `getTitle()`,
 
 ## Native record sub-navigation
 
-The same items can feed Filament's record sub-navigation, for example on
-small screens where Filament hides the breadcrumbs:
+The same items can feed Filament's record sub-navigation:
 
 ```php
 public static function getRecordSubNavigation(Page $page): array

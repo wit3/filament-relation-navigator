@@ -47,6 +47,13 @@ return [
 
         'max_height' => '24rem',
 
+        // The record pages and the relation pages in two blocks.
+        'separator' => true,
+
+        // Filament hides the breadcrumbs on small screens: show the menu
+        // above the page heading there.
+        'mobile' => true,
+
     ],
 
 ];

@@ -2,6 +2,23 @@
 
 All notable changes to `filament-relation-navigator` are documented here.
 
+## 1.1.0 - 2026-11-14
+
+New features, all backwards compatible.
+
+### Added
+
+- **Small screens**: Filament hides the breadcrumbs below 40rem; there the menu now shows above the page heading, on the pages that use `HasRelationNavigator`. Config `menu.mobile` (default `true`), or `hasRelationNavigatorMobileMenu()` per page. Its few style rules are inline, so it works even if `filament:assets` was not run after the update.
+- **Keyboard navigation** in the menu: Down from the search field enters the list, Up and Down move between the pages, Up from the first one goes back to the search field.
+- **Separator** between the record pages and the relation pages. Config `menu.separator` (default `true`).
+- `RelationNavigatorItem::isRelationPage()`, and `$hasSeparator` for preset views.
+- Translations: Spanish, German, French, Brazilian Portuguese and Dutch.
+
+### Changed
+
+- The menu looks slightly different with the separator on (a line between the two blocks). Set `menu.separator` to `false` to keep the 1.0 look.
+- Run `php artisan filament:assets` after updating to get the separator line.
+
 ## 1.0.1 - 2026-11-14
 
 Bug fixes and tests. No API changes.

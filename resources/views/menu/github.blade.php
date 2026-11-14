@@ -24,7 +24,7 @@
                 class="fi-relation-navigator-caret"
                 aria-label="{{ __('filament-relation-navigator::navigator.open') }}"
                 @if ($isSearchable)
-                    x-on:click="setTimeout(() => document.querySelector('[data-relation-navigator-search]')?.focus(), 60)"
+                    x-on:click="setTimeout(() => $refs.panel?.querySelector('[data-relation-navigator-search]')?.focus(), 60)"
                 @endif
             >
                 <x-filament::icon

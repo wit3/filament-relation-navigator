@@ -95,3 +95,13 @@
     font-size: 0.875rem;
     opacity: 0.7;
 }
+
+/* The line between record pages and relation pages (menu.separator). */
+
+.fi-relation-navigator-lists > .fi-dropdown-list + .fi-dropdown-list {
+    border-top: 1px solid var(--gray-100, rgb(0 0 0 / 0.06));
+}
+
+:is(.dark) .fi-relation-navigator-lists > .fi-dropdown-list + .fi-dropdown-list {
+    border-top-color: rgb(255 255 255 / 0.05);
+}

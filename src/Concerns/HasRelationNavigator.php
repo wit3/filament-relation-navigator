@@ -116,8 +116,14 @@ trait HasRelationNavigator
      */
     private function resolveRelationNavigatorView(): string
     {
-        $view = $this->getRelationNavigatorView();
+        return $this->ensureRelationNavigatorView($this->getRelationNavigatorView());
+    }
 
+    /**
+     * @return view-string
+     */
+    private function ensureRelationNavigatorView(string $view): string
+    {
         if (! app(ViewFactory::class)->exists($view)) {
             throw new InvalidArgumentException("The breadcrumb menu view [{$view}] does not exist. Check `filament-relation-navigator.menu.preset` and `menu.presets`, or getRelationNavigatorPreset() on [".static::class.'].');
         }
@@ -167,7 +173,49 @@ trait HasRelationNavigator
      */
     protected function renderRelationNavigator(string|Htmlable $label, array $items): Htmlable
     {
-        return new HtmlString(app(ViewFactory::class)->make($this->resolveRelationNavigatorView(), [
+        return new HtmlString(app(ViewFactory::class)->make(
+            $this->resolveRelationNavigatorView(),
+            $this->getRelationNavigatorViewData($label, $items),
+        )->render());
+    }
+
+    /**
+     * On small screens Filament hides the breadcrumbs: this selector shows
+     * above the heading instead (config `menu.mobile`). Rendered by the
+     * package through a render hook.
+     */
+    public function hasRelationNavigatorMobileMenu(): bool
+    {
+        return (bool) config('filament-relation-navigator.menu.mobile', true);
+    }
+
+    public function renderRelationNavigatorMobileMenu(): ?Htmlable
+    {
+        if (! $this->hasRelationNavigatorMobileMenu() || ! $this->hasRelationNavigator()) {
+            return null;
+        }
+
+        $items = $this->getRelationNavigatorItems();
+
+        if (count($items) < 2) {
+            return null;
+        }
+
+        $active = collect($items)->firstWhere('isActive', true);
+
+        return new HtmlString(app(ViewFactory::class)->make(
+            $this->ensureRelationNavigatorView('filament-relation-navigator::menu.mobile'),
+            $this->getRelationNavigatorViewData($active->label ?? $this->getBreadcrumb() ?? $this->getTitle(), $items),
+        )->render());
+    }
+
+    /**
+     * @param  array<RelationNavigatorItem>  $items
+     * @return array<string, mixed>
+     */
+    private function getRelationNavigatorViewData(string|Htmlable $label, array $items): array
+    {
+        return [
             'label' => $label,
             'items' => $items,
             'heading' => __('filament-relation-navigator::navigator.heading'),
@@ -176,6 +224,7 @@ trait HasRelationNavigator
             'maxHeight' => (string) config('filament-relation-navigator.menu.max_height', '24rem'),
             'isSearchable' => $this->isRelationNavigatorSearchable()
                 && (count($items) >= (int) config('filament-relation-navigator.menu.search_from', 0)),
-        ])->render());
+            'hasSeparator' => (bool) config('filament-relation-navigator.menu.separator', true),
+        ];
     }
 }

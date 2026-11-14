@@ -301,6 +301,23 @@ final class RelationNavigator
         return Route::has($resource::getRouteBaseName(Filament::getCurrentOrDefaultPanel()).'.'.$pageKey);
     }
 
+    /**
+     * The small-screen menu of the page being rendered, if it uses
+     * HasRelationNavigator.
+     */
+    public static function renderMobileMenu(): ?Htmlable
+    {
+        $page = Livewire::current();
+
+        if (! $page instanceof Page || ! in_array(HasRelationNavigator::class, class_uses_recursive($page), true)) {
+            return null;
+        }
+
+        $menu = method_exists($page, 'renderRelationNavigatorMobileMenu') ? $page->renderRelationNavigatorMobileMenu() : null;
+
+        return $menu instanceof Htmlable ? $menu : null;
+    }
+
     public static function getActivePageKey(Page $page): ?string
     {
         if ($page instanceof RelationPage) {

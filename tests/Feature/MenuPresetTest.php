@@ -3,8 +3,10 @@
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\View;
 use Livewire\Livewire;
+use Wit3\FilamentRelationNavigator\RelationNavigator;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\Author;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Models\User;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\AuthorResource;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
 
 beforeEach(function (): void {
@@ -23,6 +25,7 @@ it('uses the simple preset without search by default', function (): void {
 
 it('adds the search field to the simple preset', function (): void {
     config()->set('filament-relation-navigator.menu.searchable', true);
+    config()->set('filament-relation-navigator.menu.mobile', false);
 
     $this->get("/admin/authors/{$this->author->getKey()}")
         ->assertOk()
@@ -115,3 +118,61 @@ it('explains a preset that points to a missing view', function (): void {
     expect(fn () => $this->get("/admin/authors/{$this->author->getKey()}"))
         ->toThrow('does not exist. Check `filament-relation-navigator.menu.preset`');
 });
+
+it('shows the menu above the heading for small screens', function (): void {
+    $id = $this->author->getKey();
+
+    $this->get("/admin/authors/{$id}/posts")
+        ->assertOk()
+        ->assertSee('fi-relation-navigator-mobile', escape: false)
+        ->assertSeeInOrder(['fi-relation-navigator-mobile-trigger', 'Posts', 'Switch page', "/admin/authors/{$id}/published-comments"], escape: false);
+
+    config()->set('filament-relation-navigator.menu.mobile', false);
+
+    $this->get("/admin/authors/{$id}/posts")
+        ->assertDontSee('fi-relation-navigator-mobile', escape: false);
+});
+
+it('leaves pages without the trait alone on small screens', function (): void {
+    $this->get("/admin/authors/{$this->author->getKey()}/history")
+        ->assertOk()
+        ->assertDontSee('fi-relation-navigator-mobile', escape: false);
+});
+
+it('separates the record pages from the relation pages', function (): void {
+    $html = $this->get("/admin/authors/{$this->author->getKey()}")->getContent();
+    $menu = str($html)->after('fi-relation-navigator-preset-simple')->before('</nav>');
+
+    expect(substr_count((string) $menu, 'fi-dropdown-list"'))->toBe(2);
+
+    config()->set('filament-relation-navigator.menu.separator', false);
+
+    $html = $this->get("/admin/authors/{$this->author->getKey()}")->getContent();
+    $menu = str($html)->after('fi-relation-navigator-preset-simple')->before('</nav>');
+
+    expect(substr_count((string) $menu, 'fi-dropdown-list"'))->toBe(1);
+});
+
+it('tells relation pages from record pages', function (): void {
+    $items = collect(RelationNavigator::getItems(
+        AuthorResource::class,
+        $this->author,
+    ));
+
+    expect($items->reject->isRelationPage()->pluck('key')->all())->toBe(['view', 'edit', 'stats'])
+        ->and($items->filter->isRelationPage()->pluck('key')->first())->toBe('relations.posts');
+});
+
+it('speaks the supported languages', function (string $locale, string $heading): void {
+    app()->setLocale($locale);
+
+    expect(__('filament-relation-navigator::navigator.heading'))->toBe($heading);
+})->with([
+    ['en', 'Switch page'],
+    ['it', 'Cambia pagina'],
+    ['es', 'Cambiar de página'],
+    ['de', 'Seite wechseln'],
+    ['fr', 'Changer de page'],
+    ['pt_BR', 'Trocar de página'],
+    ['nl', 'Pagina wisselen'],
+]);

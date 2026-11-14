@@ -5,6 +5,9 @@ namespace Wit3\FilamentRelationNavigator;
 use Filament\Panel;
 use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Contracts\Support\Htmlable;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Wit3\FilamentRelationNavigator\Commands\MakeMenuPresetCommand;
@@ -42,6 +45,13 @@ class FilamentRelationNavigatorServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        // The menu on small screens, above the heading of the pages that
+        // use HasRelationNavigator.
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::PAGE_HEADER_HEADING_BEFORE,
+            fn (): ?Htmlable => RelationNavigator::renderMobileMenu(),
+        );
+
         FilamentAsset::register([
             Css::make('filament-relation-navigator', __DIR__.'/../resources/css/relation-navigator.css'),
         ], package: 'wit3/filament-relation-navigator');
