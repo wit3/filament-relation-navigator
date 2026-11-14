@@ -4,7 +4,11 @@ layout: home
 hero:
   name: Relation Navigator
   text: A real page for every relation manager
-  tagline: "/customers/1?relation=orders becomes /customers/1/orders, and a searchable menu in the breadcrumb jumps between them. For Filament v4 and v5."
+  tagline: Every relation manager gets its own page and URL. A searchable menu in the breadcrumb jumps between them. For Filament 4 and 5.
+  image:
+    light: https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-light.png
+    dark: https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/relation-page-dark.png
+    alt: The orders of a customer on their own page, with the breadcrumb menu open
   actions:
     - theme: brand
       text: Get started
@@ -28,11 +32,25 @@ features:
     details: Every feature can be turned on or off globally, per resource and per page or relation manager.
 ---
 
-<div class="demo">
-  <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/demo.gif" alt="The menu opened with Alt Shift R, filtered to Invoices, then the next customer on the same page">
+<div class="home-section">
+
+## From a tab to a page
+
+The tabs under the view page become pages of their own. Same relation manager, same table, a URL you can share:
+
+| Before | After |
+| --- | --- |
+| `/customers/1?relation=orders` | `/customers/1/orders` |
+| `/customers/1?relation=invoices` | `/customers/1/invoices` |
+
+Two traits are all it takes: see the [quick start](/guide/quick-start).
+
+<img class="demo" src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/demo.gif" alt="The menu opened with Alt Shift R, filtered to Invoices, then the next customer on the same page">
+
 </div>
 
 <style>
-.demo { max-width: 1152px; margin: 48px auto 0; padding: 0 24px; }
-.demo img { width: 100%; border-radius: 12px; border: 1px solid var(--vp-c-divider); }
+.home-section { max-width: 1152px; margin: 64px auto 0; padding: 0 24px; }
+.home-section h2 { border-top: 0; margin-top: 0; padding-top: 0; }
+.home-section .demo { width: 100%; margin-top: 24px; border-radius: 12px; border: 1px solid var(--vp-c-divider); }
 </style>
