@@ -251,28 +251,37 @@ php artisan vendor:publish --tag=filament-relation-navigator-config
 
 ```php
 'menu' => [
-    'preset' => 'dropdown', // or 'searchable'
+    'preset' => 'simple', // or 'github', a preset of yours, or a view name
     'presets' => [
-        'dropdown' => 'filament-relation-navigator::menu.dropdown',
-        'searchable' => 'filament-relation-navigator::menu.searchable',
+        'simple' => 'filament-relation-navigator::menu.simple',
+        'github' => 'filament-relation-navigator::menu.github',
     ],
+    'searchable' => false,  // a search field on top of the list, whatever the preset
+    'search_from' => 0,     // ...from this many items
     'badges' => true,       // the relation managers' badges, as in their tabs
     'max_height' => '24rem',
-    'search_from' => 0,     // searchable: show the search field from this many items
 ],
 ```
 
-- **dropdown**: the last breadcrumb opens a plain list.
-- **searchable**: the last breadcrumb stays text and a caret next to it opens a
-  panel with a heading, a search field (Enter opens the first match) and a
-  check on the current page, like GitHub's repository switcher.
+- **simple**: the last breadcrumb itself opens the list.
+- **github**: the last breadcrumb stays text and a caret next to it opens a
+  panel with a heading and a check on the current page, like GitHub's
+  repository switcher.
 
-A page can pick its own preset, or hide the badges:
+With `searchable`, the search field gets the focus when the menu opens and
+Enter opens the first match.
+
+A page can override any of them:
 
 ```php
 public function getRelationNavigatorPreset(): string
 {
-    return 'searchable';
+    return 'github';
+}
+
+public function isRelationNavigatorSearchable(): bool
+{
+    return true;
 }
 
 public function hasRelationNavigatorBadges(): bool
@@ -281,24 +290,37 @@ public function hasRelationNavigatorBadges(): bool
 }
 ```
 
-### Your own menu
+### A preset of your own
 
-Add a preset that points to any view, or publish the package views and change
-them:
+Start from one of the package presets:
+
+```bash
+php artisan make:filament-relation-navigator-preset compact --from=github
+```
+
+It copies the preset to `resources/views/filament/relation-navigator/compact.blade.php`;
+register it and change it as you like:
 
 ```php
+'preset' => 'compact',
 'presets' => [
-    'mine' => 'filament.relation-navigator-menu',
+    // ...
+    'compact' => 'filament.relation-navigator.compact',
 ],
 ```
+
+Any view name works as `preset` too. To change the package presets
+themselves, publish them:
 
 ```bash
 php artisan vendor:publish --tag=filament-relation-navigator-views
 ```
 
-The view receives `$label` (the last breadcrumb), `$items` (each with `key`,
-`label`, `url`, `icon`, `badge`, `badgeColor`, `isActive`), `$heading`,
-`$searchPlaceholder`, `$emptyLabel`, `$maxHeight` and `$isSearchable`.
+A preset view receives `$label` (the last breadcrumb), `$items` (each with
+`key`, `label`, `url`, `icon`, `badge`, `badgeColor`, `isActive`), `$heading`,
+`$searchPlaceholder`, `$emptyLabel`, `$maxHeight` and `$isSearchable`. To
+reuse the search, the list and the "no results" line, include
+`filament-relation-navigator::menu.partials.list` with `showCheck`.
 
 ## Native record sub-navigation
 

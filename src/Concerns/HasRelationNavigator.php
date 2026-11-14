@@ -89,11 +89,20 @@ trait HasRelationNavigator
     }
 
     /**
-     * One of the presets in the config (`dropdown`, `searchable` or yours).
+     * One of the presets in the config (`simple`, `github` or yours), or a
+     * view name.
      */
     public function getRelationNavigatorPreset(): string
     {
-        return (string) config('filament-relation-navigator.menu.preset', 'dropdown');
+        return (string) config('filament-relation-navigator.menu.preset', 'simple');
+    }
+
+    /**
+     * A search field on top of the list, whatever the preset.
+     */
+    public function isRelationNavigatorSearchable(): bool
+    {
+        return (bool) config('filament-relation-navigator.menu.searchable', false);
     }
 
     public function getRelationNavigatorView(): string
@@ -101,7 +110,12 @@ trait HasRelationNavigator
         $preset = $this->getRelationNavigatorPreset();
         $presets = (array) config('filament-relation-navigator.menu.presets', []);
 
-        return $presets[$preset] ?? "filament-relation-navigator::menu.{$preset}";
+        if (array_key_exists($preset, $presets)) {
+            return $presets[$preset];
+        }
+
+        // A view name works as a preset too.
+        return view()->exists($preset) ? $preset : "filament-relation-navigator::menu.{$preset}";
     }
 
     public function getRelationNavigatorActivePageKey(): ?string
@@ -134,7 +148,8 @@ trait HasRelationNavigator
             'searchPlaceholder' => __('filament-relation-navigator::navigator.search'),
             'emptyLabel' => __('filament-relation-navigator::navigator.empty'),
             'maxHeight' => (string) config('filament-relation-navigator.menu.max_height', '24rem'),
-            'isSearchable' => count($items) >= (int) config('filament-relation-navigator.menu.search_from', 0),
+            'isSearchable' => $this->isRelationNavigatorSearchable()
+                && (count($items) >= (int) config('filament-relation-navigator.menu.search_from', 0)),
         ])->render());
     }
 }

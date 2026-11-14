@@ -35,9 +35,9 @@
     font-weight: 600;
 }
 
-/* Preset "searchable" */
+/* Preset "github" */
 
-.fi-relation-navigator-preset-searchable {
+.fi-relation-navigator-preset-github {
     display: inline-flex;
     align-items: center;
     gap: 0.125rem;
@@ -65,13 +65,13 @@
 }
 
 .fi-relation-navigator-heading {
-    padding: 0.75rem 0.75rem 0.5rem;
+    padding: 0.75rem 0.75rem 0;
     font-size: 0.875rem;
     font-weight: 600;
 }
 
 .fi-relation-navigator-search {
-    padding: 0 0.5rem 0.5rem;
+    padding: 0.5rem;
     border-bottom: 1px solid rgb(0 0 0 / 0.05);
 }
 

@@ -7,6 +7,7 @@ use Filament\Support\Assets\Css;
 use Filament\Support\Facades\FilamentAsset;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Wit3\FilamentRelationNavigator\Commands\MakeMenuPresetCommand;
 use Wit3\FilamentRelationNavigator\Commands\MakeRelationPageCommand;
 
 class FilamentRelationNavigatorServiceProvider extends PackageServiceProvider
@@ -20,7 +21,10 @@ class FilamentRelationNavigatorServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasViews()
             ->hasTranslations()
-            ->hasCommand(MakeRelationPageCommand::class);
+            ->hasCommands([
+                MakeRelationPageCommand::class,
+                MakeMenuPresetCommand::class,
+            ]);
     }
 
     public function packageRegistered(): void
