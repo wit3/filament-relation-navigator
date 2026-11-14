@@ -4,9 +4,23 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+## 1.4.1 - 2026-11-14
+
+No code changes: documentation, AI tooling and repository hygiene.
+
+### Added
+
+- **Laravel Boost skill** `relation-navigator-development` (`resources/boost/skills/`), next to the guidelines: workflows for relation pages, the menu, options, headers, presets and testing. The guidelines tell agents to use it.
+
 ### Documentation
 
 - A documentation site with search: [wit3.github.io/filament-relation-navigator](https://wit3.github.io/filament-relation-navigator/). It is built from the README, the changelog and the config file, so it always matches them. `composer.json` points `homepage` and `support.docs` to it.
+- The documentation is published for AI agents too: [llms.txt](https://wit3.github.io/filament-relation-navigator/llms.txt), [llms-full.txt](https://wit3.github.io/filament-relation-navigator/llms-full.txt) and a Markdown version of every page.
+
+### Internal
+
+- GitHub Actions pinned to commit SHAs; Dependabot with a 7-day cooldown, now also for the npm dependencies of the browser tests and of the documentation site.
+- `AGENTS.md` (and `CLAUDE.md`) for contributors working with AI agents.
 
 ## 1.4.0 - 2026-11-14
 

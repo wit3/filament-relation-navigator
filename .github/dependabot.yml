@@ -1,9 +1,37 @@
 version: 2
 
+# GitHub Actions are pinned to commit SHAs: Dependabot updates the SHA and
+# the version comment next to it. A cooldown leaves new releases a week to
+# be withdrawn before they reach this repository.
 updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: ci
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Playwright, for the browser tests.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: test
+
+  # VitePress, for the documentation site.
+  - package-ecosystem: npm
+    directory: /docs
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: docs

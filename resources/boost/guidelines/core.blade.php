@@ -2,6 +2,9 @@
 
 Gives every relation manager of a Filament v4/v5 resource its own page (`/customers/1/orders` instead of `/customers/1?relation=orders`) and turns the last breadcrumb of record pages into a menu of the record's pages. No page classes to generate: traits only.
 
+- Always activate the `relation-navigator-development` skill when working with relation pages, the breadcrumb menu or the `HasRelationPages`, `HasRelationNavigator` and `InteractsWithRelationPage` traits.
+- If the skill is unavailable, read `vendor/wit3/filament-relation-navigator/resources/boost/skills/relation-navigator-development/SKILL.md`. Full documentation for agents: https://wit3.github.io/filament-relation-navigator/llms-full.txt
+
 ### Turn it on
 
 @verbatim

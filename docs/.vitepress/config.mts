@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import llmstxt from 'vitepress-plugin-llms'
 
 const repository = 'https://github.com/wit3/filament-relation-navigator'
 
@@ -14,6 +15,13 @@ export default defineConfig({
         ['meta', { property: 'og:image', content: 'https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/social-preview.jpg' }],
         ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ],
+    // llms.txt and llms-full.txt for AI agents, plus a .md version of each page.
+    vite: {
+        plugins: [llmstxt({
+            title: 'Relation Navigator for Filament',
+            description: 'A real page for every Filament relation manager (/customers/1/orders) and a searchable menu in the breadcrumb. Filament v4 and v5. Package: wit3/filament-relation-navigator.',
+        })],
+    },
     markdown: {
         theme: { light: 'github-light', dark: 'github-dark' },
     },
@@ -57,7 +65,7 @@ export default defineConfig({
                 items: [
                     { text: 'Configuration', link: '/reference/configuration' },
                     { text: 'How it works', link: '/reference/how-it-works' },
-                    { text: 'Laravel Boost', link: '/reference/laravel-boost' },
+                    { text: 'AI agents', link: '/reference/ai-agents' },
                     { text: 'Upgrade guide', link: '/reference/upgrade' },
                     { text: 'Changelog', link: '/reference/changelog' },
                     { text: 'Contributing', link: '/reference/contributing' },

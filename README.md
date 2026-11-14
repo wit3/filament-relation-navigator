@@ -602,14 +602,24 @@ public static function getRecordSubNavigation(Page $page): array
   so its state, actions and modals stay in the relation manager.
 <!-- #endregion how-it-works -->
 
-## Laravel Boost
+## AI agents
 
-<!-- #region laravel-boost -->
-The package ships guidelines for [Laravel Boost](https://laravel.com/docs/boost):
-pick `wit3/filament-relation-navigator` when you run `php artisan boost:install`
-(or `boost:update`), and your AI agent learns the traits, the options and
-their levels.
-<!-- #endregion laravel-boost -->
+<!-- #region ai-agents -->
+The package teaches AI coding agents how to use it, so Claude Code, Codex,
+Cursor, Copilot and the like write the traits and options correctly:
+
+- **Laravel Boost**: the package ships guidelines and a skill
+  (`relation-navigator-development`). Pick `wit3/filament-relation-navigator`
+  when you run `php artisan boost:install` (or `boost:update`).
+- **llms.txt**: the documentation is also published for agents, as an
+  index ([llms.txt](https://wit3.github.io/filament-relation-navigator/llms.txt))
+  and as one file
+  ([llms-full.txt](https://wit3.github.io/filament-relation-navigator/llms-full.txt)).
+  Every page has a Markdown version too: add `.md` to its URL.
+- **Without Boost**: point your agent to
+  `vendor/wit3/filament-relation-navigator/resources/boost/skills/relation-navigator-development/SKILL.md`,
+  for example from your `AGENTS.md` or `CLAUDE.md`.
+<!-- #endregion ai-agents -->
 
 ## Testing
 
