@@ -6,7 +6,8 @@
     $showCheck (a check after the current page's label), $hasSeparator
     (record pages and relation pages in two blocks; optional),
     $hasDeferredBadges (the badges come from the page's
-    getRelationNavigatorBadges() when the list shows; optional).
+    getRelationNavigatorBadges() when the list shows; optional). Items with
+    isBadgeDeferred (a lazy tab badge) load theirs the same way.
 
     Keyboard: from the search field, Down moves to the first item; Up and
     Down move between the items, Up from the first one goes back to the
@@ -20,6 +21,9 @@
     $hasSeparator ??= false;
     $showCheck ??= false;
     $hasDeferredBadges ??= false;
+
+    $isBadgeDeferred = fn ($item): bool => $item->isRelationPage() && ($hasDeferredBadges || ($item->isBadgeDeferred ?? false));
+    $loadsBadges = collect($items)->contains(fn ($item): bool => $isBadgeDeferred($item));
 
     $blocks = $hasSeparator
         ? array_values(array_filter([
@@ -82,7 +86,7 @@
         loadingBadges: false,
     }"
     {{-- No Blade conditional inside the tag: Livewire would add its markers. --}}
-    x-init="@js($hasDeferredBadges) && new IntersectionObserver((entries) => entries.some((entry) => entry.isIntersecting) && loadBadges()).observe($el)"
+    x-init="@js($loadsBadges) && new IntersectionObserver((entries) => entries.some((entry) => entry.isIntersecting) && loadBadges()).observe($el)"
 >
     @if ($isSearchable)
         <div class="fi-relation-navigator-search">
@@ -119,7 +123,7 @@
                         tag="a"
                         :href="$item->url"
                         :icon="$item->icon"
-                        :badge="($hasDeferredBadges && $item->isRelationPage()) ? null : $item->badge"
+                        :badge="$isBadgeDeferred($item) ? null : $item->badge"
                         :badge-color="$item->badgeColor ?? 'primary'"
                         :color="$item->isActive ? 'primary' : 'gray'"
                         :aria-current="$item->isActive ? 'page' : null"
@@ -127,7 +131,7 @@
                         :data-relation-navigator-label="(string) $item->label"
                         x-show="matches($el.dataset.relationNavigatorLabel)"
                     >
-                        @if ($hasDeferredBadges && $item->isRelationPage())
+                        @if ($isBadgeDeferred($item))
                             <x-slot name="badge">
                                 <span
                                     class="fi-relation-navigator-badge-loading"

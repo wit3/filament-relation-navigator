@@ -89,6 +89,23 @@ final class RelationPageDefinition
     }
 
     /**
+     * Whether the relation manager's tab badge is lazy (Filament's
+     * `$isBadgeLazyLoaded`, `$isBadgeDeferred` on Filament 4.13): the menu
+     * then loads it when it opens, too. Never for a relation group.
+     */
+    public function isBadgeLazy(Model $ownerRecord, string $pageClass): bool
+    {
+        $managerClass = $this->getManagerClass();
+
+        return match (true) {
+            $managerClass === null => false,
+            method_exists($managerClass, 'isBadgeLazyLoaded') => (bool) $managerClass::isBadgeLazyLoaded($ownerRecord, $pageClass),
+            method_exists($managerClass, 'isBadgeDeferred') => (bool) $managerClass::isBadgeDeferred($ownerRecord, $pageClass),
+            default => false,
+        };
+    }
+
+    /**
      * Badges often count records: within one request (menu, sub-navigation)
      * each one is computed once.
      */

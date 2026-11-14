@@ -202,7 +202,7 @@ trait HasRelationNavigator
 
         $badges = [];
 
-        foreach (RelationNavigator::getItems($resource, $this->getRecord(), withBadges: true) as $item) {
+        foreach (RelationNavigator::getItems($resource, $this->getRecord(), withBadges: true, resolveDeferredBadges: true) as $item) {
             if (blank($item->badge)) {
                 continue;
             }

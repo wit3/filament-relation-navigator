@@ -42,6 +42,19 @@ class PublishedCommentsRelationManager extends RelationManager
         return $ownerRecord->getAttribute('name') === 'Custom titles' ? 'Comments' : null;
     }
 
+    /**
+     * A lazy tab badge, for an author named "Lazy badge" only.
+     */
+    public static function getBadge(Model $ownerRecord, string $pageClass): ?string
+    {
+        return $ownerRecord->getAttribute('name') === 'Lazy badge' ? '7' : null;
+    }
+
+    public static function isBadgeLazyLoaded(Model $ownerRecord, string $pageClass): bool
+    {
+        return $ownerRecord->getAttribute('name') === 'Lazy badge';
+    }
+
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
         return $ownerRecord->getAttribute('name') !== 'No comments';

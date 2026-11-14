@@ -256,7 +256,7 @@ final class RelationNavigator
      * @param  class-string<resource>  $resource
      * @return array<RelationNavigatorItem>
      */
-    public static function getItems(string $resource, Model $record, ?string $activePageKey = null, bool $withBadges = true): array
+    public static function getItems(string $resource, Model $record, ?string $activePageKey = null, bool $withBadges = true, bool $resolveDeferredBadges = false): array
     {
         $items = [];
         $pages = $resource::getPages();
@@ -314,14 +314,19 @@ final class RelationNavigator
                 continue;
             }
 
+            // A lazy tab badge is loaded when the menu opens, unless asked now.
+            $isBadgeDeferred = $withBadges && (! $resolveDeferredBadges) && $definition->isBadgeLazy($record, $contextPageClass);
+            $hasBadge = $withBadges && ! $isBadgeDeferred;
+
             $items[] = new RelationNavigatorItem(
                 key: $pageKey,
                 label: $definition->getTitle($record, $contextPageClass),
                 url: $resource::getUrl($pageKey, ['record' => $record], shouldGuessMissingParameters: true),
                 icon: $definition->getIcon($record, $contextPageClass),
-                badge: $withBadges ? $definition->getBadge($record, $contextPageClass) : null,
-                badgeColor: $withBadges ? $definition->getBadgeColor($record, $contextPageClass) : null,
+                badge: $hasBadge ? $definition->getBadge($record, $contextPageClass) : null,
+                badgeColor: $hasBadge ? $definition->getBadgeColor($record, $contextPageClass) : null,
                 isActive: $activePageKey === $pageKey,
+                isBadgeDeferred: $isBadgeDeferred,
             );
         }
 
@@ -347,10 +352,12 @@ final class RelationNavigator
             return [];
         }
 
+        // Rendered with the page: no deferred badges here.
         $items = self::getItems(
             $resource,
             $page->getRecord(),
             self::getActivePageKey($page),
+            resolveDeferredBadges: true,
         );
 
         return array_map(

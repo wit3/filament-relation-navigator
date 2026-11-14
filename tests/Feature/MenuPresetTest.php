@@ -331,3 +331,26 @@ it('reads the options from the page, then the resource, then the config', functi
         AuthorResource::$options = [];
     }
 });
+
+it('loads a lazy tab badge when the menu opens, and the others with the page', function (): void {
+    $author = Author::create(['name' => 'Lazy badge']);
+    $author->posts()->create(['title' => 'Notes']);
+
+    $page = Livewire::test(ViewAuthor::class, ['record' => $author->getKey()])->instance();
+    $items = collect($page->getRelationNavigatorItems())->keyBy('key');
+
+    expect($items['relations.published-comments']->isBadgeDeferred)->toBeTrue()
+        ->and($items['relations.published-comments']->badge)->toBeNull()
+        ->and($items['relations.posts']->isBadgeDeferred)->toBeFalse()
+        ->and($items['relations.posts']->badge)->toBe('1')
+        ->and($page->getRelationNavigatorBadges()['relations.published-comments']['badge'])->toBe('7');
+
+    expect($this->get("/admin/authors/{$author->getKey()}")->getContent())
+        ->toContain('x-init="true && new IntersectionObserver')
+        ->toContain('fi-relation-navigator-badge-loading');
+
+    // The native sub-navigation renders with the page: the badge is there.
+    $navigation = collect(RelationNavigator::getRecordSubNavigation($page));
+
+    expect($navigation->first(fn ($item): bool => $item->getLabel() === 'Published comments')?->getBadge())->toBe('7');
+});

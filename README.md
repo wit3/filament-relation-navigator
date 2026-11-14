@@ -430,8 +430,15 @@ and earlier, set `'preset' => 'simple'` and `'searchable' => false`.
 
 Badges run the same queries as the tab badges. With `'badges' => 'lazy'` the
 page renders without them, and the menu loads them in one request when it
-opens. If you published the package views, update
-`menu/partials/list.blade.php` first.
+opens.
+
+A relation manager whose tab badge is lazy in Filament
+(`protected static ?bool $isBadgeLazyLoaded = true;`, or `$isBadgeDeferred`
+on Filament 4.13) gets the same treatment in the menu, whatever the config:
+its badge is loaded when the menu opens, the others with the page.
+
+If you published the package views, update `menu/partials/list.blade.php`
+before relying on either.
 
 **Keyboard**: from the search field, Down moves into the list; Up and Down
 move between the pages, Enter opens one, Escape closes the menu.

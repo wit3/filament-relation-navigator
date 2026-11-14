@@ -122,3 +122,12 @@ it('loads lazy badges when the menu opens', function (): void {
         ->assertPresent('[data-relation-navigator-badge]:visible')
         ->assertSeeIn('[data-relation-navigator-label="Posts"]:visible [data-relation-navigator-badge]', '2');
 });
+
+it('loads a lazy tab badge when the menu opens', function (): void {
+    $author = Author::create(['name' => 'Lazy badge']);
+
+    visit("/admin/authors/{$author->getKey()}")
+        ->assertNotPresent('[data-relation-navigator-badge]')
+        ->click('.fi-relation-navigator-caret')
+        ->assertSeeIn('[data-relation-navigator-label="Published comments"]:visible [data-relation-navigator-badge]', '7');
+});

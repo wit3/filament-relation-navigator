@@ -21,6 +21,8 @@ final class RelationNavigatorItem
         public readonly ?string $badge = null,
         public readonly string|array|null $badgeColor = null,
         public readonly bool $isActive = false,
+        // The badge is loaded when the menu opens, like a lazy tab badge.
+        public readonly bool $isBadgeDeferred = false,
     ) {}
 
     /**
