@@ -102,7 +102,11 @@ class AuthorResource extends Resource
                 PostsRelationManager::class,
                 PublishedCommentsRelationManager::class,
                 GroupOnlyCommentsRelationManager::class,
-            ]),
+            ])
+                // Switched by the tests of group badges.
+                ->badge(static::$options['groupBadge'] ?? null)
+                ->badgeColor(fn (?string $badge): string => $badge === '3' ? 'danger' : 'gray')
+                ->deferBadge(static::$options['groupBadgeLazy'] ?? false),
         ];
     }
 

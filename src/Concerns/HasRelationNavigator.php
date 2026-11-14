@@ -532,13 +532,23 @@ trait HasRelationNavigator
             return [];
         }
 
-        return RelationNavigator::getItems(
+        // Built once per request: the breadcrumb menu and the small-screen
+        // menu show the same items.
+        return $this->relationNavigatorItems ??= RelationNavigator::getItems(
             $resource,
             $this->getRecord(),
             $this->getRelationNavigatorActivePageKey(),
             $this->hasRelationNavigatorBadges() && ! $this->hasDeferredRelationNavigatorBadges(),
+            // Menu views that cannot load badges later get every badge now,
+            // lazy tab badges included.
+            resolveDeferredBadges: ! RelationNavigator::supportsDeferredBadges($this->getRelationNavigatorView(), 'filament-relation-navigator::menu.mobile'),
         );
     }
+
+    /**
+     * @var array<RelationNavigatorItem> | null
+     */
+    private ?array $relationNavigatorItems = null;
 
     /**
      * @param  array<RelationNavigatorItem>  $items

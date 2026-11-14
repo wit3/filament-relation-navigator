@@ -104,22 +104,23 @@ final class RelationPageDefinition
     }
 
     /**
-     * Whether the relation manager's tab badge is lazy (Filament's
-     * `$isBadgeLazyLoaded`, `$isBadgeDeferred` on Filament 4.13): the menu
-     * then loads it when it opens, too. Never for a relation group.
+     * Whether the tab badge is lazy (Filament's `$isBadgeLazyLoaded`, or
+     * `$isBadgeDeferred` on Filament 4.13), for a relation manager or a
+     * relation group: the menu then loads it when it opens, too.
      */
     public function isBadgeLazy(Model $ownerRecord, string $pageClass): bool
     {
-        $managerClass = $this->getManagerClass();
+        // A relation group, or a relation manager (static methods).
+        $source = ($this->manager instanceof RelationGroup) ? $this->getGroup($ownerRecord, $pageClass) : $this->getManagerClass();
 
-        if ($managerClass === null) {
+        if ($source === null) {
             return false;
         }
 
         // isBadgeLazyLoaded() from Filament 4.16, isBadgeDeferred() before.
         foreach (self::LAZY_BADGE_METHODS as $method) {
-            if (method_exists($managerClass, $method)) {
-                return (bool) $managerClass::$method($ownerRecord, $pageClass);
+            if (method_exists($source, $method)) {
+                return (bool) (is_object($source) ? $source->{$method}() : $source::$method($ownerRecord, $pageClass));
             }
         }
 
@@ -148,7 +149,8 @@ final class RelationPageDefinition
     {
         return $this->remember('badgeColor', $ownerRecord, $pageClass, function () use ($ownerRecord, $pageClass): string|array|null {
             if ($this->manager instanceof RelationGroup) {
-                return $this->getGroup($ownerRecord, $pageClass)->getBadgeColor();
+                // As the tab does: the color can depend on the badge.
+                return $this->getGroup($ownerRecord, $pageClass)->getBadgeColor($this->getBadge($ownerRecord, $pageClass));
             }
 
             return $this->managerClass()::getBadgeColor($ownerRecord, $pageClass);

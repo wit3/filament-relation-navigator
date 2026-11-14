@@ -935,17 +935,13 @@ final class RelationNavigator
             return null;
         }
 
-        $slug = self::findRelationPageSlug($relationPage, $manager, $ownerRecord);
+        $slug = self::findRelationPageSlug($relationPage, $resource, $manager, $ownerRecord);
 
         if ($slug === null) {
             return null;
         }
 
         $pageKey = $relationPage::getPageKey($slug);
-
-        if (! self::hasRoute($resource, $pageKey)) {
-            return null;
-        }
 
         return $resource::getUrl($pageKey, ['record' => $ownerRecord], shouldGuessMissingParameters: true);
     }
@@ -957,20 +953,20 @@ final class RelationNavigator
      * instance has wins, then the plain class.
      *
      * @param  class-string<RelationPage>  $relationPage
+     * @param  class-string<resource>  $resource
      */
-    private static function findRelationPageSlug(string $relationPage, RelationManager $manager, Model $ownerRecord): ?string
+    private static function findRelationPageSlug(string $relationPage, string $resource, RelationManager $manager, Model $ownerRecord): ?string
     {
         $contextPageClass = $relationPage::getContextPageClass();
+        $definitions = $relationPage::getRelationPageDefinitions();
 
-        // The best entry: one whose properties the instance has, then its own
-        // page before the page of a group it belongs to, then the first one.
-        $best = null;
-        $bestScore = -1;
+        // The entries this relation manager matches: one whose properties the
+        // instance has first, then its own page before the page of a group it
+        // belongs to, then the first one. Matching needs no authorization.
+        $candidates = [];
 
-        foreach ($relationPage::getRelationPageDefinitions() as $slug => $definition) {
-            $entries = $definition->isGroup()
-                ? $definition->getGroup($ownerRecord, $contextPageClass)->getManagers()
-                : [$definition->manager];
+        foreach ($definitions as $slug => $definition) {
+            $entries = ($definition->manager instanceof RelationGroup) ? $definition->manager->getManagers() : [$definition->manager];
 
             foreach ($entries as $entry) {
                 if (self::normalizeManagerClass($entry) !== $manager::class) {
@@ -978,25 +974,42 @@ final class RelationNavigator
                 }
 
                 $properties = ($entry instanceof RelationManagerConfiguration) ? $entry->getProperties() : [];
-
                 $matches = ($properties !== []) && collect($properties)->every(
-                    fn (mixed $value, string $property): bool => property_exists($manager, $property) && $manager->{$property} === $value,
+                    fn (mixed $value, string $property): bool => property_exists($manager, $property) && self::sameValue($manager->{$property}, $value),
                 );
 
                 if (($properties !== []) && ! $matches) {
                     continue;
                 }
 
-                $score = ($matches ? 2 : 0) + ($definition->isGroup() ? 0 : 1);
-
-                if ($score > $bestScore) {
-                    $best = (string) $slug;
-                    $bestScore = $score;
-                }
+                $candidates[(string) $slug] = max($candidates[(string) $slug] ?? -1, ($matches ? 2 : 0) + ($definition->isGroup() ? 0 : 1));
             }
         }
 
-        return $best;
+        // Stable: equal scores keep the order of getRelations().
+        uksort($candidates, fn (string $a, string $b): int => ($candidates[$b] <=> $candidates[$a]) ?: (array_search($a, array_keys($definitions), true) <=> array_search($b, array_keys($definitions), true)));
+
+        // The best page the user can open, as the menu would list it.
+        foreach (array_keys($candidates) as $slug) {
+            if (self::hasRoute($resource, $relationPage::getPageKey($slug)) && $definitions[$slug]->canViewForRecord($ownerRecord, $contextPageClass)) {
+                return $slug;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * A property of a configured relation manager, as Livewire hydrates it:
+     * models by key, other objects by value.
+     */
+    private static function sameValue(mixed $actual, mixed $expected): bool
+    {
+        return match (true) {
+            $expected instanceof Model => $actual instanceof Model && $actual->is($expected),
+            is_object($expected) => $actual == $expected,
+            default => $actual === $expected,
+        };
     }
 
     /**

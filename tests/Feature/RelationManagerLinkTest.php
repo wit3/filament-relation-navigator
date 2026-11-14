@@ -207,3 +207,21 @@ describe('customising the action', function (): void {
             ->and($render()->html())->toContain('global &gt; resource &gt; manager');
     });
 });
+
+it('does not link to a relation page the resource vetoes for the record', function (): void {
+    AuthorResource::$options['canAccessRelationPage'] = fn ($record, string $slug): bool => $slug !== 'published-comments';
+
+    try {
+        // Its own page is vetoed: the group page it also belongs to is next.
+        Livewire::test(PublishedCommentsRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => ViewAuthor::class])
+            ->assertDontSee(AuthorResource::getUrl('relations.published-comments', ['record' => $this->author]), escape: false)
+            ->assertSee(AuthorResource::getUrl('relations.activity', ['record' => $this->author]), escape: false);
+
+        AuthorResource::$options['canAccessRelationPage'] = fn (): bool => false;
+
+        Livewire::test(PublishedCommentsRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => ViewAuthor::class])
+            ->assertDontSee('Open as page');
+    } finally {
+        AuthorResource::$options = [];
+    }
+});

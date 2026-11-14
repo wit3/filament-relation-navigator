@@ -388,6 +388,14 @@ it('renders the badges with the page when the menu views cannot load them', func
 
         expect($page->hasDeferredRelationNavigatorBadges())->toBeFalse()
             ->and(collect($page->getRelationNavigatorItems())->firstWhere('key', 'relations.posts')->badge)->toBe('1');
+
+        // A lazy tab badge comes with the page too: nothing disappears.
+        $lazy = Author::create(['name' => 'Lazy badge']);
+        $page = Livewire::test(ViewAuthor::class, ['record' => $lazy->getKey()])->instance();
+        $comments = collect($page->getRelationNavigatorItems())->firstWhere('key', 'relations.published-comments');
+
+        expect($comments->badge)->toBe('7')
+            ->and($comments->isBadgeDeferred)->toBeFalse();
     } finally {
         View::replaceNamespace('filament-relation-navigator', [realpath(__DIR__.'/../../resources/views')]);
     }
@@ -439,4 +447,27 @@ it('computes the deferred badges once, however many times the browser asks', fun
     expect($second)->toBe($first)
         ->and($afterFirst)->toBeGreaterThan(0)
         ->and($queries)->toBe($afterFirst);
+});
+
+it('treats the badge of a relation group like its tab', function (): void {
+    config()->set('filament-relation-navigator.menu.badges', true);
+    AuthorResource::$options = ['groupBadge' => '3'];
+
+    try {
+        $activity = collect(RelationNavigator::getItems(AuthorResource::class, $this->author))->firstWhere('key', 'relations.activity');
+
+        // The color callback receives the badge, as in the tab.
+        expect($activity->badge)->toBe('3')
+            ->and($activity->badgeColor)->toBe('danger')
+            ->and($activity->isBadgeDeferred)->toBeFalse();
+
+        AuthorResource::$options['groupBadgeLazy'] = true;
+
+        $activity = collect(RelationNavigator::getItems(AuthorResource::class, $this->author))->firstWhere('key', 'relations.activity');
+
+        expect($activity->isBadgeDeferred)->toBeTrue()
+            ->and($activity->badge)->toBeNull();
+    } finally {
+        AuthorResource::$options = [];
+    }
 });
