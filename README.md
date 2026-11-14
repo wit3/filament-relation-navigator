@@ -9,7 +9,7 @@
     <a href="LICENSE.md"><img src="https://img.shields.io/packagist/l/wit3/filament-relation-navigator.svg?style=flat-square" alt="License"></a>
 </p>
 
-**[Read the documentation →](https://wit3.github.io/filament-relation-navigator/)** Guides, configuration reference, upgrade guide and search.
+**[Read the documentation →](https://wit3.github.io/filament-relation-navigator/)** Guides, configuration reference, upgrade guide and search. [In italiano](https://wit3.github.io/filament-relation-navigator/it/).
 
 <!-- #region intro -->
 Give every relation manager of a Filament resource **its own page**, and jump
@@ -301,9 +301,9 @@ same URL, for a button of your own.
 ## Previous and next record
 
 <!-- #region previous-and-next-record -->
-Two buttons before the header actions open the previous or the next record,
-by key, **on the same page**: from a customer's invoices to the next
-customer's invoices. A record that cannot open that page opens on its first
+Two buttons before the header actions open the previous or the next record
+**on the same page**: from a customer's invoices to the next customer's
+invoices. A record that cannot open that page opens on its first
 page in the menu. They are off by default, since they add a few queries per
 render:
 

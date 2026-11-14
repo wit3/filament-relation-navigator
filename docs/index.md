@@ -27,7 +27,7 @@ features:
   - title: Header, actions and widgets
     details: Show the record's card, widgets and header actions above the relation, taken from the resource.
   - title: Previous and next record
-    details: Walk through the records on the same page, from a customer's invoices to the next customer's invoices.
+    details: Walk through the records on the same page, in the order of the list you came from.
   - title: Switch anything, anywhere
     details: Every feature can be turned on or off globally, per resource and per page or relation manager.
 ---

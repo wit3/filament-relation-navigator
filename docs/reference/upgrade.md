@@ -7,6 +7,15 @@ composer update wit3/filament-relation-navigator
 php artisan filament:assets
 ```
 
+## To 1.5
+
+Nothing to change. Two behaviours are different:
+
+- **Previous and next follow the list you came from** (sort, filters, search, tab) instead of the key order, when record navigation is on. To keep the key order: `'record_navigation_follows_list' => false`.
+- **"Open as page"** opens a relation manager's own page before the page of a relation group it also belongs to.
+
+If you published the package views, publish `menu/partials/list.blade.php` again: relation managers with a lazy tab badge now load it in the menu too.
+
 ## To 1.4
 
 Nothing to change.

@@ -4,6 +4,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+## 1.5.0 - 2026-11-14
+
+Six improvements: global search links, per-relation titles, "Open as page" on group pages, lazy tab badges in the menu, previous/next that follow the list, and the documentation in Italian. Two behaviour changes, both in "Changed".
+
 ### Changed
 
 - **Previous and next follow the list the user came from** (config `record_navigation_follows_list`, default `true`; `shouldRelationNavigatorRecordNavigationFollowList()` on a page or resource): its sort, filters, search and tab, up to 100 records, instead of the key order. They stop at the ends of that list. Records not in the list, or with the option off, still walk by key. The list remembers its records in the session only when record navigation is on in the config or on the resource.
@@ -11,6 +15,7 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ### Added
 
+- **Documentation in Italian**: [wit3.github.io/filament-relation-navigator/it/](https://wit3.github.io/filament-relation-navigator/it/), from `README.it.md` (same sections as the README, checked by a test).
 - **Lazy tab badges stay lazy in the menu**: a relation manager with `$isBadgeLazyLoaded` (or `$isBadgeDeferred` on Filament 4.13) gets its menu badge when the menu opens, the others still come with the page. Filament's default is not lazy, so nothing changes unless you set it. `RelationNavigatorItem::$isBadgeDeferred`, and `RelationNavigator::getItems(..., resolveDeferredBadges: true)` to get every badge now. Published `menu/partials/list.blade.php` views need updating for it.
 - **Global search links to relation pages** (config `global_search_actions`: `false` by default, `true`, or the most links per result; resource `hasRelationPageGlobalSearchActions()`; relation manager `hasRelationPageGlobalSearchAction()` or `$hasRelationPageGlobalSearchAction`). `HasRelationPages` adds them to `getGlobalSearchResultActions()`; `RelationNavigator::getGlobalSearchResultActions()` for resources that define it themselves.
 - **"Open as page" on relation group pages**: a relation manager shown on its group's page links to its own page when it has one.

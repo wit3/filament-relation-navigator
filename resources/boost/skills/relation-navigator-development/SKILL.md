@@ -109,6 +109,28 @@ public static function getRelationPageHeaderWidgets(): array
 
 They act on the owner record. Methods that exist only on the view page class are not reachable: move shared pieces to the resource or a class.
 
+## Title, subheading and breadcrumb of one relation page
+
+Static methods on the relation manager, given the owner record; return `null` to keep the default. The menu and tabs keep the relation manager's title.
+
+```php
+public static function getRelationPageTitle(Model $ownerRecord): string|Htmlable|null
+{
+    return "Orders of {$ownerRecord->name}";
+}
+
+public static function getRelationPageSubheading(Model $ownerRecord): string|Htmlable|null;
+public static function getRelationPageBreadcrumb(Model $ownerRecord): ?string;
+```
+
+## Global search links
+
+Off by default. Config `global_search_actions` (`true`, or the most links per result), resource `public static function hasRelationPageGlobalSearchActions(): bool`, relation manager `protected static bool $hasRelationPageGlobalSearchAction = false;`. `HasRelationPages` adds them to `getGlobalSearchResultActions()`; a resource that defines that method itself spreads `...RelationNavigator::getGlobalSearchResultActions(static::class, $record)` into it.
+
+## Previous and next record
+
+Off by default (`record_navigation`). When on, the buttons follow the list the user came from (sort, filters, search, tab; `record_navigation_follows_list`, on by default) and walk by key for records not in it. The list only remembers its records when record navigation is on in the config or on the resource. Nested resources are not supported.
+
 ## Custom menu preset
 
 ```bash
