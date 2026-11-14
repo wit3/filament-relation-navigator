@@ -1,12 +1,18 @@
+{{--
+    Preset "dropdown": the last breadcrumb opens a plain list.
+
+    Data: $label (string | Htmlable), $items (array<RelationNavigatorItem>),
+    $maxHeight, $heading, $searchPlaceholder, $emptyLabel, $isSearchable.
+--}}
 @php
     use Filament\Support\Icons\Heroicon;
 @endphp
 
 <x-filament::dropdown
     placement="bottom-start"
-    max-height="24rem"
+    :max-height="$maxHeight"
     teleport
-    class="fi-relation-navigator"
+    class="fi-relation-navigator fi-relation-navigator-preset-dropdown"
 >
     <x-slot name="trigger">
         <button

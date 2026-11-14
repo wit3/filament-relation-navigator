@@ -17,6 +17,7 @@ class FilamentRelationNavigatorServiceProvider extends PackageServiceProvider
     {
         $package
             ->name(static::$name)
+            ->hasConfigFile()
             ->hasViews()
             ->hasTranslations()
             ->hasCommand(MakeRelationPageCommand::class);

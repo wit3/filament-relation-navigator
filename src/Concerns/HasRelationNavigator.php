@@ -80,12 +80,28 @@ trait HasRelationNavigator
     }
 
     /**
-     * Relation managers' badges in the menu. They run the same queries as
-     * the tab badges: turn them off if they are expensive.
+     * Relation managers' badges in the menu (config `menu.badges`). They run
+     * the same queries as the tab badges: turn them off if they are expensive.
      */
     public function hasRelationNavigatorBadges(): bool
     {
-        return true;
+        return (bool) config('filament-relation-navigator.menu.badges', true);
+    }
+
+    /**
+     * One of the presets in the config (`dropdown`, `searchable` or yours).
+     */
+    public function getRelationNavigatorPreset(): string
+    {
+        return (string) config('filament-relation-navigator.menu.preset', 'dropdown');
+    }
+
+    public function getRelationNavigatorView(): string
+    {
+        $preset = $this->getRelationNavigatorPreset();
+        $presets = (array) config('filament-relation-navigator.menu.presets', []);
+
+        return $presets[$preset] ?? "filament-relation-navigator::menu.{$preset}";
     }
 
     public function getRelationNavigatorActivePageKey(): ?string
@@ -111,9 +127,14 @@ trait HasRelationNavigator
      */
     protected function renderRelationNavigator(string|Htmlable $label, array $items): Htmlable
     {
-        return new HtmlString(view('filament-relation-navigator::breadcrumb-menu', [
+        return new HtmlString(view($this->getRelationNavigatorView(), [
             'label' => $label,
             'items' => $items,
+            'heading' => __('filament-relation-navigator::navigator.heading'),
+            'searchPlaceholder' => __('filament-relation-navigator::navigator.search'),
+            'emptyLabel' => __('filament-relation-navigator::navigator.empty'),
+            'maxHeight' => (string) config('filament-relation-navigator.menu.max_height', '24rem'),
+            'isSearchable' => count($items) >= (int) config('filament-relation-navigator.menu.search_from', 0),
         ])->render());
     }
 }

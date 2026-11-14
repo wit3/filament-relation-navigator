@@ -20,6 +20,9 @@ composer require wit3/filament-relation-navigator
 php artisan filament:assets
 ```
 
+Run `filament:assets` again after updating the package: Filament copies the
+stylesheet into `public/`.
+
 ## Usage
 
 ### 1. Opt in
@@ -238,17 +241,64 @@ the tab. Change it with `protected static ?string $contextPage = 'edit';`.
 Access to a relation page requires both the context page's `canAccess()` and
 the manager's `canViewForRecord()`. An unknown slug is a 404.
 
-## Badges
+## How the menu looks
 
-The menu shows the relation managers' badges, which run the same queries as
-the tab badges. To hide them on a page:
+Publish the config to choose the menu's look:
+
+```bash
+php artisan vendor:publish --tag=filament-relation-navigator-config
+```
 
 ```php
+'menu' => [
+    'preset' => 'dropdown', // or 'searchable'
+    'presets' => [
+        'dropdown' => 'filament-relation-navigator::menu.dropdown',
+        'searchable' => 'filament-relation-navigator::menu.searchable',
+    ],
+    'badges' => true,       // the relation managers' badges, as in their tabs
+    'max_height' => '24rem',
+    'search_from' => 0,     // searchable: show the search field from this many items
+],
+```
+
+- **dropdown**: the last breadcrumb opens a plain list.
+- **searchable**: the last breadcrumb stays text and a caret next to it opens a
+  panel with a heading, a search field (Enter opens the first match) and a
+  check on the current page, like GitHub's repository switcher.
+
+A page can pick its own preset, or hide the badges:
+
+```php
+public function getRelationNavigatorPreset(): string
+{
+    return 'searchable';
+}
+
 public function hasRelationNavigatorBadges(): bool
 {
-    return false;
+    return false; // the badges run the same queries as the tab badges
 }
 ```
+
+### Your own menu
+
+Add a preset that points to any view, or publish the package views and change
+them:
+
+```php
+'presets' => [
+    'mine' => 'filament.relation-navigator-menu',
+],
+```
+
+```bash
+php artisan vendor:publish --tag=filament-relation-navigator-views
+```
+
+The view receives `$label` (the last breadcrumb), `$items` (each with `key`,
+`label`, `url`, `icon`, `badge`, `badgeColor`, `isActive`), `$heading`,
+`$searchPlaceholder`, `$emptyLabel`, `$maxHeight` and `$isSearchable`.
 
 ## Native record sub-navigation
 

@@ -4,4 +4,10 @@ return [
 
     'open' => 'Other pages of this record',
 
+    'heading' => 'Switch page',
+
+    'search' => 'Find a page…',
+
+    'empty' => 'No pages found.',
+
 ];
