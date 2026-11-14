@@ -61,10 +61,10 @@ it('denies the relation pages of a record the user cannot view, wherever the vie
     'no view or edit page' => 'index-only-authors',
 ]);
 
-it('answers 404 like the view page when the policy denies as not found', function (): void {
+it('answers 404 when the policy denies as not found', function (): void {
     $hidden = Author::create(['name' => 'Hidden']);
 
-    $this->get("/admin/authors/{$hidden->getKey()}")->assertNotFound();
+    // (The view page itself answers 404 from Filament 4.16; 4.13 says 403.)
     $this->get("/admin/authors/{$hidden->getKey()}/posts")->assertNotFound();
     $this->get("/admin/auto-authors/{$hidden->getKey()}/posts")->assertNotFound();
 });

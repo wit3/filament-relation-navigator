@@ -4,12 +4,16 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+## 1.6.0 - 2026-11-14
+
+A security fix for relation pages of resources whose view page is not registered as `view` (or that have none), security hardening from an audit, badges loaded when the menu opens by default, and a customisable "Open as page" action.
+
 ### Security
 
-- **Relation pages applied the record's `view` policy only when the view page was registered under the key `view` (or the edit page under `edit`).** With the view page under another key (`'details' => ViewCustomer::route(...)`), or with no view or edit page at all, relation pages checked only `canAccess()` and the relation manager's `canViewForRecord()`. The view page is now also found by its class, and without one the `view` policy applies.
+- **Relation pages applied the record's `view` policy only when the view page was registered under the key `view` (or the edit page under `edit`)** (1.3.0 to 1.5.0, [GHSA-mjj3-c8gm-4j73](https://github.com/wit3/filament-relation-navigator/security/advisories/GHSA-mjj3-c8gm-4j73)). With the view page under another key (`'details' => ViewCustomer::route(...)`), or with no view or edit page at all, relation pages checked only `canAccess()` and the relation manager's `canViewForRecord()`. The view page is now also found by its class, and without one the `view` policy applies.
 - A policy that denies "as not found" (`Response::denyAsNotFound()`) gives a 404 on relation pages too, as on the view page, instead of a 403 that told existing records apart.
 - Generated relation page classes: in the system temporary directory they go to a directory of this user only (0700, owner checked), and a file whose content is not the expected code is rewritten, never included.
-- Package methods that the browser does not need are `#[Unexposed]` (Filament 5 refuses calls to them); `getRelationNavigatorBadges()` stays callable and computes once per request.
+- Package methods that the browser does not need are `#[Unexposed]` (Filament 4.16 and later refuse browser calls to them); `getRelationNavigatorBadges()` stays callable and computes once per request.
 - `make:filament-relation-navigator-preset` accepts plain names and the package presets only.
 - "Open as page" and the tab redirect check the relation page's `canAccess()` before linking to it.
 

@@ -1,5 +1,6 @@
 <?php
 
+use Filament\Support\Livewire\MethodAccess;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
@@ -201,6 +202,11 @@ it('takes the title, subheading and breadcrumb of one relation page from its rel
 });
 
 it('lets the browser call only the methods the menu needs', function (): void {
+    // Filament refuses browser calls to #[Unexposed] methods from 4.16.
+    if (! class_exists(MethodAccess::class)) {
+        $this->markTestSkipped('This Filament version lets the browser call every public method.');
+    }
+
     $author = Author::create(['name' => 'Ada Lovelace']);
 
     Livewire::test(ViewAuthor::class, ['record' => $author->getKey()])
