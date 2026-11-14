@@ -69,8 +69,9 @@ return [
     | Relation managers on the record pages
     |--------------------------------------------------------------------------
     |
-    | An "Open as page" link above the table of every relation manager that
-    | has its own page, on the view and edit pages.
+    | An "Open as page" action in the header of the table of every relation
+    | manager that has its own page, on the view and edit pages. Per resource:
+    | hasRelationPageLinks(); per relation manager: hasRelationPageLink().
     |
     */
 

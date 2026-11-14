@@ -4,6 +4,25 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+## 1.4.0 - 2026-11-14
+
+Every feature can now be turned on or off globally, per resource and per page or relation manager.
+
+### Added
+
+- **Options per resource**: every option of the menu is read from the page, then from a static method with the same name on the resource, then from the config. For example `public static function hasRelationNavigatorRecordNavigation(): bool` on a resource turns previous/next on for all its pages. Methods: `getRelationNavigatorPreset()`, `isRelationNavigatorSearchable()`, `hasRelationNavigatorBadges()`, `hasDeferredRelationNavigatorBadges()`, `getRelationNavigatorShortcut()`, `hasRelationNavigatorMobileMenu()`, `hasRelationNavigatorRecordNavigation()`, `shouldRedirectRelationNavigatorTabs()`.
+- **"Open as page" per resource and per relation manager**: `hasRelationPageLinks()` on a resource, `hasRelationPageLink()` (or `$hasRelationPageLink` with `InteractsWithRelationPage`) on a relation manager, on top of the config `relation_manager_link`.
+- **Laravel Boost guidelines** (`resources/boost/guidelines/core.blade.php`): pick the package in `boost:install` and AI agents learn the traits and options.
+- `RelationNavigator::addRelationPageAction()`, `hasRelationPageAction()` and the `RELATION_PAGE_ACTION` constant.
+
+### Changed
+
+- **"Open as page" is now an action in the header of the relation manager's table**, next to its title and before its own actions, with an arrow icon. In 1.3.0 it was a link above the table, with an icon that looked like "full screen".
+
+### Deprecated
+
+- `RelationNavigator::renderRelationManagerLink()` and the `relation-manager-link` view: the package no longer uses them. They still render the 1.3.0 link, for a render hook of your own, and will be removed in 2.0.
+
 ## 1.3.0 - 2026-11-14
 
 A security fix, new features behind config switches, and a new default look for the menu. Update now if you use policies on your records. No breaking changes: every new key has a default in the code, so a published config from 1.2 keeps working.

@@ -247,11 +247,32 @@ it only when `canAccess()` allows it for the record.
 ## Open as page
 
 On the view and edit pages, every relation manager that has its own page gets
-an **Open as page** link above its table. A manager inside a relation group
-opens the group's page. Turn it off in the config:
+an **Open as page** action in the header of its table, next to its title and
+before its own actions. A manager inside a relation group opens the group's
+page. Turn it off where you need to:
 
 ```php
+// config/filament-relation-navigator.php: everywhere
 'relation_manager_link' => false,
+```
+
+```php
+// On a resource: all its relation managers
+public static function hasRelationPageLinks(): bool
+{
+    return false;
+}
+```
+
+```php
+// On a relation manager (with InteractsWithRelationPage)
+protected static bool $hasRelationPageLink = false;
+
+// or, without the trait
+public static function hasRelationPageLink(): bool
+{
+    return false;
+}
 ```
 
 `RelationNavigator::getRelationManagerPageUrl($relationManager)` returns the
@@ -388,22 +409,35 @@ or `/ . , ;`.
     <img src="https://raw.githubusercontent.com/wit3/filament-relation-navigator/main/art/menu-github-search-light.png" alt="The github preset with the search field" width="700">
 </picture>
 
-A page can override any of them:
+### Page, resource or config
+
+Every option has three levels. The page wins, then the resource, then the
+config:
+
+| Page method (static on the resource) | Config key |
+|---|---|
+| `getRelationNavigatorPreset(): string` | `menu.preset` |
+| `isRelationNavigatorSearchable(): bool` | `menu.searchable` |
+| `hasRelationNavigatorBadges(): bool` | `menu.badges` |
+| `hasDeferredRelationNavigatorBadges(): bool` | `menu.badges` = `'lazy'` |
+| `getRelationNavigatorShortcut(): ?string` | `menu.shortcut` |
+| `hasRelationNavigatorMobileMenu(): bool` | `menu.mobile` |
+| `hasRelationNavigatorRecordNavigation(): bool` | `record_navigation` |
+| `shouldRedirectRelationNavigatorTabs(): bool` | `redirect_relation_tabs` |
 
 ```php
-public function getRelationNavigatorPreset(): string
-{
-    return 'github';
-}
-
+// On one page
 public function isRelationNavigatorSearchable(): bool
 {
-    return true;
+    return false;
 }
+```
 
-public function hasRelationNavigatorBadges(): bool
+```php
+// On a resource: the same method, static, for all its pages
+public static function hasRelationNavigatorRecordNavigation(): bool
 {
-    return false; // the badges run the same queries as the tab badges
+    return true;
 }
 ```
 
@@ -537,6 +571,13 @@ public static function getRecordSubNavigation(Page $page): array
   registered with Livewire. It works with `route:cache`.
 - The relation page embeds the relation manager as Filament does in the tabs,
   so its state, actions and modals stay in the relation manager.
+
+## Laravel Boost
+
+The package ships guidelines for [Laravel Boost](https://laravel.com/docs/boost):
+pick `wit3/filament-relation-navigator` when you run `php artisan boost:install`
+(or `boost:update`), and your AI agent learns the traits, the options and
+their levels.
 
 ## Testing
 
