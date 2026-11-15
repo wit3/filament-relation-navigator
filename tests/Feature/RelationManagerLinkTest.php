@@ -15,6 +15,7 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationMana
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PublishedCommentsRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\AutoAuthors\AutoAuthorResource;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\AutoAuthors\Pages\ViewAutoAuthor;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\NoPagesAuthors\Pages\ViewNoPagesAuthor;
 
 beforeEach(function (): void {
     $this->actingAs(User::create(['name' => 'Admin', 'email' => 'admin@example.com', 'password' => 'secret']));
@@ -89,6 +90,18 @@ it('does not link a relation manager without a page', function (): void {
     Livewire::test(HiddenPageRelationManager::class, ['ownerRecord' => $this->author, 'pageClass' => ViewAuthor::class])
         ->assertDontSee('Open as page');
 });
+
+it('adds no action to a relation manager that can never have a page', function (string $managerClass, string $pageClass): void {
+    // Not even hidden: the app's own header actions keep their positions.
+    $names = collect(Livewire::test($managerClass, ['ownerRecord' => $this->author, 'pageClass' => $pageClass])->instance()->getTable()->getHeaderActions())
+        ->map(fn ($action) => $action->getName())
+        ->all();
+
+    expect($names)->not->toContain(RelationNavigator::RELATION_PAGE_ACTION);
+})->with([
+    'a resource without relation pages' => [PostsRelationManager::class, ViewNoPagesAuthor::class],
+    'a relation manager left out of them' => [HiddenPageRelationManager::class, ViewAuthor::class],
+]);
 
 it('tells apart two entries of the same relation manager by their properties', function (): void {
     $test = fn (array $properties) => Livewire::test(

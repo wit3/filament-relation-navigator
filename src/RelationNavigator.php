@@ -948,9 +948,11 @@ final class RelationNavigator
     }
 
     /**
-     * The action shows unless it is turned off in the config
-     * (`relation_manager_link`), on the resource (`hasRelationPageLinks()`)
-     * or on the relation manager (`hasRelationPageLink()`).
+     * The action shows on a relation manager listed on one of its resource's
+     * relation pages (its own or its group's), unless it is turned off in the
+     * config (`relation_manager_link`), on the resource
+     * (`hasRelationPageLinks()`) or on the relation manager
+     * (`hasRelationPageLink()`).
      */
     public static function hasRelationPageAction(RelationManager $manager): bool
     {
@@ -972,7 +974,37 @@ final class RelationNavigator
 
         $resource = $pageClass::getResource();
 
-        return ! (method_exists($resource, 'hasRelationPageLinks') && ! $resource::hasRelationPageLinks());
+        if (method_exists($resource, 'hasRelationPageLinks') && ! $resource::hasRelationPageLinks()) {
+            return false;
+        }
+
+        // Elsewhere the link could never resolve: the action would only sit
+        // hidden in the header of the table, first, moving the relation
+        // manager's own actions one place down.
+        $relationPage = is_subclass_of($resource, Resource::class) ? self::getRelationPageClass($resource) : null;
+
+        return $relationPage !== null && self::isOnRelationPages($relationPage, $manager);
+    }
+
+    /**
+     * Whether a relation manager is listed on one of the relation pages,
+     * on its own or in a group, whatever the record and the user.
+     *
+     * @param  class-string<RelationPage>  $relationPage
+     */
+    private static function isOnRelationPages(string $relationPage, RelationManager $manager): bool
+    {
+        foreach ($relationPage::getRelationPageDefinitions() as $definition) {
+            $entries = ($definition->manager instanceof RelationGroup) ? $definition->manager->getManagers() : [$definition->manager];
+
+            foreach ($entries as $entry) {
+                if (self::normalizeManagerClass($entry) === $manager::class) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
