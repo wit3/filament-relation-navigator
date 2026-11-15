@@ -272,6 +272,9 @@ public static function getRelationPageFooterWidgets(): array
 `withRelationNavigator()`:
 
 ```php
+/**
+ * @return array<string | int, string | Htmlable>
+ */
 public function getBreadcrumbs(): array
 {
     return $this->withRelationNavigator([

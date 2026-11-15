@@ -219,6 +219,9 @@ public static function getRelationPageFooterWidgets(): array
 如果页面已经自己构建面包屑，把它们传给 `withRelationNavigator()`：
 
 ```php
+/**
+ * @return array<string | int, string | Htmlable>
+ */
 public function getBreadcrumbs(): array
 {
     return $this->withRelationNavigator([

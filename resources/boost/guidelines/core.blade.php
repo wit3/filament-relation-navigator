@@ -29,7 +29,7 @@ class ViewCustomer extends ViewRecord
 
 - Only for one relation manager instead of the whole resource: `use InteractsWithRelationPage;` on the relation manager (or `public static function hasRelationPage(): bool { return true; }`).
 - Do not add the generated relation pages to `getPages()` and do not register routes: the package does it for every panel, tenancy, clusters and resource configurations included. Route names are `{resource route base}.relations.{slug}`: `CustomerResource::getUrl('relations.orders', ['record' => $customer])`.
-- A record page is in the menu only if it uses `HasRelationNavigator`. If the page already overrides `getBreadcrumbs()`, return `$this->withRelationNavigator([...])`. A custom page that uses `InteractsWithRecord` itself needs `HasRelationNavigator::getBreadcrumbs insteadof InteractsWithRecord;`.
+- A record page is in the menu only if it uses `HasRelationNavigator`. If the page already overrides `getBreadcrumbs()`, return `$this->withRelationNavigator([...])` and declare `@return array<string | int, string | Htmlable>`: the last breadcrumb becomes an `Htmlable`. A custom page that uses `InteractsWithRecord` itself needs `HasRelationNavigator::getBreadcrumbs insteadof InteractsWithRecord;`.
 - Relation managers on a relation page receive the view page as `$pageClass`, so `isReadOnly()`, `canViewForRecord()` and badges behave as in the tab. Do not branch on the relation page class.
 
 ### Per relation manager

@@ -3,6 +3,7 @@
 namespace Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages;
 
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Contracts\Support\Htmlable;
 use Wit3\FilamentRelationNavigator\Concerns\HasRelationNavigator;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\AuthorResource;
 
@@ -15,7 +16,7 @@ class EditAuthor extends EditRecord
     /**
      * A page that already builds its own breadcrumbs.
      *
-     * @return array<string | int, mixed>
+     * @return array<string | int, string | Htmlable>
      */
     public function getBreadcrumbs(): array
     {

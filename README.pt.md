@@ -271,6 +271,9 @@ Se a página já monta os próprios breadcrumbs, passe-os por
 `withRelationNavigator()`:
 
 ```php
+/**
+ * @return array<string | int, string | Htmlable>
+ */
 public function getBreadcrumbs(): array
 {
     return $this->withRelationNavigator([

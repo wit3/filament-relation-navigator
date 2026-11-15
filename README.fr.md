@@ -275,6 +275,9 @@ Si la page construit déjà son propre fil d'Ariane, passez-le à
 `withRelationNavigator()` :
 
 ```php
+/**
+ * @return array<string | int, string | Htmlable>
+ */
 public function getBreadcrumbs(): array
 {
     return $this->withRelationNavigator([

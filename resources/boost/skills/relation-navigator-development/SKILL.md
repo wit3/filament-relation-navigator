@@ -50,7 +50,7 @@ class ViewCustomer extends ViewRecord
 ```
 
 - A record page (view, edit, custom) is listed in the menu only when it uses the trait.
-- A page that already overrides `getBreadcrumbs()` returns `$this->withRelationNavigator([...])`.
+- A page that already overrides `getBreadcrumbs()` returns `$this->withRelationNavigator([...])`, declared as `@return array<string | int, string | Htmlable>`: the last breadcrumb becomes an `Htmlable`.
 - A custom page that uses `InteractsWithRecord` itself resolves the conflict:
 
 ```php

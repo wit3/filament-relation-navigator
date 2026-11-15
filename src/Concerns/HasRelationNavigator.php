@@ -169,10 +169,18 @@ trait HasRelationNavigator
             return $breadcrumbs;
         }
 
-        $label = $breadcrumbs[$lastKey];
-        unset($breadcrumbs[$lastKey]);
+        $menu = $this->renderRelationNavigator($breadcrumbs[$lastKey], $items);
 
-        $breadcrumbs[] = $this->renderRelationNavigator($label, $items);
+        // A text breadcrumb keeps its key. A link (its key is the URL) moves
+        // to a numeric key, so that the menu never ends up inside a link.
+        if (is_int($lastKey)) {
+            $breadcrumbs[$lastKey] = $menu;
+
+            return $breadcrumbs;
+        }
+
+        unset($breadcrumbs[$lastKey]);
+        $breadcrumbs[] = $menu;
 
         return $breadcrumbs;
     }

@@ -220,6 +220,9 @@ public static function getRelationPageFooterWidgets(): array
 ページがすでに独自のパンくずリストを組み立てている場合は、`withRelationNavigator()` に渡してください。
 
 ```php
+/**
+ * @return array<string | int, string | Htmlable>
+ */
 public function getBreadcrumbs(): array
 {
     return $this->withRelationNavigator([

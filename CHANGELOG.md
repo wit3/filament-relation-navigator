@@ -7,9 +7,11 @@ All notable changes to `filament-relation-navigator` are documented here.
 ### Fixed
 
 - The "Open as page" action is added only to the relation managers that have a relation page, their own or their group's. Before, every relation manager of the app got it, hidden, first in the header of its table: a test or a piece of code that took the first header action found it instead of its own.
+- `withRelationNavigator()` keeps the key of the last breadcrumb when it is text: `[..., 0 => 'View']` no longer comes back as `[..., 1 => ...]`. A linked last breadcrumb still moves to a numeric key, so that the menu never ends up inside a link.
 
 ### Documentation
 
+- The example of a page that builds its own breadcrumbs declares `@return array<string | int, string | Htmlable>`: the last breadcrumb becomes an `Htmlable`, and PHPStan (larastan) rejects Filament's `array<string>`.
 - The documentation site reads better on phones: the screenshot under the heading at full width, tables as one card per row, long inline code wrapping, and the Arabic pages no longer wider than the screen.
 
 ## 1.8.0 - 2026-11-14

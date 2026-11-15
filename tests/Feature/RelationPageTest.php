@@ -2,6 +2,7 @@
 
 use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Support\Livewire\MethodAccess;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,7 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Policies\AuthorPolicy;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\AuthorResource;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorRelationPage;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\AuthorStats;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\EditAuthor;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAuthor;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PostsRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PublishedCommentsRelationManager;
@@ -122,6 +124,27 @@ it('wraps breadcrumbs that a page builds by itself', function (): void {
     $this->get("/admin/authors/{$this->author->getKey()}/edit")
         ->assertSee('Custom authors')
         ->assertSee('fi-relation-navigator', escape: false);
+});
+
+it('keeps the key of a text breadcrumb when it adds the menu', function (): void {
+    $page = Livewire::test(EditAuthor::class, ['record' => $this->author->getKey()])->instance();
+    $breadcrumbs = $page->getBreadcrumbs();
+
+    expect(array_keys($breadcrumbs))->toBe([AuthorResource::getUrl('index'), 0])
+        ->and($breadcrumbs[0])->toBeInstanceOf(Htmlable::class)
+        ->and($breadcrumbs[0]->toHtml())->toContain('fi-relation-navigator', 'Custom edit');
+});
+
+it('moves a linked last breadcrumb to a numeric key when it adds the menu', function (): void {
+    $page = Livewire::test(EditAuthor::class, ['record' => $this->author->getKey()])->instance();
+    $breadcrumbs = $page->withRelationNavigator([
+        AuthorResource::getUrl('index') => 'Authors',
+        AuthorResource::getUrl('view', ['record' => $this->author]) => 'Ada Lovelace',
+    ]);
+
+    // The menu never sits inside a link.
+    expect(array_keys($breadcrumbs))->toBe([AuthorResource::getUrl('index'), 0])
+        ->and($breadcrumbs[0]->toHtml())->toContain('fi-relation-navigator', 'Ada Lovelace');
 });
 
 it('builds native record sub-navigation from the same items', function (): void {
