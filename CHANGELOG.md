@@ -4,6 +4,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+## 1.8.1 - 2026-11-15
+
+The package stays out of the relation managers and the lists that do not use it, and keeps the key of the last breadcrumb. The documentation site reads better on phones. No API changes.
+
 ### Fixed
 
 - The "Open as page" action is added only to the relation managers that have a relation page, their own or their group's. Before, every relation manager of the app got it, hidden, first in the header of its table: a test or a piece of code that took the first header action found it instead of its own.
