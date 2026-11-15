@@ -689,7 +689,28 @@ final class RelationNavigator
             ? (bool) $resource::shouldRelationNavigatorRecordNavigationFollowList()
             : (bool) config('filament-relation-navigator.record_navigation_follows_list', true);
 
-        return $navigation && $followsList;
+        // Only the resources that can show previous and next: the lists of
+        // the rest of the app leave the session alone.
+        return $navigation && $followsList && self::showsRecordNavigation($resource);
+    }
+
+    /**
+     * Whether one of the resource's pages can show previous and next: a
+     * record page that uses {@see HasRelationNavigator}, or a relation page.
+     *
+     * @param  class-string<resource>  $resource
+     */
+    private static function showsRecordNavigation(string $resource): bool
+    {
+        return self::remember("shows-record-navigation|{$resource}", function () use ($resource): bool {
+            foreach ($resource::getPages() as $registration) {
+                if (self::isRecordPageInMenu($registration->getPage())) {
+                    return true;
+                }
+            }
+
+            return self::getRelationPageClass($resource) !== null;
+        });
     }
 
     /**

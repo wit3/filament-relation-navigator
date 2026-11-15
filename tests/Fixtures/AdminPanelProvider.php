@@ -32,6 +32,7 @@ class AdminPanelProvider extends PanelProvider
                 Resources\ConfiguredAuthors\ConfiguredAuthorResource::make('vip')->slug('vip-authors'),
                 Resources\KeyedAuthors\KeyedAuthorResource::class,
                 Resources\IndexOnlyAuthors\IndexOnlyAuthorResource::class,
+                Resources\UnrelatedAuthors\UnrelatedAuthorResource::class,
             ])
             ->pages([Clusters\Settings::class])
             ->middleware([

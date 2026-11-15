@@ -7,6 +7,7 @@ All notable changes to `filament-relation-navigator` are documented here.
 ### Fixed
 
 - The "Open as page" action is added only to the relation managers that have a relation page, their own or their group's. Before, every relation manager of the app got it, hidden, first in the header of its table: a test or a piece of code that took the first header action found it instead of its own.
+- With `record_navigation` turned on in the config, only the lists of resources that can show previous and next remember their records. Before, the list pages of every resource of the app wrote them to the session, at every render, including resources that do not use the package.
 - `withRelationNavigator()` keeps the key of the last breadcrumb when it is text: `[..., 0 => 'View']` no longer comes back as `[..., 1 => ...]`. A linked last breadcrumb still moves to a numeric key, so that the menu never ends up inside a link.
 
 ### Documentation

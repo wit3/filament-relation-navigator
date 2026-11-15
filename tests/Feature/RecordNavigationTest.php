@@ -15,6 +15,8 @@ use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\Pages\ViewAu
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Authors\RelationManagers\PostsRelationManager;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\AutoAuthors\AutoAuthorResource;
 use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\Posts\PostResource;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\UnrelatedAuthors\Pages\ListUnrelatedAuthors;
+use Wit3\FilamentRelationNavigator\Tests\Fixtures\Resources\UnrelatedAuthors\UnrelatedAuthorResource;
 
 beforeEach(function (): void {
     $this->user = User::create(['name' => 'Admin', 'email' => 'admin@example.com', 'password' => 'secret']);
@@ -281,6 +283,19 @@ describe('following the list', function (): void {
             ->toBe([(string) $this->third->getKey(), (string) $this->second->getKey(), (string) $this->first->getKey()])
             ->and(RelationNavigator::getRememberedListKeys(AutoAuthorResource::class))->toBeNull();
     });
+});
+
+it('remembers no list for a resource whose pages never show previous and next', function (): void {
+    // Turned on in the config for every resource: only the ones that use the
+    // package keep a list, the others leave the session alone.
+    Livewire::test(ListUnrelatedAuthors::class)->assertOk();
+
+    expect(RelationNavigator::getRememberedListKeys(UnrelatedAuthorResource::class))->toBeNull()
+        ->and(session()->get('filament-relation-navigator.lists', []))->toBe([]);
+
+    Livewire::test(ListAuthors::class)->assertOk();
+
+    expect(RelationNavigator::getRememberedListKeys(AuthorResource::class))->not->toBeNull();
 });
 
 it('keeps the remembered list small enough for a cookie session', function (): void {
