@@ -4,6 +4,10 @@ All notable changes to `filament-relation-navigator` are documented here.
 
 ## Unreleased
 
+### Documentation
+
+- The documentation site reads better on phones: the screenshot under the heading at full width, tables as one card per row, long inline code wrapping, and the Arabic pages no longer wider than the screen.
+
 ## 1.8.0 - 2026-11-14
 
 25 more languages in the package, and the documentation in eight more. No API changes.

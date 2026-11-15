@@ -66,6 +66,12 @@ html[dir='rtl'] .VPSidebar.open {
     transform: translateX(0);
 }
 
+/* The closed sidebar waits off screen on the right: phones would widen the
+   page to show it. */
+html[dir='rtl'] body {
+    overflow-x: clip;
+}
+
 html[dir='rtl'] .VPLocalNav {
     left: auto;
     right: 0;
@@ -124,9 +130,139 @@ html[dir='rtl'] .VPLocalNav {
     }
 }
 
+/* Long inline code (class names, view names) breaks instead of widening
+   the page. */
+.vp-doc :not(pre) > code {
+    overflow-wrap: break-word;
+}
+
 /* Code reads left to right in every language. */
 html[dir='rtl'] div[class*='language-'],
 html[dir='rtl'] .vp-doc :not(pre) > code {
     direction: ltr;
     unicode-bidi: isolate;
+}
+
+/*
+ * Phones and small tablets.
+ */
+@media (max-width: 959px) {
+    /* The screenshot after the text, as wide as the screen: at 192px it
+       could not be read. */
+    .VPHero .main {
+        order: 1;
+    }
+
+    .VPHero .image {
+        order: 2;
+        margin: 40px 0 0;
+    }
+
+    .VPHero .image-container {
+        width: 100%;
+        max-width: 560px;
+        height: auto;
+    }
+
+    .VPHero .image-bg {
+        display: none;
+    }
+
+    .VPHero .image-src {
+        position: static;
+        transform: none;
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+    }
+}
+
+@media (max-width: 639px) {
+    /* Tables of three columns or more become one card per row: each value
+       with the name of its column (set by the theme). */
+    .vp-doc table.stacked,
+    .vp-doc table.stacked tbody,
+    .vp-doc table.stacked tr,
+    .vp-doc table.stacked td {
+        display: block;
+    }
+
+    .vp-doc table.stacked {
+        border: 0;
+        overflow: visible;
+    }
+
+    .vp-doc table.stacked thead {
+        display: none;
+    }
+
+    .vp-doc table.stacked tr {
+        margin: 0 0 12px;
+        padding: 10px 14px;
+        border: 1px solid var(--vp-c-divider);
+        border-radius: 8px;
+        background-color: var(--vp-c-bg-soft);
+    }
+
+    .vp-doc table.stacked td {
+        border: 0;
+        padding: 3px 0;
+    }
+
+    .vp-doc table.stacked td:first-child {
+        font-weight: 600;
+    }
+
+    .vp-doc table.stacked td:not(:first-child)[data-label]:not([data-label=''])::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 18px;
+        color: var(--vp-c-text-2);
+    }
+
+    .vp-doc table.stacked td:empty {
+        display: none;
+    }
+
+    /* The before and after URLs on the home page: one under the other. */
+    .home-section table,
+    .home-section tbody,
+    .home-section tr,
+    .home-section td {
+        display: block;
+    }
+
+    .home-section table {
+        border: 0;
+    }
+
+    .home-section thead {
+        display: none;
+    }
+
+    .home-section tr {
+        margin: 0 0 12px;
+        padding: 10px 14px;
+        border: 1px solid var(--vp-c-divider);
+        border-radius: 8px;
+        background-color: transparent;
+    }
+
+    .home-section td {
+        border: 0;
+        padding: 2px 0;
+    }
+
+    .home-section td + td::before {
+        content: '↓';
+        display: block;
+        color: var(--vp-c-text-3);
+    }
+
+    .home-section td code {
+        white-space: nowrap;
+    }
 }

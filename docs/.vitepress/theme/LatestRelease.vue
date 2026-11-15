@@ -59,3 +59,12 @@ const link = computed(() => withBase(localeIndex.value === 'root' ? '/reference/
     font-weight: 500;
 }
 </style>
+
+<style scoped>
+/* On phones: the version and the link, on one line. */
+@media (max-width: 639px) {
+    .latest-release-text {
+        display: none;
+    }
+}
+</style>
